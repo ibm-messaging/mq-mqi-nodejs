@@ -1,0 +1,17 @@
+{
+  "name": "ibmmq",
+  "version": "0.1.0",
+  "description": "Bindings to call IBM MQ API",
+  "main": "mqi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mark Taylor",
+  "license": "Apache-2.0",
+  "dependencies" :
+   { "ref" : ">=1.3.0"
+   , "ref-array"  : ">=1.2.0"
+   , "ref-struct" : ">=1.1.0"
+   , "ffi"        : ">=2.2.0"
+   }
+}
