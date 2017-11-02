@@ -43,17 +43,20 @@ for any returned errors and information.
 The exception to this is for getting messages from a queue.
 
 This implementation includes two mechanisms for retrieving messages from
-the queue.
+a queue:
 * *GetSync()* is the call that does an MQGET(wait) synchronously. In a Node
 environment, it blocks the execution thread until it completes. That may
-be OK for an immediate retrieval but not recommended for any times where
+be OK for an immediate retrieval where the wait time is set to zero,
+but it is not recommended for any times where
 you want to wait a while for a message to arrive.
 * *Get()* is the call that works asynchronously. The callback
 given as a parameter to this function is invoked truly asynchronously. To
 stop the callback being called for further messages, use the *GetDone()* function.
-Sample programs **amqsget** and **amqsgeta** demonstrate the two different
-techniques.
 
+Sample programs **amqsget** and **amqsgeta** demonstrate the two different
+techniques. Note that *GetDone()* cannot be executed from
+within the callback function itself; an exception is thrown. But it can
+be scheduled for later execution.
 
 ## Alternative JavaScript routes into MQ
 There are already some other ways to access MQ from Node.js:

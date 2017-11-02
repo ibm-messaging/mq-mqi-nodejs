@@ -93,6 +93,11 @@ function getCB(err, hObj, gmo,md,buf) {
        exitCode = 1;
      }
      ok = false;
+     // We don't need any more messages delivered, so schedule the
+     // callback to be deleted after this one has completed.
+     setImmediate(function() {
+       mq.GetDone(hObj);
+     });
    } else {
      if (md.Format=="MQSTR") {
        console.log("message <%s>", decoder.write(buf));
@@ -173,7 +178,6 @@ mq.Conn(qMgr, function(err,hConn) {
 setInterval(function() {
   if (!ok) {
      console.log("Exiting ...");
-     mq.GetDone(queueHandle);
      cleanup(connectionHandle,queueHandle);
      process.exit(exitCode);
   }
