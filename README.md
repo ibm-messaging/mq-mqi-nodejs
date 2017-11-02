@@ -67,7 +67,7 @@ connections from MQ Light clients via AMQP channels.
 * The MQTT protocol has an implementation [here](https://www.npmjs.com/package/mqtt). MQ supports
 connections from MQTT clients via the XR service and Telemetry channels.
 * MQ V9.0.4 includes a simple REST API for messaging that is accessible from any environment.
-See [here](https://www-01.ibm.com/common/ssi/ShowDoc.wss?docURL=/common/ssi/rep_ca/0/897/ENUS217-420/index.html&request_locale=en) for more information.
+See [here](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pro.doc/q130020_.htm#q130020___messagingapi) for more information.
 
 These interfaces may be suitable for many messaging applications, even though
 they do not give access to the full services available from MQ such as transactions.
