@@ -105,13 +105,16 @@ This package was developed using
 * node version 6.11
 * npm 3.10.10
 
+I have run it on Windows, where the NPM 'windows-build-tools' package
+also needed to be installed first.
+
 ## Installation:
 To install the package, it needs to be cloned from GitHub and
 then made available from the local node environment.
 
 ~~~
 git clone https://github.com/ibm-message/mq-mqi-nodejs <directory>
-cd <directory>/lib
+cd <directory>
 npm link        # This may require root permissions.
 ~~~
 
@@ -143,8 +146,8 @@ Run like:
 
 ~~~
 cd <directory>/samples
-setmqenv -m <qmgr> -k     # to make sure MQ libraries can be found
-npm link ibmmq
+. setmqenv -m <qmgr> -k     # to make sure MQ libraries can be found
+
 node amqsput.js
 node amqsget.js
 ~~~
@@ -152,7 +155,10 @@ node amqsget.js
 ## History
 
 25 October 2017
- * Version 0.1.0 : Initial release
+* Version 0.1.0 : Initial release
+
+08 November 2017
+* Version 0.1.1 : Updates for Windows and package layout
 
 ## Health Warning
 
