@@ -109,22 +109,18 @@ I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
 
 ## Installation:
-To install the package, it needs to be cloned from GitHub and
-then made available from the local node environment.
+To install the package, you can now pull it straight from the 
+NPM repository.
 
 ~~~
-git clone https://github.com/ibm-message/mq-mqi-nodejs <directory>
-cd <directory>
-npm link        # This may require root permissions.
+mkdir <something>
+cd <something>
+npm install ibmmq
 ~~~
 
 Installation of the package will automatically install any
 prerequisite packages downloadable from the npm
 repository.
-
-This package is not, for now, being pushed to the npm repository.
-That may happen when it has had more testing and more stability, and
-depending on feedback.
 
 ## Sample applications
 Samples are provided to put and get messages, and subscribe to
@@ -145,7 +141,7 @@ APIs for retrieving messages.
 Run like:
 
 ~~~
-cd <directory>/samples
+cd <something>/node_modules/ibmmq/samples
 . setmqenv -m <qmgr> -k     # to make sure MQ libraries can be found
 
 node amqsput.js
@@ -159,6 +155,9 @@ node amqsget.js
 
 08 November 2017
 * Version 0.1.1 : Updates for Windows and package layout
+
+16 November 2017
+* Version 0.1.2 : Pushed to NPM. No code changes.
 
 ## Health Warning
 
