@@ -109,7 +109,7 @@ I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
 
 ## Installation:
-To install the package, you can now pull it straight from the 
+To install the package, you can now pull it straight from the
 NPM repository.
 
 ~~~
@@ -142,11 +142,15 @@ Run like:
 
 ~~~
 cd <something>/node_modules/ibmmq/samples
-. setmqenv -m <qmgr> -k     # to make sure MQ libraries can be found
+. setmqenv -s  -k     # to make sure MQ libraries can be found
 
 node amqsput.js
 node amqsget.js
 ~~~
+
+There are various forms of the setmqenv command parameters, depending on your
+environment and platform. This is just one example; read the KnowledgeCenter for
+more options if you need them.
 
 ## History
 
@@ -158,6 +162,9 @@ node amqsget.js
 
 16 November 2017
 * Version 0.1.2 : Pushed to NPM. No code changes.
+
+21 November 2017
+* Version 0.1.3 : Fixed async get when events returned in callback.
 
 ## Health Warning
 
