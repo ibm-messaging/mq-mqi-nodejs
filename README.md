@@ -88,10 +88,11 @@ to convert that Buffer to a string for printing.
 
 Only a local queue manager has been tested. Clients should work if defined via
 CCDT or MQSERVER environment variable and the program sets the
-MQCNO_CLIENT_BINDING flag in the MQCNO options during *Connx()*.
+MQCNO_CLIENT_BINDING flag in the MQCNO options during *Connx()* or sets the
+MQ_CONNECT_TYPE environment variable to "CLIENT".
 Programmatic controls for
 client connectivity (the MQCD and MQSCO structures) have not been implemented
-in this initial version.
+in this early version.
 
 ## Extra operations
 The package includes a couple of verbs that are not standard in the MQI.
@@ -165,6 +166,9 @@ more options if you need them.
 
 21 November 2017
 * Version 0.1.3 : Fixed async get when events returned in callback.
+
+24 November 2017
+* Version 0.1.4 : Fixed some CNO fields; added support for client CCDTUrl
 
 ## Health Warning
 

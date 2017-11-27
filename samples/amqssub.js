@@ -62,6 +62,7 @@ function getMessage(hObj) {
   gmo.WaitInterval = 3 * 1000; // 3 seconds
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
                 MQC.MQGMO_WAIT |
+                MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
   mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {

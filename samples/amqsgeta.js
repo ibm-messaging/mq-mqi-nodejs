@@ -68,6 +68,7 @@ function getMessages() {
 
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
                 MQC.MQGMO_WAIT |
+                MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
   gmo.MatchOptions = MQC.MQMO_NONE;
   gmo.WaitInterval = waitInterval * 1000; // 3 seconds
