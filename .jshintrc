@@ -1,0 +1,7 @@
+{
+  "globals" : {
+    "require":false
+  },
+    "node": true,
+    "esversion": 6
+}

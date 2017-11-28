@@ -170,6 +170,9 @@ more options if you need them.
 24 November 2017
 * Version 0.1.4 : Fixed some CNO fields; added support for client CCDTUrl
 
+30 November 2017
+* Version 0.2.0 : Added MQSCO and MQCD structures for client programmatic access
+
 ## Health Warning
 
 This package is provided as-is with no guarantees of support or updates.
