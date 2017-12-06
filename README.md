@@ -77,8 +77,8 @@ Unimplemented MQI verbs include
 * MQSET and MQINQ
 * MQBEGIN
 * All of the message property controls
-* MQSUBRQ, MQSTAT
-* MQCB/MQCTL are not directly exposed but wrapped under the *Get()* method.
+* MQSTAT
+* MQCB/MQCTL are not directly exposed but wrapped under the *Get()* methods.
 
 There are no structure definitions for elements in message contents such
 as the MQRFH2 or MQDLQ headers. When putting messages, JavaScript Buffers and
