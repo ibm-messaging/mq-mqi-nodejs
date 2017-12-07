@@ -176,7 +176,7 @@ more options if you need them.
 * Version 0.2.0 : Added MQSCO and MQCD structures for client programmatic access
 
 08 Dec 2017
-* Version 0.2.1 : Added support for MQSTAT and MQINQ verbs. Documentation improvements.
+* Version 0.2.1 : Added support for MQSUBRQ and MQINQ verbs. Documentation improvements.
 
 ## Health Warning
 
