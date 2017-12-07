@@ -33,11 +33,11 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
 var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8')
+var decoder = new StringDecoder('utf8');
 
 // The default queue manager and queue to be used
-var qMgr = "QM1"
-var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE"
+var qMgr = "QM1";
+var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
 
 // Global variables
 var ok = true;

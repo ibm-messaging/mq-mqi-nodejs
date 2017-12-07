@@ -43,27 +43,6 @@ function formatErr(err) {
   return  "MQ call failed in " + err.message;
 }
 
-// Define some functions that will be used from the main flow
-function putMessage(hObj) {
-
-  var msg = "Hello from Node at " + new Date();
-
-  var mqmd = new mq.MQMD(); // Defaults are fine.
-  var pmo = new mq.MQPMO();
-
-  // Describe how the Put should behave
-  pmo.Options = MQC.MQPMO_NO_SYNCPOINT |
-                MQC.MQPMO_NEW_MSG_ID |
-                MQC.MQPMO_NEW_CORREL_ID;
-
-  mq.Put(hObj,mqmd,pmo,msg,function(err) {
-    if (err) {
-      console.log(formatErr(err));
-    } else {
-      console.log("MQPUT successful");
-    }
-  });
-}
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
@@ -83,11 +62,35 @@ function cleanup(hConn,hObj) {
   });
 }
 
+function inqQmgr(hObj) {
+   // We will request 3 attributes of the queue manager.
+   var selectors = [MQC.MQCA_Q_MGR_NAME,
+                    MQC.MQCA_DEAD_LETTER_Q_NAME,
+                    MQC.MQIA_CODED_CHAR_SET_ID];
+   var intAttrs = []; // Allocate an array which will get filled in int values 
+   var charAttrs = Buffer.alloc(96); // Allocate a buffer filled in with char values
+
+   try {
+    mq.Inq(hObj,selectors,intAttrs,charAttrs);
+
+    // We have to know how long each character attribute is, and therefore where to 
+    // extract the values from. They are in the same order as the MQCA attributes supplied
+    // in the request.
+    var qmgrName = charAttrs.slice(0,48);
+    var dlqName = charAttrs = charAttrs.slice(48,96);
+
+    console.log("ccsid=%d qmgrName = \"%s\", dlqName = \"%s\"",intAttrs[0],qmgrName,dlqName);
+
+   } catch (err) {
+     console.log(err.message);
+   }
+}
+
 // The program really starts here.
 // Connect to the queue manager. If that works, the callback function
 // opens the queue, and then we can put a message.
 
-console.log("Sample AMQSPUT.JS start");
+console.log("Sample AMQSINQ.JS start");
 
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
@@ -101,14 +104,6 @@ if (myArgs[1]) {
 var cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE; // use MQCNO_CLIENT_BINDING to connect as client
 
-// To add authentication, enable this block
-if (false) {
-  var csp = new mq.MQCSP();
-  csp.UserId = "metaylor";
-  csp.Password = "passw0rd";
-  cno.SecurityParms = csp;
-}
-
 mq.Connx(qMgr, cno, function(err,hConn) {
    if (err) {
      console.log(formatErr(err));
@@ -116,16 +111,20 @@ mq.Connx(qMgr, cno, function(err,hConn) {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
+     // In this case, we want to INQUIRE on attributes of the queue manager so we
+     // get an object handle that refers to that qmgr.
+     // No ObjectName is needed for this inquiry - the fact that it is the Q_MGR type
+     // is sufficient.
      var od = new mq.MQOD();
-     od.ObjectName = qName;
-     od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_OUTPUT;
+     od.ObjectName = null;   
+     od.ObjectType = MQC.MQOT_Q_MGR;
+     var openOptions = MQC.MQOO_INQUIRE;
      mq.Open(hConn,od,openOptions,function(err,hObj) {
        if (err) {
          console.log(formatErr(err));
        } else {
          console.log("MQOPEN of %s successful",qName);
-         putMessage(hObj);
+         inqQmgr(hObj);
        }
        cleanup(hConn,hObj);
      });

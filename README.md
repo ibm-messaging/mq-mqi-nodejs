@@ -74,7 +74,7 @@ they do not give access to the full services available from MQ such as transacti
 
 ## Unimplemented operations
 Unimplemented MQI verbs include
-* MQSET and MQINQ
+* MQSET
 * MQBEGIN
 * All of the message property controls
 * MQSTAT
@@ -139,6 +139,8 @@ userid and password values.
 The two **amqsget** samples show use of synchronous and asynchronous
 APIs for retrieving messages.
 
+An **amqsinq** sample shows how to inquire on attributes of an object.
+
 Run like:
 
 ~~~
@@ -172,6 +174,9 @@ more options if you need them.
 
 30 November 2017
 * Version 0.2.0 : Added MQSCO and MQCD structures for client programmatic access
+
+08 Dec 2017
+* Version 0.2.1 : Added support for MQSTAT and MQINQ verbs. Documentation improvements.
 
 ## Health Warning
 

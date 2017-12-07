@@ -74,7 +74,7 @@ function getMessage(hObj) {
        }
        ok = false;
     } else {
-      if (mqmd.Format="MQSTR") {
+      if (mqmd.Format=="MQSTR") {
         console.log("message <%s>", decoder.write(buf.slice(0,len)));
       } else {
         console.log("binary message: " + buf);
@@ -114,7 +114,7 @@ function cleanup(hConn,hObjPubQ, hObjSubQ) {
 // Connect to the queue manager. If that works, the callback function
 // opens the topic, and then we can start to retrieve messages.
 
-console.log("Sample AMQSSUB.JS start")
+console.log("Sample AMQSSUB.JS start");
 
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
