@@ -74,7 +74,6 @@ they do not give access to the full services available from MQ such as transacti
 
 ## Unimplemented operations
 Unimplemented MQI verbs include
-* MQSET
 * MQBEGIN
 * All of the message property controls
 * MQSTAT
@@ -176,7 +175,7 @@ more options if you need them.
 * Version 0.2.0 : Added MQSCO and MQCD structures for client programmatic access
 
 08 Dec 2017
-* Version 0.2.1 : Added support for MQSUBRQ and MQINQ verbs. Documentation improvements.
+* Version 0.2.1 : Added support for MQSUBRQ, MQSET and MQINQ verbs. Documentation improvements.
 
 ## Health Warning
 
