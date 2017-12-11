@@ -79,18 +79,18 @@ Unimplemented MQI verbs include
 * MQCB/MQCTL are not directly exposed but wrapped under the *Get()* methods.
 
 There are no structure definitions for elements in message contents such
-as the MQRFH2 or MQDLQ headers. When putting messages, JavaScript Buffers and
+as the MQRFH2 or MQDLH headers. When putting messages, JavaScript Buffers and
 strings can be used; when getting messages,
 data is always returned in a Buffer. The amqsget samples show one way
 to convert that Buffer to a string for printing.
 
-Only a local queue manager has been tested. Clients should work if defined via
+The default behaviour assumes use of a local queue manager.
+Client connections should work if defined via
 CCDT or MQSERVER environment variable and the program sets the
 MQCNO_CLIENT_BINDING flag in the MQCNO options during *Connx()* or sets the
-MQ_CONNECT_TYPE environment variable to "CLIENT".
-Programmatic controls for
-client connectivity (the MQCD and MQSCO structures) have not been implemented
-in this early version.
+MQ_CONNECT_TYPE environment variable to "CLIENT". The package also includes
+an implementation of the MQCD and MQSCO structures to permit programmatic
+creation of client connection details.
 
 ## Extra operations
 The package includes a couple of verbs that are not standard in the MQI.
