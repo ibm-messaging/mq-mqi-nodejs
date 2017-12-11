@@ -1,0 +1,5 @@
+Scripts in this directory are basic drivers to check
+the programs in ../samples run OK.
+
+mqset shows how you can take and format MQ trace at the
+same time as running the sample program.

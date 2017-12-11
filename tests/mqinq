@@ -1,0 +1,18 @@
+rm -f /var/mqm/trace/*
+rm -f /var/mqm/errors/*FDC
+
+r="`pwd`/.."
+cd $r
+npm link
+cd $r/samples
+
+strmqtrc
+
+node amqsinq.js QM1
+
+endmqtrc
+cd /var/mqm/trace
+dspmqtrc *
+rm -f *.TRC
+# vi `grep -l ":- node" *.FMT`
+

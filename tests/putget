@@ -1,0 +1,11 @@
+
+r="`pwd`/.."
+cd $r
+npm link
+cd $r/samples
+
+
+node amqsput.js
+
+node amqsgeta.js
+

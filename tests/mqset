@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Cleanup any old debug information before we start
+rm -f /var/mqm/trace/*
+rm -f /var/mqm/errors/*FDC
+
+# Get the environment Ok for running the test
+r="`pwd`/.."
+cd $r
+npm link   # may not be necessary but makes sure my dev environment is at latest level
+cd $r/samples
+
+# Start capturing MQ trace
+strmqtrc
+q="SYSTEM.DEFAULT.LOCAL.QUEUE"
+qm="QM1"
+
+# Set the queue to a known state and capture it in some MQSC output. These
+# attributes are the ones that amqsset will modify.
+echo "ALTER QL($q) TRIGDATA('TrigData Before') GET(ENABLED) PUT(ENABLED)" | runmqsc $qm >/dev/null 2>&1
+echo "DIS QL($q) GET PUT TRIGDATA" | runmqsc $qm > /tmp/amqsset.pre
+
+# Run the program to set object attributes
+node amqsset.js $q $qm
+
+# And look at the attributes now
+echo "DIS QL($q) GET PUT TRIGDATA" | runmqsc $qm > /tmp/amqsset.post
+
+# Reset values to usable after we've done the test
+echo "ALTER QL($q) TRIGDATA('') GET(ENABLED) PUT(ENABLED)" | runmqsc $qm >/dev/null 2>&1
+
+# Show the object attribute differences so we can see if the MQSET succeeded.
+echo "Differences are ..."
+diff /tmp/amqsset.pre /tmp/amqsset.post
+echo "Done."
+
+# Stop the trace and format the output. Uncomment the final line if we think we
+# want to look at the program's MQ trace.
+endmqtrc
+cd /var/mqm/trace
+dspmqtrc *
+rm -f *.TRC
+# vi `grep -l ":- node" *.FMT`
+
