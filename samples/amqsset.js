@@ -18,10 +18,10 @@
 */
 
 /*
- * This is an example of a Node.js program to inquire about the attributes of an IBM MQ
+ * This is an example of a Node.js program to set attributes of an IBM MQ
  * object.
  *
- * The queue manager name can be given as a parameter on the
+ * The queue and queue manager name can be given as a parameter on the
  * command line. Defaults are coded in the program.
  *
  */
@@ -59,25 +59,17 @@ function cleanup(hConn,hObj) {
 
 // This is where the interesting work is done. See MQ Knowledge Center documentation
 // about the MQSET verb to understand more about what this is doing, and how the
-// parameters work.
+// parameters work. Using the MQAttr object makes this quite simple.
 function setQ(hObj) {
    // We will set 3 attributes of the queue.
-   var selectors = [MQC.MQIA_INHIBIT_PUT,
-                    MQC.MQIA_INHIBIT_GET,
-                    MQC.MQCA_TRIGGER_DATA];
+   var selectors = [new mq.MQAttr(MQC.MQIA_INHIBIT_PUT,MQC.MQQA_PUT_INHIBITED),
+                    new mq.MQAttr(MQC.MQIA_INHIBIT_GET,MQC.MQQA_GET_INHIBITED),
+                    new mq.MQAttr(MQC.MQCA_TRIGGER_DATA,"TrigData After"),
+                   ];
 
-   // Allocate an array which holds the integer values
-   var intAttrs = [MQC.MQQA_PUT_INHIBITED,MQC.MQQA_GET_INHIBITED];
-
-   // Allocate a char buffer to hold the value for this setting. This is an
-   // easy way to ensure it's long enough, and padded appropriately (0 rather than space is OK)
-   var charAttrs = Buffer.from("TrigData After");
-   var padding = Buffer.alloc(MQC.MQ_TRIGGER_DATA_LENGTH);
-   charAttrs = Buffer.concat([charAttrs,padding],MQC.MQ_TRIGGER_DATA_LENGTH);
 
    try {
-    mq.Set(hObj,selectors,intAttrs,charAttrs);
-
+    mq.Set(hObj,selectors);
    } catch (err) {
      console.log(err.message);
    }

@@ -61,22 +61,15 @@ function cleanup(hConn,hObj) {
 // parameters work.
 function inqQmgr(hObj) {
    // We will request 3 attributes of the queue manager.
-   var selectors = [MQC.MQCA_Q_MGR_NAME,
-                    MQC.MQCA_DEAD_LETTER_Q_NAME,
-                    MQC.MQIA_CODED_CHAR_SET_ID];
-   var intAttrs = []; // Allocate an array which will get filled in with int values
-   var charAttrs = Buffer.alloc(96); // Allocate a buffer filled in with char values
+   var selectors = [new mq.MQAttr(MQC.MQCA_Q_MGR_NAME),
+                    new mq.MQAttr(MQC.MQCA_DEAD_LETTER_Q_NAME),
+                    new mq.MQAttr(MQC.MQIA_CODED_CHAR_SET_ID)
+                   ];
 
    try {
-    mq.Inq(hObj,selectors,intAttrs,charAttrs);
+    mq.Inq(hObj,selectors);
 
-    // We have to know how long each character attribute is, and therefore where to
-    // extract the values from. They are in the same order as the MQCA attributes supplied
-    // in the request.
-    var qmgrName = charAttrs.slice(0,48);
-    var dlqName = charAttrs.slice(48,96);
-
-    console.log("ccsid=%d qmgrName = \"%s\", dlqName = \"%s\"",intAttrs[0],qmgrName,dlqName);
+    console.log("ccsid=%d qmgrName = \"%s\", dlqName = \"%s\"",selectors[2].value,selectors[0].value,selectors[1].value);
 
 
    } catch (err) {

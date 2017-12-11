@@ -74,7 +74,6 @@ they do not give access to the full services available from MQ such as transacti
 
 ## Unimplemented operations
 Unimplemented MQI verbs include
-* MQBEGIN
 * All of the message property controls
 * MQSTAT
 * MQCB/MQCTL are not directly exposed but wrapped under the *Get()* methods.
@@ -138,7 +137,8 @@ userid and password values.
 The two **amqsget** samples show use of synchronous and asynchronous
 APIs for retrieving messages.
 
-An **amqsinq** sample shows how to inquire on attributes of an object.
+Samples **amqsinq** and **amqsset** show how to inquire on, and set, attributes
+of an object.
 
 Run like:
 
@@ -176,6 +176,9 @@ more options if you need them.
 
 08 Dec 2017
 * Version 0.2.1 : Added support for MQSUBRQ, MQSET and MQINQ verbs. Documentation improvements.
+
+12 Dec 2017
+* Version 0.2.2 : Redesigned MQSET/MQINQ interface to be much simpler.
 
 ## Health Warning
 
