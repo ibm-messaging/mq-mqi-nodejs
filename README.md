@@ -21,8 +21,8 @@ enables a focus on the
 business application code. For example, JavaScript strings are used
 instead of fixed-length, spaced-padded fields.
 
-The most important MQI verbs and parameters are implemented here, with enough
-function for many applications. Where there
+Most MQI verbs and parameters are implemented here.
+Where there
 are missing details within the verbs, these are shown by TODO
 markers in the source files.
 
@@ -41,6 +41,11 @@ then either an exception is thrown, or the verb returns.
 All the verbs are essentially synchronous, even though they invoke callbacks
 for any returned errors and information.
 The exception to this is for getting messages from a queue.
+
+Note that MQ also has a concept of Asynchronous Put (an MQPMO option) usable from
+client applications. That can be used in conjunction with a later call to the Stat()
+function to determine the success of the Put calls, but it is not related to
+asynchronous notification of the operation completion in JavaScript terms.
 
 This implementation includes two mechanisms for retrieving messages from
 a queue:
@@ -75,7 +80,6 @@ they do not give access to the full services available from MQ such as transacti
 ## Unimplemented operations
 Unimplemented MQI verbs include
 * All of the message property controls
-* MQSTAT
 * MQCB/MQCTL are not directly exposed but wrapped under the *Get()* methods.
 
 There are no structure definitions for elements in message contents such
@@ -179,6 +183,9 @@ more options if you need them.
 
 12 Dec 2017
 * Version 0.2.2 : Redesigned MQSET/MQINQ interface to be much simpler.
+
+15 Dev 2017
+* Version 0.2.3 : Added MQSTAT
 
 ## Health Warning
 
