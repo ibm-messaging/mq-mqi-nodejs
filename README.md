@@ -77,10 +77,8 @@ See [here](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.m
 These interfaces may be suitable for many messaging applications, even though
 they do not give access to the full services available from MQ such as transactions.
 
-## Unimplemented operations
-Unimplemented MQI verbs include
-* All of the message property controls
-* MQCB/MQCTL are not directly exposed but wrapped under the *Get()* methods.
+## Unimplemented capabilities
+All the application-level MQI verbs are now implemented.
 
 There are no structure definitions for elements in message contents such
 as the MQRFH2 or MQDLH headers. When putting messages, JavaScript Buffers and
@@ -186,6 +184,9 @@ more options if you need them.
 
 15 Dev 2017
 * Version 0.2.3 : Added MQSTAT
+
+20 Dec 2017
+* Version 0.3.0 : Added the message properties calls
 
 ## Health Warning
 
