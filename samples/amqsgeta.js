@@ -94,16 +94,9 @@ function getCB(err, hObj, gmo,md,buf) {
        exitCode = 1;
      }
      ok = false;
-     // We don't need any more messages delivered, so schedule the
-     // callback to be deleted after this one has completed. Because
-     // MQ's internal threading and locking model does not match 
-     // cleanly with JavaScript's single execution thread, we cannot 
-     // call any further MQI functions from within this message callback.
-     // The setImmediate() causes the closure to happen after this
-     // function has completed.
-     setImmediate(function() {
-       mq.GetDone(hObj);
-     });
+     // We don't need any more messages delivered, so cause the
+     // callback to be deleted after this one has completed.
+     mq.GetDone(hObj);
    } else {
      if (md.Format=="MQSTR") {
        console.log("message <%s>", decoder.write(buf));
