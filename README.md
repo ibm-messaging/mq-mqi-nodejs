@@ -43,7 +43,7 @@ for any returned errors and information.
 The exception to this is for getting messages from a queue.
 
 Note that MQ also has a concept of Asynchronous Put (an MQPMO option) usable from
-client applications. That can be used in conjunction with a later call to the Stat()
+client applications. That can be used in conjunction with a later call to the *Stat()*
 function to determine the success of the Put calls, but it is not related to
 asynchronous notification of the operation completion in JavaScript terms.
 
@@ -55,13 +55,20 @@ be OK for an immediate retrieval where the wait time is set to zero,
 but it is not recommended for any times where
 you want to wait a while for a message to arrive.
 * *Get()* is the call that works asynchronously. The callback
-given as a parameter to this function is invoked truly asynchronously. To
+given as a parameter to this function is invoked asynchronously. To
 stop the callback being called for further messages, use the *GetDone()* function.
 
+The asynchronous retrieval is now implemented using a polling MQGET(immediate)
+operation. Originally, this package used the MQCB and MQCTL functions to
+work fully asynchronously, but the threading model used within the
+MQ libraries does not work well with the Node model, and more detailed testing
+was demonstrating deadlocks that could not be solved without changes
+to the underlying
+MQ products. The polling is done by default every second; applications
+can override that by setting the *getLoopIntervalMs* variable.
+
 Sample programs **amqsget** and **amqsgeta** demonstrate the two different
-techniques. Note that *GetDone()* cannot be executed from
-within the callback function itself; an exception is thrown. But it can
-be scheduled for later execution.
+techniques.
 
 ## Alternative JavaScript routes into MQ
 There are already some other ways to access MQ from Node.js:
@@ -97,6 +104,7 @@ creation of client connection details.
 ## Extra operations
 The package includes a couple of verbs that are not standard in the MQI.
 * *GetDone()* is used to complete asynchronous retrieval of messages.
+* *GetSync()* is equivalent of the traditional MQGET operation.
 * *Lookup()* extracts strings corresponding to MQI numbers, similar to the
 *MQConstants.lookup()* method in Java.
 
@@ -187,6 +195,10 @@ more options if you need them.
 
 20 Dec 2017
 * Version 0.3.0 : Added the message properties calls
+
+02 Jan 2018
+* Version 0.3.5 : Had to redesign async retrieval to avoid deadlocks
+in queue manager code. Added makedoc script to generate JSDoc output.
 
 ## Health Warning
 

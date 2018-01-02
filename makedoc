@@ -1,0 +1,52 @@
+# Create JSDoc to describe the API
+ 
+# Use a simple configuration file to 
+# control JSDoc format.
+configFile=/tmp/jsdoc.cfg
+
+cat << EOF > $configFile
+{
+  "templates" : {
+     "default" : {
+        "outputSourceFiles" : false
+     }
+  }
+}
+EOF
+
+# Exclude a few files from the doc generation process
+contents=`ls ./lib/*js |\
+   grep -v mqidefs.js |\
+   grep -v mqistrings.js |\
+   grep -v mqitypes.js |\
+   grep -v mqiutils.js`
+
+# Create a package definition without the version number   
+# so it is not used in the output path.
+tmpPackage="/tmp/package.json"
+cat ./package.json | grep -v version > $tmpPackage
+
+# The output goes in the source tree
+outputDirectory="./doc"
+rm -rf $outputDirectory/ibmmq
+
+# And now run the processor
+jsdoc  -a all \
+       -c $configFile \
+       -d $outputDirectory \
+       -P $tmpPackage \
+       --verbose \
+       --pedantic \
+        $contents
+
+# A couple of simple patches to the generated files
+# make it look a little better. Doesn't seem to be
+# a way to configure these in the default JSDoc template.
+x=`find $outputDirectory -name index.html`
+for f in $x
+do
+  cat  $f |\
+     sed "s/JSDoc: Home/JSDoc: IBM MQ/g" |\
+     sed "s/>Home</>IBM MQ Node.js API</g"  > $f.tmp
+  mv $f.tmp $f
+done
