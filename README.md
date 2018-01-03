@@ -200,6 +200,9 @@ more options if you need them.
 * Version 0.3.5 : Had to redesign async retrieval to avoid deadlocks
 in queue manager code. Added makedoc script to generate JSDoc output.
 
+04 Jan 2018
+* Version 0.3.7 : Modified some of the new async retrieval design
+
 ## Health Warning
 
 This package is provided as-is with no guarantees of support or updates.
