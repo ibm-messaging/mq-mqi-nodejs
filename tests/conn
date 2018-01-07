@@ -1,0 +1,9 @@
+
+r="`pwd`/.."
+cd $r
+npm link
+cd $r/samples
+
+
+node amqsconn.js
+
