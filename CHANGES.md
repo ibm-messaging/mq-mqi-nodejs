@@ -37,4 +37,4 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 * Version 0.3.7 : Modified some of the new async retrieval design
 
 02 Feb 2018
-* Version 0.4.0 : Added sample for MQCONN. Test that C client is installed
+* Version 0.4.1 : Added sample for MQCONN. Test that C client is installed
