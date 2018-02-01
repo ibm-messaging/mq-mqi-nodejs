@@ -53,7 +53,9 @@ a queue:
 environment, it blocks the execution thread until it completes. That may
 be OK for an immediate retrieval where the wait time is set to zero,
 but it is not recommended for any times where
-you want to wait a while for a message to arrive.
+you want to wait a while for a message to arrive. Some of the samples use
+this function for simplicity, where the Get() is not the interesting aspect
+being demonstrated.
 * *Get()* is the call that works asynchronously. The callback
 given as a parameter to this function is invoked asynchronously. To
 stop the callback being called for further messages, use the *GetDone()* function.
@@ -64,8 +66,8 @@ work fully asynchronously, but the threading model used within the
 MQ libraries does not work well with the Node model, and more detailed testing
 was demonstrating deadlocks that could not be solved without changes
 to the underlying
-MQ products. The polling is done by default every second; applications
-can override that by setting the *getLoopIntervalMs* variable.
+MQ products. The polling is done by default every 10 seconds; applications
+can override that by calling the *setPollTime* function.
 
 Sample programs **amqsget** and **amqsgeta** demonstrate the two different
 techniques.
@@ -118,7 +120,7 @@ I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
 
 ## Installation:
-To install the package, you can now pull it straight from the
+To install this package, you can now pull it straight from the
 NPM repository.
 
 ~~~
@@ -130,6 +132,9 @@ npm install ibmmq
 Installation of the package will automatically install any
 prerequisite packages downloadable from the npm
 repository.
+
+It also requires the MQ C client libraries to be installed that you can
+get from your MQ installation media or from [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
 
 ## Sample applications
 Samples are provided to put and get messages, and subscribe to
@@ -166,42 +171,7 @@ more options if you need them.
 
 ## History
 
-25 October 2017
-* Version 0.1.0 : Initial release
-
-08 November 2017
-* Version 0.1.1 : Updates for Windows and package layout
-
-16 November 2017
-* Version 0.1.2 : Pushed to NPM. No code changes.
-
-21 November 2017
-* Version 0.1.3 : Fixed async get when events returned in callback.
-
-24 November 2017
-* Version 0.1.4 : Fixed some CNO fields; added support for client CCDTUrl
-
-30 November 2017
-* Version 0.2.0 : Added MQSCO and MQCD structures for client programmatic access
-
-08 Dec 2017
-* Version 0.2.1 : Added support for MQSUBRQ, MQSET and MQINQ verbs. Documentation improvements.
-
-12 Dec 2017
-* Version 0.2.2 : Redesigned MQSET/MQINQ interface to be much simpler.
-
-15 Dev 2017
-* Version 0.2.3 : Added MQSTAT
-
-20 Dec 2017
-* Version 0.3.0 : Added the message properties calls
-
-02 Jan 2018
-* Version 0.3.5 : Had to redesign async retrieval to avoid deadlocks
-in queue manager code. Added makedoc script to generate JSDoc output.
-
-04 Jan 2018
-* Version 0.3.7 : Modified some of the new async retrieval design
+See [CHANGES](https://github.com/ibm-messaging/mq-mqi-nodejs/CHANGES.md).
 
 ## Health Warning
 
