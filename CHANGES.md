@@ -38,3 +38,6 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 02 Feb 2018
 * Version 0.4.1 : Added sample for MQCONN. Test that C client is installed
+
+26 Mar 2018
+* Version 0.5.0 : Added V9.0.5 MQI constants
