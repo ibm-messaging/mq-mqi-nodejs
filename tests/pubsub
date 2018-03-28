@@ -1,0 +1,18 @@
+# Make a subscription and then publish a few messages to a matching topic
+r="`pwd`/.."
+cd $r
+npm link
+cd $r/samples
+
+topic="JS.SUB"
+qmgr="QM1"
+
+node amqssub.js $topic $qmgr &
+for i in 0 1 2 3 4
+do
+  node amqspub.js $topic $qmgr  >/dev/null 
+done
+
+wait
+
+

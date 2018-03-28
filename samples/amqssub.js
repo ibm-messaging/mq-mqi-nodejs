@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017, 2018
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -84,14 +84,14 @@ function getMessage(hObj) {
 }
 
 // When we're done, close queues and connections
-function cleanup(hConn,hObjPubQ, hObjSubQ) {
+function cleanup(hConn,hObjPubQ, hObjSubscription) {
   // Demonstrate two ways of closing queues - first using an exception, then
   // the version with callback.
   try {
-    mq.Close(hObjSubQ,0);
-    console.log("MQCLOSE (Sub) successful");
+    mq.Close(hObjSubscription,0);
+    console.log("MQCLOSE (Subscription) successful");
   } catch (err) {
-    console.log("MQCLOSE (Sub) ended with reason "  + err.mqrc);
+    console.log("MQCLOSE (Subscription) ended with reason "  + err.mqrc);
   }
 
   mq.Close(hObjPubQ, 0, function(err) {
@@ -140,7 +140,7 @@ mq.Conn(qMgr, function(err,hConn) {
                   | MQC.MQSO_FAIL_IF_QUIESCING
                   | MQC.MQSO_MANAGED;
 
-     mq.Sub(hConn,null,sd,function(err,hObjPubQ,hObjSubQ) {
+     mq.Sub(hConn,null,sd,function(err,hObjPubQ,hObjSubscription) {
        if (err) {
          console.log("MQSUB ended with reason " + err.mqrc);
        } else {
@@ -148,7 +148,7 @@ mq.Conn(qMgr, function(err,hConn) {
          // And loop getting messages until done.
          getMessages(hObjPubQ);
        }
-       cleanup(hConn,hObjPubQ, hObjSubQ);
+       cleanup(hConn,hObjPubQ, hObjSubscription);
      });
    }
 });
