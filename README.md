@@ -134,7 +134,8 @@ prerequisite packages downloadable from the npm
 repository.
 
 It also requires the MQ C client libraries to be installed that you can
-get from your MQ installation media or from [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
+get from your MQ installation media, from the full Client downloads [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176), 
+or from the Redistributable Client packages now available directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/9.0.4.0-IBM-MQC-Redist-LinuxX64.tar.gz).
 
 ## Sample applications
 Samples are provided to put and get messages, and subscribe to
@@ -171,7 +172,7 @@ more options if you need them.
 
 ## History
 
-See [CHANGES](https://github.com/ibm-messaging/mq-mqi-nodejs/CHANGES.md).
+See [CHANGES](CHANGES.md).
 
 ## Health Warning
 
@@ -186,6 +187,6 @@ For feedback and issues relating specifically to this package, please use the
 [GitHub issue tracker](https://github.com/ibm-messaging/mq-mqi-nodejs/issues).
 
 Contributions to this package can be accepted under the terms of the
-IBM Contributor License Agreement, found in the file CLA.md of this repository.
+IBM Contributor License Agreement, found in the file [CLA.md](CLA.md) of this repository.
 When submitting a pull request, you must include a statement stating
-you accept the terms in CLA.md.
+you accept the terms in the CLA.
