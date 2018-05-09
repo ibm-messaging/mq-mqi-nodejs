@@ -134,7 +134,7 @@ prerequisite packages downloadable from the npm
 repository.
 
 It also requires the MQ C client libraries to be installed that you can
-get from your MQ installation media, from the full Client downloads [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176), 
+get from your MQ installation media, from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176), 
 or from the Redistributable Client packages now available directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
 ## Sample applications

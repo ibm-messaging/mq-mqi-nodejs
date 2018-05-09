@@ -41,3 +41,6 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 26 Mar 2018
 * Version 0.5.0 : Added V9.0.5 MQI constants
+
+09 May 2018
+* Version 0.5.2 : Allow hostname:port format for ConnectionName in client MQCD
