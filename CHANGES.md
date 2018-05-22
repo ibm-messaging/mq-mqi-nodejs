@@ -47,4 +47,5 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 25 May 2018
 * Version 0.6.0 : Try to automatically load the C client library during npm install
+* Version 0.6.1 : Correct version
 
