@@ -44,3 +44,7 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 09 May 2018
 * Version 0.5.2 : Allow hostname:port format for ConnectionName in client MQCD
+
+25 May 2018
+* Version 0.6.0 : Try to automatically load the C client library during npm install
+

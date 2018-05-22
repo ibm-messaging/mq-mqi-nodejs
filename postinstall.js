@@ -1,0 +1,166 @@
+'use strict';
+
+// External packages we require
+var fs = require('fs');
+var path = require('path');
+var http  = require('http');
+var https = require('https');
+
+const execSync = require('child_process').execSync;
+
+// How to get to the MQ Redistributable Client package
+var protocol = "https://"
+var host="public.dhe.ibm.com";
+var dir="ibmdl/export/pub/software/websphere/messaging/mqdev/redist";
+var vrm="9.0.5";
+var vrmf=vrm + ".0";
+var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
+var title="IBM MQ Redistributable C Client";
+
+
+// Other local variables
+var rc = 0;
+var unpackCommand;
+var unwantedDirs;
+const newBaseDir="redist";
+
+// Some functions used at the end of the operation
+function cleanup() {
+  // Always run to try to delete the downloaded zip/tar file
+  try {
+    console.log("Removing " + file);
+    fs.unlink(file);
+  } catch(err) {
+  }
+
+  // Always exit OK, even after an error so the rest of the install succeeds.
+  process.exit(0);
+}
+
+function printError(err) {
+  console.error("Error occurred downloading " + title + ": " + err.message);
+  console.error("You will need to manually install it.");
+  cleanup();
+}
+
+// Equivalent of "rm -rf"
+function removeDirRecursive(d) {
+  if (fs.existsSync(d)) {
+        fs.readdirSync(d).forEach(function(e) {
+            var ePath = path.join(d, e);
+            if (fs.lstatSync(ePath).isDirectory()) {
+                removeDirRecursive(ePath);
+            } else {
+                fs.unlinkSync(ePath);
+            }
+        });
+        fs.rmdirSync(d);
+    }
+}
+
+function removePattern(d,type) {
+  fs.readdirSync(d).forEach(function(e) {
+      if (e.match(type)) {
+        var ePath = path.join(d, e);
+        try {
+          fs.unlinkSync(ePath);
+        } catch (err) {
+        }
+      }
+  });
+}
+
+// Remove directories from the client that are not needed for Node execution
+function removeUnneeded() {
+  for (var i=0;i<unwantedDirs.length;i++) {
+    try {
+      removeDirRecursive(path.join(newBaseDir,unwantedDirs[i]));
+    } catch (err) {
+      // don't really care
+    }
+  }
+
+  if (process.platform === 'win32') {
+    var d = path.join(newBaseDir,"bin64");
+    removePattern(d,/.exe$/);
+    removePattern(d,/^imq.*.dll$/);
+  } else {
+    var d= path.join(newBaseDir,"lib");
+    removePattern(d,/lib.*so/);
+  }
+
+  cleanup();
+}
+
+// Start main processing here. Check if the install is for an environment
+// where there is a Redistributable Client.
+if (process.platform === 'win32') {
+  file=file+"Win64.zip";
+  unpackCommand="mkdir " +  newBaseDir + " && chdir " + newBaseDir + " && unzip ..\\" + file;
+  unwantedDirs=[ "conv","exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
+} else if (process.platform === 'linux' && process.arch === 'x64'){
+  file=file+"LinuxX64.tar.gz";
+  unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
+  unwantedDirs=[ "samp", "bin","java", "gskit8/lib" ];
+} else {
+  console.log("No redistributable client package available for this platform.");
+  console.log("If an MQ Client library exists for the platform, install it manually.")
+  process.exit(0);
+}
+
+// Don't download if it looks to already be there - though Node will usually be running this in a clean directory
+var idTagFile = path.join(newBaseDir,"swidtag","ibm.com_IBM_MQ_Client-" + vrm + ".swidtag");
+//console.log("Checking for existence of " + idTagFile);
+if (fs.existsSync(idTagFile)) {
+    console.log("The " + title + " appears to already be installed");
+    process.exit(0);
+}
+
+console.log("Downloading  " + title + " runtime libraries - version " + vrmf);
+
+// Define the file to be downloaded (it will be deleted later, after unpacking)
+var url = protocol + host + "/" + dir + "/" + file;
+//url = "http://localhost:8000/"+file; // My local version for testing
+//console.log("Getting " + url);
+
+var client = http;
+if (url.startsWith("https"))
+  client=https;
+
+// Now download and unpack the file in the platform-specific fashion.
+// The 'request' package would simplify this code, but it introduces too many
+// prereqs for just an installation step.
+try {
+  // The downloaded file goes into the current directory (node_modules/ibmmq)
+  var fd = fs.openSync(file, "w");
+  client.get(url, (res) => {
+    var error;
+
+    if (res.statusCode < 200 || res.statusCode > 299) {
+      error = new Error("'Request Failed.\nStatus Code: " + res.statusCode);
+    }
+
+    if (error) {
+      res.resume();
+      printError(error);
+    }
+
+    res.on('data', (chunk) => {
+      fs.appendFileSync(fd,chunk);
+    });
+    res.on('end', () => {
+      try {
+        fs.closeSync(fd);
+        console.log("Unpacking libraries...");
+        execSync(unpackCommand);
+        removeUnneeded();
+      } catch (error) {
+        printError(error);
+      }
+    });
+  }).on('error', (error) => {
+    printError(error);
+  });
+} catch (err) {
+  printError(err);
+}
