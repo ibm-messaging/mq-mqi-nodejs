@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Create and run a Docker container for a NodeJS MQ program
+
+# Assume you have a local queue manager on your machine with
+# suitable connectivity.
+
+# This script uses the Dockerfile to build a container with just
+# the amqsput program and its dependencies, and then runs it to
+# connect to that queue manager. The container defaults to
+# QM1 and DEV.QUEUE.1 (overriding the default queue in the program itself).
+# And this script re-overrides the queue name.
+
+docker build  -t mq-node-demo .
+if [ $? -eq 0 ]
+then
+  h=`hostname`
+  docker run \
+    -e MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$h(1414)" \
+    -e DOCKER_QMGR="QM1" \
+    -e DOCKER_Q="SYSTEM.DEFAULT.LOCAL.QUEUE" \
+    -it \
+      mq-node-demo
+fi

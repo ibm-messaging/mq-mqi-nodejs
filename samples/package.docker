@@ -1,0 +1,11 @@
+{
+  "name": "amqsput",
+  "version": "0.0.1",
+  "description": "For demonstrating container-based installation of MQ API",
+  "main": "amqsput.js",
+  "author": "Mark Taylor",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ibmmq": ">=0.6.1"
+  }
+}

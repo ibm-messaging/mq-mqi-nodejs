@@ -120,7 +120,7 @@ I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
 
 ## Installation:
-To install this package, you can now pull it straight from the
+To install this package, you can pull it straight from the
 NPM repository.
 
 ~~~
@@ -130,15 +130,28 @@ npm install ibmmq
 ~~~
 
 Installation of the package will automatically install any
-prerequisite packages downloadable from the npm
-repository.
+prerequisite packages downloadable from the npm repository.
 
-It also requires the MQ C client libraries to be installed that you can
-get from your MQ installation media, from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176), 
-or from the Redistributable Client packages now available directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
+It also requires the MQ C client libraries to be installed.
+
+For Windows and Linux x64, the npm installation process now tries to access
+the Redistributable Client packages and unpack them automatically. The
+installation of this library succeeds even if the download and unpack of the
+MQ runtime libraries fails in some way.
+
+If you do not want this automatic installation of the MQ runtime, then set the
+environment variable "MQIJS_NOREDIST" to any value before running npm install.
+The MQ libraries will then be found at runtime using mechanisms such as
+searching LD_LIBRARY_PATH.
+
+For other MQ-supported platforms and environments, the C runtime can be
+installed from your MQ installation media, or from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
+The Redistributable Client packages for Windows and Linux x64 are also available
+directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
 ## Sample applications
-Samples are provided to put and get messages, and subscribe to
+Samples are provided to demonstrate most MQI uses, including ways put and get
+messages, and to subscribe to
 topics. The source code of these samples should be reviewed for
 an fuller idea of how this package can be used.
 
@@ -170,6 +183,13 @@ There are various forms of the setmqenv command parameters, depending on your
 environment and platform. This is just one example; read the KnowledgeCenter for
 more options if you need them.
 
+## Containers
+
+The samples directory includes a Dockerfile that can be used as the basis
+of generating an independent container to run MQ programs. The **run.docker**
+script builds and executes the container. Environment variables are used in
+the Dockerfile and the script to control connection to the queue manager.
+
 ## History
 
 See [CHANGES](CHANGES.md).
@@ -178,7 +198,7 @@ See [CHANGES](CHANGES.md).
 
 This package is provided as-is with no guarantees of support or updates.
 There are also no guarantees of compatibility
-with any future versions of the package; the API is subject to change based
+with any future versions of the package. The API is subject to change based
 on any feedback.
 
 ## Issues and Contributions

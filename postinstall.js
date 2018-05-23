@@ -59,15 +59,17 @@ function removeDirRecursive(d) {
 }
 
 function removePattern(d,type) {
-  fs.readdirSync(d).forEach(function(e) {
-      if (e.match(type)) {
+  if (fs.lstatSync(d).isDirectory()) {
+    fs.readdirSync(d).forEach(function(e) {
+    if (e.match(type)) {
         var ePath = path.join(d, e);
         try {
           fs.unlinkSync(ePath);
         } catch (err) {
         }
       }
-  });
+    });
+  }
 }
 
 // Remove directories from the client that are not needed for Node execution
@@ -92,11 +94,21 @@ function removeUnneeded() {
   cleanup();
 }
 
+// If a particular environment variable is set, do not try to install
+// the Redist client package. I did consider doing this automatically by
+// trying to locate the libraries in the "usual" places, but decided it was
+// better to be explicit about the choice.
+var doit = process.env['MQIJS_NOREDIST'];
+if (doit != null) {
+  console.log("Environment variable set to not install " + title);
+  process.exit(0);
+}
+
 // Start main processing here. Check if the install is for an environment
 // where there is a Redistributable Client.
 if (process.platform === 'win32') {
   file=file+"Win64.zip";
-  unpackCommand="mkdir " +  newBaseDir + " && chdir " + newBaseDir + " && unzip ..\\" + file;
+  unpackCommand="mkdir " +  newBaseDir;// + " && chdir " + newBaseDir;// + " && unzip ..\\" + file;
   unwantedDirs=[ "conv","exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
 } else if (process.platform === 'linux' && process.arch === 'x64'){
   file=file+"LinuxX64.tar.gz";
@@ -153,7 +165,20 @@ try {
         fs.closeSync(fd);
         console.log("Unpacking libraries...");
         execSync(unpackCommand);
-        removeUnneeded();
+        // On Windows we have run the unzip separately as there may
+        // not be a command line interface available. So use a nodejs
+        // package to manage it.
+        if (process.platform === 'win32') {
+          var unzip = require('unzip');
+          fs.createReadStream(file)
+             .pipe(unzip.Extract({ path: newBaseDir })
+             .on('close',function() {
+               console.log("Finished Windows unzip");
+               removeUnneeded();
+             }));
+        } else {
+          removeUnneeded();
+        }
       } catch (error) {
         printError(error);
       }
