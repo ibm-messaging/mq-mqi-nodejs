@@ -51,3 +51,6 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 23 May 2018
 * Version 0.7.0 : Add sample for building Docker container
+
+06 Jun 2018
+* Version 0.7.1 : Use smaller base image for container. Keep runmqsc in redist package

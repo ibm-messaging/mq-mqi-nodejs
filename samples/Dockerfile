@@ -1,4 +1,7 @@
-FROM ubuntu:16.04
+
+# Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu 
+#FROM ubuntu:16.04
+FROM debian:jessie-slim
 
 # Set some parameters.
 ENV NODE_USER  app

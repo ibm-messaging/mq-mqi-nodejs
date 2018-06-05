@@ -51,10 +51,13 @@ function removeDirRecursive(d) {
             if (fs.lstatSync(ePath).isDirectory()) {
                 removeDirRecursive(ePath);
             } else {
-                fs.unlinkSync(ePath);
+                // Keep runmqsc as it might be useful for creating CCDTs locally,
+                // particularly in a containerised runtime
+                if (!e.match(/runmqsc/))
+                  fs.unlinkSync(ePath);
             }
         });
-        fs.rmdirSync(d);
+        fs.rmdirSync(d); // This fails on the directory containing runmqsc but that's fine
     }
 }
 
@@ -89,6 +92,10 @@ function removeUnneeded() {
   } else {
     var d= path.join(newBaseDir,"lib");
     removePattern(d,/lib.*so/);
+    removePattern(d,/amqtrc.fmt/);
+    var d= path.join(newBaseDir,"lib64");
+    removePattern(d,/libimq.*so/);
+    removePattern(d,/libedit.so/);
   }
 
   cleanup();
@@ -113,7 +120,7 @@ if (process.platform === 'win32') {
 } else if (process.platform === 'linux' && process.arch === 'x64'){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
-  unwantedDirs=[ "samp", "bin","java", "gskit8/lib" ];
+  unwantedDirs=[ "samp", "bin","java", "gskit8/lib", ".github" ];
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.")
