@@ -54,3 +54,6 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 06 Jun 2018
 * Version 0.7.1 : Use smaller base image for container. Keep runmqsc in redist package
+
+14 Jun 2018
+* Version 0.8.0 : Use fastcall instead of node-ffi in order to support the newer versions of NodeJS

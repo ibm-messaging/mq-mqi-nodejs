@@ -1,7 +1,7 @@
 
 # Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu 
 #FROM ubuntu:16.04
-FROM debian:jessie-slim
+FROM node:slim
 
 # Set some parameters.
 ENV NODE_USER  app
@@ -26,16 +26,13 @@ COPY package.docker ${APP_DIR}/package.json
 
 # Update the base image and make sure we've installed basic capabilities
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl gcc g++ make \
-    && curl --silent -k --location https://deb.nodesource.com/setup_8.x | bash - \
-    && apt-get install -y  nodejs  \
-    && npm install -g npm \
+    && apt-get install -y --no-install-recommends python git cmake curl gcc g++ make \
 # Define the userid and set up the location for the program
    && groupadd -r ${NODE_GROUP} && useradd -r -m -g ${NODE_GROUP} ${NODE_USER} \
 # Now get all the prereq packages installed and cleanup the
 # pieces that are not needed after building the C interface pieces.
    && npm install \
-   && apt-get autoremove -y curl make gcc g++ python \
+   && apt-get autoremove -y cmake git curl make gcc g++ python \
    && apt-get purge -y \
    && rm -rf /var/lib/apt/lists/* \
    && chmod a+rx ${APP_DIR}/*
