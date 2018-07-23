@@ -115,12 +115,12 @@ if (doit != null) {
 // where there is a Redistributable Client.
 if (process.platform === 'win32') {
   file=file+"Win64.zip";
-  unpackCommand="mkdir " +  newBaseDir;// + " && chdir " + newBaseDir;// + " && unzip ..\\" + file;
-  unwantedDirs=[ "conv","exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
+  unpackCommand="mkdir " +  newBaseDir;
+  unwantedDirs=[ "exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
 } else if (process.platform === 'linux' && process.arch === 'x64'){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
-  unwantedDirs=[ "samp", "bin","java", "gskit8/lib", ".github" ];
+  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.")
@@ -172,7 +172,7 @@ try {
         fs.closeSync(fd);
         console.log("Unpacking libraries...");
         execSync(unpackCommand);
-        // On Windows we have run the unzip separately as there may
+        // On Windows we have to run the unzip separately as there may
         // not be a command line interface available. So use a nodejs
         // package to manage it.
         if (process.platform === 'win32') {

@@ -190,6 +190,13 @@ of generating an independent container to run MQ programs. The **run.docker**
 script builds and executes the container. Environment variables are used in
 the Dockerfile and the script to control connection to the queue manager.
 
+
+## Documentation
+
+The package contains JSDoc comments that can be formatted using the **makedoc** script in the root directory. The generated documentation is then accessible
+via a web browser.
+
+
 ## History
 
 See [CHANGES](CHANGES.md).

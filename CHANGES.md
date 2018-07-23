@@ -54,3 +54,7 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 06 Jun 2018
 * Version 0.7.1 : Use smaller base image for container. Keep runmqsc in redist package
+
+23 Jul 2018
+* Version 0.8.0 : Use a git-level instead of npm for ffi package to get it working on Node 10.
+Added sample to show programming TLS connections in client.
