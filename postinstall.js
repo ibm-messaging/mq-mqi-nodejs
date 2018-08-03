@@ -12,7 +12,7 @@ const execSync = require('child_process').execSync;
 var protocol = "https://"
 var host="public.dhe.ibm.com";
 var dir="ibmdl/export/pub/software/websphere/messaging/mqdev/redist";
-var vrm="9.0.5";
+var vrm="9.1.0";
 var vrmf=vrm + ".0";
 var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
 var title="IBM MQ Redistributable C Client";
@@ -135,7 +135,7 @@ if (fs.existsSync(idTagFile)) {
     process.exit(0);
 }
 
-console.log("Downloading  " + title + " runtime libraries - version " + vrmf);
+console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 var url = protocol + host + "/" + dir + "/" + file;

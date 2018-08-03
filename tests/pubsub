@@ -1,7 +1,7 @@
 # Make a subscription and then publish a few messages to a matching topic
 r="`pwd`/.."
 cd $r
-npm link
+#npm link
 cd $r/samples
 
 topic="JS.SUB"

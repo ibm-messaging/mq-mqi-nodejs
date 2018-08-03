@@ -3,7 +3,7 @@ rm -f /var/mqm/errors/*FDC
 
 r="`pwd`/.."
 cd $r
-npm link
+#npm link
 cd $r/samples
 
 strmqtrc
