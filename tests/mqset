@@ -7,7 +7,7 @@ rm -f /var/mqm/errors/*FDC
 # Get the environment Ok for running the test
 r="`pwd`/.."
 cd $r
-npm link   # may not be necessary but makes sure my dev environment is at latest level
+#npm link   # may not be necessary but makes sure my dev environment is at latest level
 cd $r/samples
 
 # Start capturing MQ trace

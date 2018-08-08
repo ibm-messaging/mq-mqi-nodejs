@@ -57,7 +57,14 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 23 Jul 2018
 * Version 0.8.0 : Use a git-level instead of npm for ffi package to get it working on Node 10.
-Added sample to show programming TLS connections in client.
+  * Added sample to show programming TLS connections in client.
 
 03 Aug 2018
 * Version 0.8.1 : Update for MQ 9.1 client and definitions
+
+10 Aug 2018
+* Version 0.8.2 : 
+  * Separate definitions files by platform
+  * Implement some "fairness" heuristics for dealing with lots of queues or
+very deep queues
+  * New verb setMaxConsecutiveGets to modify default fairness attribute
