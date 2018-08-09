@@ -43,6 +43,12 @@ function formatErr(err) {
   return  "MQ call failed in " + err.message;
 }
 
+function toHexString(byteArray) {
+  return byteArray.reduce((output, elem) => 
+    (output + ('0' + elem.toString(16)).slice(-2)),
+    '');
+}
+
 // Define some functions that will be used from the main flow
 function putMessage(hObj) {
 
@@ -60,6 +66,7 @@ function putMessage(hObj) {
     if (err) {
       console.log(formatErr(err));
     } else {
+      console.log("MsgId: " + toHexString(mqmd.MsgId));
       console.log("MQPUT successful");
     }
   });

@@ -38,6 +38,7 @@ var decoder = new StringDecoder('utf8');
 // The default queue manager and queue to be used
 var qMgr = "QM1";
 var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
+var msgId = "";
 
 // Some global variables
 var connectionHandle;
@@ -59,6 +60,13 @@ function formatErr(err) {
   }
 }
 
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}
+
+
 /*
  * Define which messages we want to get, and how.
  */
@@ -72,6 +80,12 @@ function getMessages() {
                 MQC.MQGMO_FAIL_IF_QUIESCING;
   gmo.MatchOptions = MQC.MQMO_NONE;
   gmo.WaitInterval = waitInterval * 1000; // 3 seconds
+
+  if (msgId != null) {
+     console.log("Setting Match Option for MsgId");
+     gmo.MatchOptions = MQC.MQMO_MATCH_MSG_ID;
+     md.MsgId = hexToBytes(msgId);
+  }
 
   // Set up the callback handler to be invoked when there
   // are any incoming messages. As this is a sample, I'm going
@@ -142,6 +156,9 @@ if (myArgs[0]) {
 }
 if (myArgs[1]) {
   qMgr  = myArgs[1];
+}
+if (myArgs[2]) {
+  msgId  = myArgs[2];
 }
 
 

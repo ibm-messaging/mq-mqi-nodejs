@@ -1,11 +1,18 @@
+# This test puts a message and then uses the msgId to retrieve the same message
+#
+# amqsput prints the msgid as a hex string, which amqsgeta will then convert back to 
+# a byte array
+#
 
 r="`pwd`/.."
-cd $r
-#npm link
 cd $r/samples
 
 
-node amqsput.js
+# Note the format that amqsput writes the MsgId. Save to a temp file for extraction
+# so we still see all the other messages printed by the program
+node amqsput.js | tee /tmp/nodetest.out
+id=`grep MsgId /tmp/nodetest.out | cut -f2 -d:`
 
-node amqsgeta.js
+# Then pass it as a parameter to the getter
+node amqsgeta.js SYSTEM.DEFAULT.LOCAL.QUEUE QM1 $id
 
