@@ -26,7 +26,7 @@ COPY package.docker ${APP_DIR}/package.json
 
 # Update the base image and make sure we've installed basic capabilities
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl gcc g++ make git \
+    && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \
     && curl --silent -k --location https://deb.nodesource.com/setup_8.x | bash - \
     && apt-get install -y  nodejs  \
     && npm install -g npm \
