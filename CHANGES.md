@@ -64,7 +64,7 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 
 10 Aug 2018
 * Version 0.8.2 : 
-  * Separate definitions files by platform
+  * Separate MQI definition files by platform
   * Implement some "fairness" heuristics for dealing with lots of queues or
 very deep queues
   * New verb setMaxConsecutiveGets to modify default fairness attribute
