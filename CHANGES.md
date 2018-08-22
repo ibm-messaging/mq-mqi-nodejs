@@ -63,8 +63,14 @@ in queue manager code. Added makedoc script to generate JSDoc output.
 * Version 0.8.1 : Update for MQ 9.1 client and definitions
 
 10 Aug 2018
-* Version 0.8.2 : 
+* Version 0.8.2 (not released to NPM):
   * Separate MQI definition files by platform
   * Implement some "fairness" heuristics for dealing with lots of queues or
 very deep queues
   * New verb setMaxConsecutiveGets to modify default fairness attribute
+
+22 Aug 2018
+* Version 0.8.5 :
+  * Add some more definitions to MQI constants
+  * Experimental message element generator/parser for MQDLH structure
+  * New sample amqsdlh to put message with Dead Letter Header

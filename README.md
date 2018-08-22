@@ -89,8 +89,8 @@ they do not give access to the full services available from MQ such as transacti
 ## Unimplemented capabilities
 All the application-level MQI verbs are now implemented.
 
-There are no structure definitions for elements in message contents such
-as the MQRFH2 or MQDLH headers. When putting messages, JavaScript Buffers and
+There are no structure definitions for most MQ elements in message contents such
+as the MQRFH2 headers. When putting messages, JavaScript Buffers and
 strings can be used; when getting messages,
 data is always returned in a Buffer. The amqsget samples show one way
 to convert that Buffer to a string for printing.
