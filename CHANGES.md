@@ -74,3 +74,8 @@ very deep queues
   * Add some more definitions to MQI constants
   * Experimental message element generator/parser for MQDLH structure
   * New sample amqsdlh to put message with Dead Letter Header
+
+28 Aug 2018
+* Version 0.8.6:
+  * Change how fairness tuning is done for heavy workloads
+  * Removal of exported getLoopIntervalMs value; use setTuningParameters() instead
