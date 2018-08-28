@@ -11,7 +11,8 @@
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
    Contributors:
      Mark Taylor - Initial Contribution
@@ -21,24 +22,24 @@
  * This is an example of a Node.js program to connect as a client to an
  * IBM MQ queue manager with a TLS-secured channel.
  *
- * The queue manager name and the CONNAME 
+ * The queue manager name and the CONNAME
  * are set to default values of "QM1" and "localhost(1414)" to demonstrate
  * how to use them but these can be overridden on the command line.
  *
- * The SVRCONN channel is assumed to have been defined with 
+ * The SVRCONN channel is assumed to have been defined with
  *    DEFINE CHL(SYSTEM.SSL.SVRCONN) CHLTYPE(SVRCONN) +
  *        SSLCAUTH(OPTIONAL) +
  *        SSLCIPH(TLS_RSA_WITH_AES_128_CBC_SHA256)
  *
- * It is also assumed that you have a local keystore containing, at minimum, 
+ * It is also assumed that you have a local keystore containing, at minimum,
  * the signing cert to validate the queue manager's certificate. This
  * keystore is in kdb format, and called "mykey" here. All the keystore
  * files should be in the current directory, not just the .kdb but also
- * the .rdb and .sth files. 
+ * the .rdb and .sth files.
  *
  * Other non-programmatic ways of connecting to the queue manager are
  * of course also possible, via the CCDT and controls set as environment
- * variables (eg MQSSLKEYR) or in the mqclient.ini file. These are 
+ * variables (eg MQSSLKEYR) or in the mqclient.ini file. These are
  * described in the MQ documentation - this node package follows the
  * C client libraries for connectivity.
  */
@@ -92,13 +93,13 @@ cno.Options |= MQC.MQCNO_CLIENT_BINDING;
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = connName; 
+cd.ConnectionName = connName;
 cd.ChannelName = "SYSTEM.SSL.SVRCONN";
 
 // The TLS parameters are the minimal set needed here. You might
 // want more control such as SSLPEER values.
 // This SSLClientAuth setting means that this program does not need to
-// present a certificate to the server - but it must match how the 
+// present a certificate to the server - but it must match how the
 // SVRCONN is defined on the queue manager.
 cd.SSLCipherSpec = "TLS_RSA_WITH_AES_128_CBC_SHA256";
 cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;

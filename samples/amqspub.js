@@ -11,7 +11,8 @@
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
    Contributors:
      Mark Taylor - Initial Contribution
@@ -38,7 +39,7 @@ var qMgr = "QM1";
 var topic = "NODEJS.TEST.TOPIC";
 
 function formatErr(err) {
-  if (err.mqcc == MQC.MQCC_WARNING) 
+  if (err.mqcc == MQC.MQCC_WARNING)
     return  "MQ call returned warning in " + err.message;
   else
     return  "MQ call failed in " + err.message;
