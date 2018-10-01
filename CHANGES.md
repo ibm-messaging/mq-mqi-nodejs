@@ -79,3 +79,8 @@ very deep queues
 * Version 0.8.6:
   * Change how fairness tuning is done for heavy workloads
   * Removal of exported getLoopIntervalMs value; use setTuningParameters() instead
+
+
+01 Oct 2018
+* Version 0.9.0
+  * Switch to using ffi-napi as alternative library since ffi appears unmaintained. 
