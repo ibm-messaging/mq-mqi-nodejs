@@ -95,6 +95,10 @@ strings can be used; when getting messages,
 data is always returned in a Buffer. The amqsget samples show one way
 to convert that Buffer to a string for printing.
 
+However there is now a definition and sample program to manipulate the Dead
+Letter Header (MQDLH). This should be considered experimental for now - there
+may be better ways to work with the structures.
+
 The default behaviour assumes use of a local queue manager.
 Client connections should work if defined via
 CCDT or MQSERVER environment variable and the program sets the
@@ -118,6 +122,18 @@ This package was developed using
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
+
+### FFI package prereq change 
+Version 0.9.0 of this package has changed the prereq package used to
+access the C libraries from "node-ffi" to "node-ffi-napi". The older
+package appears to be unmaintained and does not work with node v10 unless
+accessed directly from a git commit level. That level has not been pushed
+to npm. The prereq change
+should be transparent. However, if you are using the node v8 stream, then
+you may see a message: "Warning: N-API is an experimental feature". This 
+warning is not produced from v8.12.0 onwards; it can also be suppressed via
+the --no-warnings flag. The message is not generated for the v6 or v10
+streams.
 
 ## Installation:
 To install this package, you can pull it straight from the

@@ -12,7 +12,7 @@ node amqsinq.js QM1
 
 endmqtrc
 cd /var/mqm/trace
-dspmqtrc *
+dspmqtrc *TRC
 rm -f *.TRC
 # vi `grep -l ":- node" *.FMT`
 

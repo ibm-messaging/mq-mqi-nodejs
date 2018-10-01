@@ -38,7 +38,7 @@ echo "Done."
 # want to look at the program's MQ trace.
 endmqtrc
 cd /var/mqm/trace
-dspmqtrc *
+dspmqtrc *.TRC
 rm -f *.TRC
 # vi `grep -l ":- node" *.FMT`
 
