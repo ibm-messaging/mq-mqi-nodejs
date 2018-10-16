@@ -91,7 +91,7 @@ function getMessages() {
   // Set up the callback handler to be invoked when there
   // are any incoming messages. As this is a sample, I'm going
   // to tune down the poll interval from default 10 seconds to 0.5s.
-  mq.setPollTime(500);
+  mq.setTuningParameters({getLoopPollTimeMs: 500});
   mq.Get(queueHandle,md,gmo,getCB);
 
 }

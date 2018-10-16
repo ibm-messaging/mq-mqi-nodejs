@@ -67,7 +67,7 @@ MQ libraries does not work well with the Node model, and more detailed testing
 was demonstrating deadlocks that could not be solved without changes
 to the underlying
 MQ products. The polling is done by default every 10 seconds; applications
-can override that by calling the *setPollTime* function.
+can override that by calling the *setTuningParameters* function.
 
 Sample programs **amqsget** and **amqsgeta** demonstrate the two different
 techniques.
