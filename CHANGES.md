@@ -84,3 +84,8 @@ very deep queues
 01 Oct 2018
 * Version 0.9.0
   * Switch to using ffi-napi as alternative library since ffi appears unmaintained. 
+
+16 Oct 2018
+* Version 0.9.1
+  * Environment variable MQIJS_NOREMOVE to preserve all extracted files in MQ client package for debug purposes
+  * Environment variable MQIJS_NOREMOVE_DOWNLOAD to preserve tar/zip file of MQ client package for debug purposes

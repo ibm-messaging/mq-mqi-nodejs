@@ -28,8 +28,14 @@ const newBaseDir="redist";
 function cleanup() {
   // Always run to try to delete the downloaded zip/tar file
   try {
-    console.log("Removing " + file);
-    fs.unlink(file);
+    // Allow it to be overridden for debug purposes
+    var doNotRemove = process.env['MQIJS_NOREMOVE_DOWNLOAD'];
+    if (doNotRemove == null) {
+      console.log("Removing " + file);
+      fs.unlink(file);
+    } else {
+      console.log("Preserving " + file);
+    }
   } catch(err) {
   }
 
@@ -77,25 +83,31 @@ function removePattern(d,type) {
 
 // Remove directories from the client that are not needed for Node execution
 function removeUnneeded() {
-  for (var i=0;i<unwantedDirs.length;i++) {
-    try {
-      removeDirRecursive(path.join(newBaseDir,unwantedDirs[i]));
-    } catch (err) {
-      // don't really care
-    }
-  }
-
-  if (process.platform === 'win32') {
-    var d = path.join(newBaseDir,"bin64");
-    removePattern(d,/.exe$/);
-    removePattern(d,/^imq.*.dll$/);
+  var doNotRemove = process.env['MQIJS_NOREMOVE'];
+  if (doNotRemove != null) {
+    console.log('Environment variable set to keep all files in client package');
   } else {
-    var d= path.join(newBaseDir,"lib");
-    removePattern(d,/lib.*so/);
-    removePattern(d,/amqtrc.fmt/);
-    var d= path.join(newBaseDir,"lib64");
-    removePattern(d,/libimq.*so/);
-    removePattern(d,/libedit.so/);
+
+    for (var i=0;i<unwantedDirs.length;i++) {
+      try {
+        removeDirRecursive(path.join(newBaseDir,unwantedDirs[i]));
+      } catch (err) {
+        // don't really care
+      }
+    }
+
+    if (process.platform === 'win32') {
+      var d = path.join(newBaseDir,"bin64");
+      removePattern(d,/.exe$/);
+      removePattern(d,/^imq.*.dll$/);
+    } else {
+      var d= path.join(newBaseDir,"lib");
+      removePattern(d,/lib.*so/);
+      removePattern(d,/amqtrc.fmt/);
+      var d= path.join(newBaseDir,"lib64");
+      removePattern(d,/libimq.*so/);
+      removePattern(d,/libedit.so/);
+    }
   }
 
   cleanup();
