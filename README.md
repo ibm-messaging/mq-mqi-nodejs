@@ -38,7 +38,7 @@ objects and data. If the callback is not provided by the application,
 then either an exception is thrown, or the verb returns.
 
 ###  Synchrony
-**Note**: This has changed significantly from the 0.9.5 version of the module.
+**Note**: This has changed significantly from the 0.9.2 version of the module.
 
 The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
 and `Get` - now have
