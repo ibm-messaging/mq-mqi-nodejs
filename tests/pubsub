@@ -4,7 +4,7 @@ cd $r
 #npm link
 cd $r/samples
 
-topic="JS.SUB"
+topic="dev/JSTopic"
 qmgr="QM1"
 
 node amqssub.js $topic $qmgr &

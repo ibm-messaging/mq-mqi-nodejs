@@ -45,6 +45,13 @@ function formatErr(err) {
 function cleanup(hConn) {
 }
 
+function sleep(ms) {
+  return new Promise(resolve=>{
+    setTimeout(resolve,ms);
+  });
+}
+
+
 // The program starts here.
 // Connect to the queue manager.
 console.log("Sample AMQSCONN.JS start");
@@ -57,7 +64,7 @@ var csp = new mq.MQCSP();
 csp.UserId = "mqguest";
 csp.Password = "passw0rd";
 // Make the MQCNO refer to the MQCSP
-// Uncomment next line to use the userid/password
+// This line allows use of the userid/password
 cno.SecurityParms = csp;
 
 // And use the MQCD to programatically connect as a client
@@ -70,18 +77,26 @@ cd.ChannelName = "SYSTEM.DEF.SVRCONN";
 // Make the MQCNO refer to the MQCD
 cno.ClientConn = cd;
 
+// MQ V9.1.2 allows setting of the application name explicitly
+if (MQC.MQCNO_CURRENT_VERSION >= 7) {
+  cno.ApplName = "Node.js 9.1.2 ApplName";
+}
+
 // Now we can try to connect
 mq.Connx(qMgr, cno, function(err,conn) {
   if (err) {
     console.log(formatErr(err));
   } else {
     console.log("MQCONN to %s successful ", qMgr);
-    mq.Disc(conn, function(err) {
-      if (err) {
-        console.log(formatErr(err));
-      } else {
-        console.log("MQDISC successful");
-      }
+    // Sleep for a few seconds - bad in a real program but good for this one
+    sleep(3 *1000).then(() => {
+      mq.Disc(conn, function(err) {
+        if (err) {
+          console.log(formatErr(err));
+        } else {
+          console.log("MQDISC successful");
+        }
+      });
     });
   }
 });

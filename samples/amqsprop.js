@@ -42,7 +42,7 @@ var decoder = new StringDecoder('utf8');
 
 // The queue manager and queue to be used. These can be overridden on command line.
 var qMgr = "QM1";
-var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
+var qName = "DEV.QUEUE.1";
 
 var hConn;
 

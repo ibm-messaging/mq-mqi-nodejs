@@ -35,8 +35,9 @@ var mq = require('ibmmq');
 var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager and topic to be used. These can be overridden on command line.
+// The DEV.BASE.TOPIC object defines a tree starting at dev/
 var qMgr = "QM1";
-var topic = "NODEJS.TEST.TOPIC";
+var topicString = "dev/JSTopic";
 
 function formatErr(err) {
   if (err.mqcc == MQC.MQCC_WARNING)
@@ -96,7 +97,7 @@ console.log("Sample AMQSPUB.JS start");
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
-  topic = myArgs[0];
+  topicString = myArgs[0];
 }
 if (myArgs[1]) {
   qMgr  = myArgs[1];
@@ -129,14 +130,14 @@ mq.Connx(qMgr, cno, function(err,hConn) {
      // Remember that the combined TopicString attribute has to match what
      // the subscriber is using.
      var od = new mq.MQOD();
-     od.ObjectString = topic;
+     od.ObjectString = topicString;
      od.ObjectType = MQC.MQOT_TOPIC;
      var openOptions = MQC.MQOO_OUTPUT;
      mq.Open(hConn,od,openOptions,function(err,hObj) {
        if (err) {
          console.error(formatErr(err));
        } else {
-         console.log("MQOPEN of %s successful",topic);
+         console.log("MQOPEN of %s successful",topicString);
          publishMessage(hObj);
        }
        cleanup(hConn,hObj);

@@ -37,7 +37,7 @@ var decoder = new StringDecoder('utf8');
 
 // The queue manager and queue to be used
 var qMgr = "QM1";
-var topicName = "SYSTEM.DEFAULT.TOPIC";
+var topicString = "dev/JSTopic";
 
 // Global variables
 var ok = true;
@@ -89,10 +89,10 @@ function cleanup(hConn,hObjPubQ, hObjSubscription) {
   // Demonstrate two ways of closing queues - first using an exception, then
   // the version with callback.
   try {
-    mq.Close(hObjSubscription,0);
+    mq.CloseSync(hObjSubscription,0);
     console.log("MQCLOSE (Subscription) successful");
   } catch (err) {
-    console.log("MQCLOSE (Subscription) ended with reason "  + err.mqrc);
+    console.log("MQCLOSE (Subscription) ended with reason "  + err);
   }
 
   mq.Close(hObjPubQ, 0, function(err) {
@@ -120,7 +120,7 @@ console.log("Sample AMQSSUB.JS start");
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
-  topicName = myArgs[0];
+  topicString = myArgs[0];
 }
 if (myArgs[1]) {
   qMgr  = myArgs[1];
@@ -135,7 +135,7 @@ mq.Conn(qMgr, function(err,hConn) {
 
      // Define what we want to open, and how we want to open it.
      var sd = new mq.MQSD();
-     sd.ObjectString = topicName;
+     sd.ObjectString = topicString;
      sd.Options =   MQC.MQSO_CREATE
                   | MQC.MQSO_NON_DURABLE
                   | MQC.MQSO_FAIL_IF_QUIESCING
@@ -145,7 +145,7 @@ mq.Conn(qMgr, function(err,hConn) {
        if (err) {
          console.log("MQSUB ended with reason " + err.mqrc);
        } else {
-         console.log("MQSUB to topic %s successful", topicName);
+         console.log("MQSUB to topic %s successful", topicString);
          // And loop getting messages until done.
          getMessages(hObjPubQ);
        }

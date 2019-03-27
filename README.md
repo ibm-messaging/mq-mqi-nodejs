@@ -38,15 +38,35 @@ objects and data. If the callback is not provided by the application,
 then either an exception is thrown, or the verb returns.
 
 ###  Synchrony
-All the verbs are essentially synchronous, even though they invoke callbacks
-for any returned errors and information.
-The exception to this is for getting messages from a queue.
+**Note**: This has changed significantly from the 0.9.5 version of the module.
+
+The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
+and `Get` - now have
+true synchronous and asynchronous variations. The default is that the verbs
+are asynchronous, to be more natural in a Node.js environment. When given a `...Sync`
+suffix (eg `OpenSync`) then the verb is synchronous. Callback functions are now required
+for the OpenSync and SubSync verbs to obtain the object handles; these are not returned
+explicitly from the function calls.
+
+The remaining verbs continue to internally make synchronous calls to the underlying
+MQI services. Callback functions can still be used to indicate completion of the
+operation, with function return values and exceptions being available if you want to
+treat them more synchronously rather than pseudo-async.
+
+For the asynchronous functions, a callback function is now mandatory.
 
 Note that MQ also has a concept of Asynchronous Put (an MQPMO option) usable from
-client applications. That can be used in conjunction with a later call to the *Stat()*
+client applications. That can be used in conjunction with a later call to the `Stat`
 function to determine the success of the Put calls, but it is not related to
 asynchronous notification of the operation completion in JavaScript terms.
 
+#### Synchronous compatibility option
+If you wish to continue to use the original pseudo-async calls made by this module
+without changing the verbs to use the Sync variants, then you can set the SyncMQICompat
+variable to `true`. This variable should be considered a temporary migration path; it
+will likely be removed at some point in the future.
+
+### Message Retrieval
 This implementation includes two mechanisms for retrieving messages from
 a queue:
 * *GetSync()* is the call that does an MQGET(wait) synchronously. In a Node
@@ -117,27 +137,28 @@ The package includes a couple of verbs that are not standard in the MQI.
 ## Requirements
 This package was developed using
 * MQ V9 on Linux x64
-* node version 6.11
-* npm 3.10.10
+* node version 8.12
+* npm 6.6.0
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
 
-### FFI package prereq change 
+### FFI package prereq change
 Version 0.9.0 of this package has changed the prereq package used to
 access the C libraries from "node-ffi" to "node-ffi-napi". The older
 package appears to be unmaintained and does not work with node v10 unless
 accessed directly from a git commit level. That level has not been pushed
 to npm. The prereq change
 should be transparent. However, if you are using the node v8 stream, then
-you may see a message: "Warning: N-API is an experimental feature". This 
+you may see a message: "Warning: N-API is an experimental feature". This
 warning is not produced from v8.12.0 onwards; it can also be suppressed via
 the --no-warnings flag. The message is not generated for the v6 or v10
 streams.
 
 ## Installation:
 To install this package, you can pull it straight from the
-NPM repository.
+NPM repository. You can also refer to it in a package.json file for
+automatic installation.
 
 ~~~
 mkdir <something>
@@ -166,38 +187,7 @@ The Redistributable Client packages for Windows and Linux x64 are also available
 directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
 ## Sample applications
-Samples are provided to demonstrate most MQI uses, including ways put and get
-messages, and to subscribe to
-topics. The source code of these samples should be reviewed for
-an fuller idea of how this package can be used.
-
-The sample applications use, by default, a local queue manager QM1
-and ability to
-use SYSTEM.DEFAULT.LOCAL.QUEUE or the topic SYSTEM.DEFAULT.TOPIC.
-These values can be overridden on the command line.
-
-The **amqsput** sample shows how to fill in authentication options with
-userid and password values.
-
-The two **amqsget** samples show use of synchronous and asynchronous
-APIs for retrieving messages.
-
-Samples **amqsinq** and **amqsset** show how to inquire on, and set, attributes
-of an object.
-
-Run like:
-
-~~~
-cd <something>/node_modules/ibmmq/samples
-. setmqenv -s  -k     # to make sure MQ libraries can be found
-
-node amqsput.js
-node amqsget.js
-~~~
-
-There are various forms of the setmqenv command parameters, depending on your
-environment and platform. This is just one example; read the KnowledgeCenter for
-more options if you need them.
+See the samples [README](samples/README.md) file for more information about the sample programs.
 
 ## Containers
 
@@ -233,3 +223,8 @@ Contributions to this package can be accepted under the terms of the
 IBM Contributor License Agreement, found in the file [CLA.md](CLA.md) of this repository.
 When submitting a pull request, you must include a statement stating
 you accept the terms in the CLA.
+
+## Acknowledgements
+Thanks to the IBM App Connect team for the initial implementation of the
+asynchronous MQI variations. Their work has been adopted and adapted into
+this library.
