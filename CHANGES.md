@@ -4,6 +4,7 @@ Newest updates are at the top of this file.
 ## 26 Mar 2019 : v0.9.5
 * Make core verbs truly asynchronous with alternative synchronous variants
   * Breaking API: Open(Sync) and Sub(Sync) no longer return objects. Must use callback.
+  * Callback function for Get() now invoked with additional MQQueueManager parameter (as last parm, to avoid breaking API).
 * Update for MQ V9.1.2 definitions
 * MQ V9.1.2 allows setting of application name
 * Add MacOS ("darwin") definitions

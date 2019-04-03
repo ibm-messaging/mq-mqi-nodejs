@@ -101,7 +101,7 @@ function getMessages() {
  * include the message descriptor and the buffer containing
  * the message data.
  */
-function getCB(err, hObj, gmo,md,buf) {
+function getCB(err, hObj, gmo,md,buf, hConn ) {
    // If there is an error, prepare to exit by setting the ok flag to false.
    if (err) {
      if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
