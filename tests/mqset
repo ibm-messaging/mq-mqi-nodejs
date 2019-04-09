@@ -12,7 +12,7 @@ cd $r/samples
 
 # Start capturing MQ trace
 strmqtrc
-q="SYSTEM.DEFAULT.LOCAL.QUEUE"
+q="DEV.QUEUE.1"
 qm="QM1"
 
 # Set the queue to a known state and capture it in some MQSC output. These

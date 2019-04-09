@@ -38,7 +38,7 @@ var decoder = new StringDecoder('utf8');
 
 // The default queue manager and queue to be used
 var qMgr = "QM1";
-var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
+var qName = "DEV.QUEUE.1";
 
 // Global variables
 var ok = true;

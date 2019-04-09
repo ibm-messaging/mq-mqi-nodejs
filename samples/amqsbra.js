@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017, 2019
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 */
 
 /*
- * This is an example of a Node.js program to get messages from an IBM MQ
- * queue using an asynchronous method.
+ * This is an example of a Node.js program to browse messages from an IBM MQ
+ * queue using an asynchronous method. This is a non-destructive operation
  *
  * The queue and queue manager name can be given as parameters on the
  * command line. Defaults are coded in the program.
@@ -39,7 +39,6 @@ var decoder = new StringDecoder('utf8');
 // The default queue manager and queue to be used
 var qMgr = "QM1";
 var qName = "DEV.QUEUE.1";
-var msgId = null;
 
 // Some global variables
 var connectionHandle;
@@ -79,14 +78,12 @@ function getMessages() {
                 MQC.MQGMO_WAIT |
                 MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
+
+  // To start with, set the option to browse the FIRST message on the queue
+  gmo.Options |= MQC.MQGMO_BROWSE_FIRST;
+
   gmo.MatchOptions = MQC.MQMO_NONE;
   gmo.WaitInterval = waitInterval * 1000; // 3 seconds
-
-  if (msgId != null) {
-     console.log("Setting Match Option for MsgId");
-     gmo.MatchOptions = MQC.MQMO_MATCH_MSG_ID;
-     md.MsgId = hexToBytes(msgId);
-  }
 
   // Set up the callback handler to be invoked when there
   // are any incoming messages. As this is a sample, I'm going
@@ -101,7 +98,7 @@ function getMessages() {
  * include the message descriptor and the buffer containing
  * the message data.
  */
-function getCB(err, hObj, gmo,md,buf, hConn ) {
+function getCB(err, hObj, gmo,md,buf, hConn) {
    // If there is an error, prepare to exit by setting the ok flag to false.
    if (err) {
      if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
@@ -120,6 +117,12 @@ function getCB(err, hObj, gmo,md,buf, hConn ) {
      } else {
        console.log("binary message: " + buf);
      }
+     // After the first message has been browsed, change the option
+     // to retrieve further messages on the queue.
+     // First remove the original option using a bitwise operation to clear the flag
+     gmo.Options &= ~MQC.MQGMO_BROWSE_FIRST;
+     // And then set the new flag.
+     gmo.Options |= MQC.MQGMO_BROWSE_NEXT;
   }
 }
 
@@ -148,7 +151,7 @@ function cleanup(hConn,hObj) {
  * Connect to the queue manager. If that works, the callback function
  * opens the queue, and then we can start to retrieve messages.
  */
-console.log("Sample AMQSGETA.JS start");
+console.log("Sample AMQSBRA.JS start");
 
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
@@ -158,12 +161,6 @@ if (myArgs[0]) {
 if (myArgs[1]) {
   qMgr  = myArgs[1];
 }
-if (myArgs[2]) {
-  msgId  = myArgs[2];
-}
-
-mq.setTuningParameters({syncMQICompat:true});
-
 
 // Connect to the queue manager, including a callback function for
 // when it completes.
@@ -178,7 +175,7 @@ mq.Conn(qMgr, function(err,hConn) {
      var od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+     var openOptions = MQC.MQOO_BROWSE; // Indicate non-destructive retrieval needed
      mq.Open(hConn,od,openOptions,function(err,hObj) {
        queueHandle = hObj;
        if (err) {

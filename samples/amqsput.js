@@ -38,7 +38,7 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager and queue to be used. These can be overridden on command line.
 var qMgr = "QM1";
-var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
+var qName = "DEV.QUEUE.1";
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;

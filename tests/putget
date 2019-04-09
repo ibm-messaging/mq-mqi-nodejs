@@ -14,5 +14,5 @@ node amqsput.js | tee /tmp/nodetest.out
 id=`grep MsgId /tmp/nodetest.out | cut -f2 -d:`
 
 # Then pass it as a parameter to the getter
-node amqsgeta.js SYSTEM.DEFAULT.LOCAL.QUEUE QM1 $id
+node amqsgeta.js DEV.QUEUE.1 QM1 $id
 

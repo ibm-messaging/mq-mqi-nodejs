@@ -11,18 +11,25 @@ const execSync = require('child_process').execSync;
 // How to get to the MQ Redistributable Client package
 var protocol = "https://"
 var host="public.dhe.ibm.com";
-var dir="ibmdl/export/pub/software/websphere/messaging/mqdev/redist";
-var vrm="9.1.1";
+var baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
+var redistDir=baseDir+"/redist";
+var macDir=baseDir+"/mactoolkit";
+var vrm="9.1.2";
 var vrmf=vrm + ".0";
+var macVrmf="9.1.2.0" 
 var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
-var title="IBM MQ Redistributable C Client";
+var redistTitle="IBM MQ Redistributable C Client";
 
+var dir=redistDir; // Default
+var title=redistTitle;
 
 // Other local variables
 var rc = 0;
 var unpackCommand;
 var unwantedDirs;
 const newBaseDir="redist";
+var currentPlatform=process.platform;
+//currentPlatform='darwin'; // for forcing a platform test
 
 // Some functions used at the end of the operation
 function cleanup() {
@@ -96,7 +103,7 @@ function removeUnneeded() {
       }
     }
 
-    if (process.platform === 'win32') {
+    if (currentPlatform === 'win32') {
       var d = path.join(newBaseDir,"bin64");
       removePattern(d,/.exe$/);
       removePattern(d,/^imq.*.dll$/);
@@ -125,14 +132,24 @@ if (doit != null) {
 
 // Start main processing here. Check if the install is for an environment
 // where there is a Redistributable Client.
-if (process.platform === 'win32') {
+if (currentPlatform === 'win32') {
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
   unwantedDirs=[ "exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
-} else if (process.platform === 'linux' && process.arch === 'x64'){
+} else if (currentPlatform === 'linux' && process.arch === 'x64'){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
   unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
+//} else if (currentPlatform === 'darwin'){
+//  The MacOS client for MQ is released under a different license - 'Developers' not
+//  'Redistributable' - so we will not try to automatically download it. But all the
+//  pieces are in this script to enable it at some point.
+//
+//  dir=macDir
+//  title="IBM MacOS Toolkit for Developers"
+//  file="IBM-MQ-Toolkit-Mac-x64-" + macVrmf + ".tar.gz"
+//  unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
+//  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.")
@@ -152,7 +169,7 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 var url = protocol + host + "/" + dir + "/" + file;
 //url = "http://localhost:8000/"+file; // My local version for testing
-//console.log("Getting " + url);
+console.log("Getting " + url);
 
 var client = http;
 if (url.startsWith("https"))
@@ -187,7 +204,7 @@ try {
         // On Windows we have to run the unzip separately as there may
         // not be a command line interface available. So use a nodejs
         // package to manage it.
-        if (process.platform === 'win32') {
+        if (currentPlatform === 'win32') {
           var unzip = require('unzip');
           fs.createReadStream(file)
              .pipe(unzip.Extract({ path: newBaseDir })
