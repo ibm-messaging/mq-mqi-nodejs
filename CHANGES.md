@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 03 Jul 2019 : v0.9.6
+* Update for MQ V9.1.3 definitions
+
 ## 26 Mar 2019 : v0.9.5
 * Make core verbs truly asynchronous with alternative synchronous variants
   * Breaking API: Open(Sync) and Sub(Sync) no longer return objects. Must use callback.

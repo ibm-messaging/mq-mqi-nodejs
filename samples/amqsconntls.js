@@ -101,6 +101,10 @@ cd.ChannelName = "SYSTEM.SSL.SVRCONN";
 // This SSLClientAuth setting means that this program does not need to
 // present a certificate to the server - but it must match how the
 // SVRCONN is defined on the queue manager.
+// If you have to present a client certificate too then the
+// SSLClientAuth is set to MQC.MQSCA_REQUIRED. You may
+// also want to set the sco.CertificateLabel to choose  
+// which certificate is to be sent.
 cd.SSLCipherSpec = "TLS_RSA_WITH_AES_128_CBC_SHA256";
 cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
