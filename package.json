@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
