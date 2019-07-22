@@ -205,7 +205,7 @@ try {
         // not be a command line interface available. So use a nodejs
         // package to manage it.
         if (currentPlatform === 'win32') {
-          var unzip = require('unzip');
+          var unzip = require('unzipper');
           fs.createReadStream(file)
              .pipe(unzip.Extract({ path: newBaseDir })
              .on('close',function() {

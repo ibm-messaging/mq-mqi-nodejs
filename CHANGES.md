@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 22 Jul 2019 : v0.9.7
+* Update for Node 12 - various dependencies replaced
+
 ## 03 Jul 2019 : v0.9.6
 * Update for MQ V9.1.3 definitions
 
@@ -16,7 +19,7 @@ Newest updates are at the top of this file.
 ## 24 Nov 2018 : v0.9.2
 * Update for MQ V9.1.1 definitions
 
-## 16 Oct 2018 : v0.9.1
+# 16 Oct 2018 : v0.9.1
 * Environment variable MQIJS_NOREMOVE to preserve all extracted files in MQ client package for debug purposes
 * Environment variable MQIJS_NOREMOVE_DOWNLOAD to preserve tar/zip file of MQ client package for debug purposes
 

@@ -170,6 +170,7 @@ mq.setTuningParameters({syncMQICompat:true});
 mq.Conn(qMgr, function(err,hConn) {
    if (err) {
      console.log(formatErr(err));
+     ok = false;
    } else {
      console.log("MQCONN to %s successful ", qMgr);
      connectionHandle = hConn;
