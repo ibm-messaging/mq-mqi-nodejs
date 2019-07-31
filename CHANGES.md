@@ -1,8 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## 22 Jul 2019 : v0.9.7
+## 22 Jul 2019 : v0.9.8
 * Update for Node 12 - various dependencies replaced
+* Fixed a memory problem in MQINQMP
+* Added partial parser for RFH2 structure header (fixed portion)
 
 ## 03 Jul 2019 : v0.9.6
 * Update for MQ V9.1.3 definitions

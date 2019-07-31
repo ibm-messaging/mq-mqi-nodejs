@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "ffi-napi": ">=2.4.5",
-    "ref-napi": ">=1.4.0",
     "ref-array-di": ">=1.2.0",
+    "ref-napi": "^1.4.1",
     "ref-struct-di": ">=1.1.0",
     "unzipper": ">=0.10.1"
   }
