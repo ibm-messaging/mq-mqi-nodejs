@@ -2,10 +2,6 @@
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
 
-The initial release of this code is being done to encourage feedback, to
-see if it is useful to continue with further development and how it
-might be improved.
-
 ## MQI Description
 The package exposes the IBM MQ programming interface via
 a wrapper layer implemented in JavaScript. This should make it
@@ -38,7 +34,7 @@ objects and data. If the callback is not provided by the application,
 then either an exception is thrown, or the verb returns.
 
 ###  Synchrony
-**Note**: This has changed significantly from the 0.9.2 version of the module.
+**Note**: This has changed significantly from the 0.9.2 version of the module onwards.
 
 The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
 and `Get` - now have
@@ -77,14 +73,16 @@ you want to wait a while for a message to arrive. Some of the samples use
 this function for simplicity, where the Get() is not the interesting aspect
 being demonstrated.
 * *Get()* is the call that works asynchronously. The callback
-given as a parameter to this function is invoked asynchronously. To
-stop the callback being called for further messages, use the *GetDone()* function.
+given as a parameter to this function is invoked asynchronously. The function remains
+active after delivering a message to permit receipt of multiple messages. To
+stop the callback being called for further messages, use the *GetDone()* function. This
+behaviour is similar to how the MQI *MQCB* callback invocation works.
 
-The asynchronous retrieval is now implemented using a polling MQGET(immediate)
+The asynchronous retrieval is implemented using a polling MQGET(immediate)
 operation. Originally, this package used the MQCB and MQCTL functions to
 work fully asynchronously, but the threading model used within the
-MQ libraries does not work well with the Node model, and more detailed testing
-was demonstrating deadlocks that could not be solved without changes
+MQ libraries does not work well with the Node model, and testing
+demonstrated deadlocks that could not be solved without changes
 to the underlying
 MQ products. The polling is done by default every 10 seconds; applications
 can override that by calling the *setTuningParameters* function.
@@ -110,22 +108,49 @@ they do not give access to the full services available from MQ such as transacti
 All the application-level MQI verbs are now implemented.
 
 There are no structure definitions for most MQ elements in message contents such
-as the MQRFH2 headers. When putting messages, JavaScript Buffers and
-strings can be used; when getting messages,
-data is always returned in a Buffer. The amqsget samples show one way
-to convert that Buffer to a string for printing.
+as the MQCIH structure. When putting messages, JavaScript Buffers and
+strings can be used; when getting messages, data is always returned in a Buffer. T
 
 However there is now a definition and sample program to manipulate the Dead
 Letter Header (MQDLH). This should be considered experimental for now - there
-may be better ways to work with the structures.
+may be better ways to work with the structures. There is also a definition for
+the MQRFH2 structure header, though not for the individual folders and properties
+that may be added to that structure.
 
-The default behaviour assumes use of a local queue manager.
-Client connections should work if defined via
-CCDT or MQSERVER environment variable and the program sets the
-MQCNO_CLIENT_BINDING flag in the MQCNO options during *Connx()* or sets the
-MQ_CONNECT_TYPE environment variable to "CLIENT". The package also includes
-an implementation of the MQCD and MQSCO structures to permit programmatic
-creation of client connection details.
+The amqsget sample shows ways to process the returned message, including
+extracting details from the MQDLH and MQRFH2 structures if they are part of
+the message.
+
+## Local queue manager connectivity
+
+The C MQ library is dynamically loaded at runtime. By default, this package will
+try to load the library from the `node_modules` directory associated with the
+application.
+
+For platforms where the MQ Redistributable Client exists and has been installed, this means that
+local bindings connections will not work to connect to a queue manager, even if there
+is also a full MQ installation on the machine. Only client connections can be used by the Redistributable
+Client libraries. Trying to connect to a local queue manager will likely result in
+an **MQRC_Q_MGR_NAME_ERROR** (2058) error.
+
+To override this default behaviour and to permit use of local bindings connections, the
+full MQ installation libraries must be used instead. There are two mechanisms to do this:
+* Set the `MQIJS_NOREDIST` environment variable during `npm install` so that the Redist Client
+package is not downloaded and installed in the `node_modules` directory.
+* Set the `MQIJS_PREFER_INSTALLED_LIBRARY` environment variable at runtime
+
+The use of the Redist Client libraries is preferred wherever possible, so that new function
+can be introduced regardless of the version of MQ that has been "properly" installed on a machine.
+
+## Client connectivity
+
+Client connections work in the usual way.
+* Definitions can be set up externally via CCDT or the MQSERVER environment variable
+* Definitions can be set up programmatically via the MQCD and MQSCO structures passed to *Connx()*
+
+To force client connections, even when there is a full MQ server set of libraries installed and loaded:
+* The program can set the `MQCNO_CLIENT_BINDING` flag in the MQCNO options during *Connx()*
+* You can set the `MQ_CONNECT_TYPE` environment variable to "CLIENT".
 
 ## Extra operations
 The package includes a couple of verbs that are not standard in the MQI.
@@ -136,9 +161,9 @@ The package includes a couple of verbs that are not standard in the MQI.
 
 ## Requirements
 This package was developed using
-* MQ V9 on Linux x64
-* node version 8.12
-* npm 6.6.0
+* MQ V9.1 on Linux x64
+* node version 8.16
+* npm 6.10.0
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
@@ -169,17 +194,17 @@ npm install ibmmq
 Installation of the package will automatically install any
 prerequisite packages downloadable from the npm repository.
 
-It also requires the MQ C client libraries to be installed.
+It also requires the MQ C client libraries to be installed/available.
 
-For Windows and Linux x64, the npm installation process now tries to access
+For Windows and Linux x64, the npm installation process tries to access
 the Redistributable Client packages and unpack them automatically. The
 installation of this library succeeds even if the download and unpack of the
 MQ runtime libraries fails in some way.
 
 If you do not want this automatic installation of the MQ runtime, then set the
-environment variable "MQIJS_NOREDIST" to any value before running npm install.
-The MQ libraries will then be found at runtime using mechanisms such as
-searching LD_LIBRARY_PATH.
+environment variable `MQIJS_NOREDIST` to any value before running npm install.
+The MQ libraries are then be found at runtime using mechanisms such as
+searching `LD_LIBRARY_PATH`.
 
 For other MQ-supported platforms and environments, the C runtime can be
 installed from your MQ installation media, or from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).

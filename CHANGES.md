@@ -1,6 +1,12 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 28 Oct 2019 : v0.9.9
+* Changes to how the MQ C libraries are accessed.
+  * Make the Redist Client libraries the default mechanism
+  * Use environment variable MQIJS_PREFER_INSTALLED_LIBRARY to choose installed (eg /opt/mqm) path instead
+* Add RFH2 processing to amqsget sample
+
 ## 22 Jul 2019 : v0.9.8
 * Update for Node 12 - various dependencies replaced
 * Fixed a memory problem in MQINQMP
