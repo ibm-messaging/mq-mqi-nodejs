@@ -58,7 +58,7 @@ function getMessages(hObj) {
 function getMessage(hObj) {
 
   var buf = Buffer.alloc(1024);
-
+  var hdr;
   var mqmd = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
@@ -77,14 +77,36 @@ function getMessage(hObj) {
        }
        ok = false;
     } else {
-      if (mqmd.Format=="MQSTR") {
-        console.log("message <%s>", decoder.write(buf.slice(0,len)));
-      } else {
-        console.log("binary message: " + buf);
+      var format = mqmd.Format;
+      switch (format) {
+      case MQC.MQFMT_RF_HEADER_2:
+        hdr   = mq.MQRFH2.getHeader(buf);
+        var props = mq.MQRFH2.getProperties(hdr,buf);
+        console.log("RFH2 HDR is %j",hdr);
+        console.log("Properties are '%s'",props);
+        printBody(hdr.Format,buf.slice(hdr.StrucLength),len-hdr.StrucLength);
+        break;
+      case MQC.MQFMT_DEAD_LETTER_HEADER:
+        hdr = mq.MQDLH.getHeader(buf);
+        console.log("DLH HDR is %j",hdr);
+        printBody(hdr.Format,buf.slice(hdr.StrucLength),len-hdr.StrucLength);
+        break;
+      default:
+        printBody(format,buf,len);
+        break;
       }
     }
   });
 }
+
+function printBody(format,buf,len) {
+  if (format=="MQSTR") {
+    console.log("message len=%d <%s>", len,decoder.write(buf.slice(0,len)));
+  } else {
+    console.log("binary message: " + buf);
+  }
+}
+
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
