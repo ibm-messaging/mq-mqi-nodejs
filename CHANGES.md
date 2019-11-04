@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 30 Oct 2019 : v0.9.10
+* Calling Get after a GetDone should now properly resume processing
+
 ## 28 Oct 2019 : v0.9.9
 * Changes to how the MQ C libraries are accessed.
   * Make the Redist Client libraries the default mechanism
