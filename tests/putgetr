@@ -1,8 +1,12 @@
-# This test puts a message and then uses the msgId to retrieve the same message
+# This test puts 2 messages and then uses msgIds to retrieve the same messages
 #
-# amqsput prints the msgid as a hex string, which amqsgeta will then convert back to 
+# amqsput prints the msgid as a hex string, which amqsgeta will then convert back to
 # a byte array
 #
+
+# Try to use a local MQ library by preference so we don't need to define SVRCONN routes
+export MQIJS_PREFER_INSTALLED_LIBRARY=true
+
 
 r="`pwd`/.."
 cd $r/samples
@@ -13,10 +17,13 @@ cd $r/samples
 node amqsput.js | tee /tmp/nodetest.out
 id=`grep MsgId /tmp/nodetest.out | cut -f2 -d:`
 
+sleep 3 # So we get a different timestamp
 # Put a second message
 node amqsput.js | tee /tmp/nodetest.out
 id2=`grep MsgId /tmp/nodetest.out | cut -f2 -d:`
 
-# Then pass it as a parameter to the getter
-node amqsgetar.js DEV.QUEUE.1 QM1 $id $id2
+# And come back to the tests directory to try to run the getter
+cd ../tests
 
+# Then pass the ids as parameters to the getter
+node amqsgetar.js DEV.QUEUE.1 QM1 $id $id2

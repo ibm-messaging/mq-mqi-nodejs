@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017, 2019
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
  * queue using an asynchronous method, stops processing, and then resumes processing.
  *
  * Based on amqsgeta.js
- * 
+ *
  * The queue and queue manager name can be given as parameters on the
  * command line. Defaults are coded in the program.
  *
@@ -43,6 +43,7 @@ var decoder = new StringDecoder('utf8');
 var qMgr = "QM1";
 var qName = "DEV.QUEUE.1";
 var msgId = null;
+var msgId2 = null;
 
 // Some global variables
 var connectionHandle;
@@ -175,7 +176,7 @@ function cleanup(hConn, hObj) {
  * Connect to the queue manager. If that works, the callback function
  * opens the queue, and then we can start to retrieve messages.
  */
-console.log("Sample AMQSGETA.JS start");
+console.log("Sample AMQSGETAR.JS start");
 
 // Get command line parameters
 var myArgs = process.argv.slice(2); // Remove redundant parms
