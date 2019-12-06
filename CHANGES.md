@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 05 Dec 2019 : v0.9.11
+* Update for MQ V9.1.4
+
 ## 30 Oct 2019 : v0.9.10
 * Calling Get after a GetDone should now properly resume processing
 
