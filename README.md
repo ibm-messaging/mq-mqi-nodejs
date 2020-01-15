@@ -49,7 +49,7 @@ MQI services. Callback functions can still be used to indicate completion of the
 operation, with function return values and exceptions being available if you want to
 treat them more synchronously rather than pseudo-async.
 
-For the asynchronous functions, a callback function is now mandatory.
+For the asynchronous functions, a callback function is mandatory.
 
 Note that MQ also has a concept of Asynchronous Put (an MQPMO option) usable from
 client applications. That can be used in conjunction with a later call to the `Stat`
@@ -61,6 +61,13 @@ If you wish to continue to use the original pseudo-async calls made by this modu
 without changing the verbs to use the Sync variants, then you can set the SyncMQICompat
 variable to `true`. This variable should be considered a temporary migration path; it
 will likely be removed at some point in the future.
+
+### Promises
+Most of the core MQI verbs (excluding the GET variants) have Promise-based alternatives
+named with a `...Promise` suffix (eg `ConnxPromise`). This can help with removal of much
+of the typical callback nesting. See the amqsputp.js sample for a demonstration
+of how these can be used. There is no Get-based Promise because the async Get operation invokes
+callbacks multiple times as messages appear.
 
 ### Message Retrieval
 This implementation includes two mechanisms for retrieving messages from
@@ -163,7 +170,7 @@ The package includes a couple of verbs that are not standard in the MQI.
 This package was developed using
 * MQ V9.1 on Linux x64
 * node version 8.16
-* npm 6.10.0
+* npm 6.12.0
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.

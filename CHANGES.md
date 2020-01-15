@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 15 Jan 2020 : v0.9.12
+* Add Promises for most core verbs
+* Correct version number for SCO structure
+
 ## 05 Dec 2019 : v0.9.11
 * Update for MQ V9.1.4
 

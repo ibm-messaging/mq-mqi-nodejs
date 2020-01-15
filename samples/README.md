@@ -23,6 +23,7 @@ Where needed for the sample programs:
 Current samples in this directory include
 
 * amqsput  : Put a single message to a queue
+* amqsputp : Put a single message to a queue using Promises for the MQ verbs
 * amqsget  : Get all the messages from a queue synchronously.
 * amqsgeta : Get all the messages from a queue using asynchronous retrieval. Optionally get a specific message by its id
 * amqsbra  : Non-destructive browse of messages on a queue
