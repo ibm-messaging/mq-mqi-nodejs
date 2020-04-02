@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 03 Apr 2020 : v0.9.13
+* Add support for Hdr/Msg Compression in MQCD
+* Update for MQ V9.1.5
+
 ## 15 Jan 2020 : v0.9.12
 * Add Promises for most core verbs
 * Correct version number for SCO structure
