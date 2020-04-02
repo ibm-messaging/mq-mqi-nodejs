@@ -1,3 +1,5 @@
+> Custom fork for NODE 12 with mqi.js downgraded to d9f345a6 - compat issues
+
 # mq-mqi-nodejs
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
