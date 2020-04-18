@@ -147,7 +147,7 @@ if (currentPlatform === 'win32') {
 //
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
-//  file="IBM-MQ-Toolkit-Mac-x64-" + macVrmf + ".tar.gz"
+//  file=macVrmf + "-IBM-MQ-Toolkit-MacX64" + ".tar.gz"
 //  unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
 //  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 } else {
