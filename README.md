@@ -169,8 +169,7 @@ The package includes a couple of verbs that are not standard in the MQI.
 ## Requirements
 This package was developed using
 * MQ V9.1 on Linux x64
-* node version 8.16
-* npm 6.12.0
+* node version 10 or greater
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.

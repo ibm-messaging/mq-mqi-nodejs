@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 20 May 2020
+* Add support for Node 14
+  * Various dependencies updated
+* Remove support for Node 8
+
 ## 03 Apr 2020 : v0.9.13
 * Add support for Hdr/Msg Compression in MQCD
 * Update for MQ V9.1.5
