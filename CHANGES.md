@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 25 July 2020
+* Update for MQ 9.2.0
+
 ## 20 May 2020
 * Add support for Node 14
   * Various dependencies updated

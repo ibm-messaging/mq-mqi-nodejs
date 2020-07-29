@@ -14,9 +14,9 @@ var host="public.dhe.ibm.com";
 var baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
 var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
-var vrm="9.1.5";
+var vrm="9.2.0";
 var vrmf=vrm + ".0";
-var macVrmf="9.1.5.0" 
+var macVrmf="9.2.0.0" 
 var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
 var redistTitle="IBM MQ Redistributable C Client";
 

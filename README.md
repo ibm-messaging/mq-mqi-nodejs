@@ -18,8 +18,7 @@ business application code. For example, JavaScript strings are used
 instead of fixed-length, spaced-padded fields.
 
 Most MQI verbs and parameters are implemented here.
-Where there
-are missing details within the verbs, these are shown by TODO
+Where there are missing details within the verbs, these are shown by TODO
 markers in the source files.
 
 It is assumed that someone using this package does have a basic
@@ -37,7 +36,7 @@ then either an exception is thrown, or the verb returns.
 **Note**: This has changed significantly from the 0.9.2 version of the module onwards.
 
 The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
-and `Get` - now have
+and `Get` - have
 true synchronous and asynchronous variations. The default is that the verbs
 are asynchronous, to be more natural in a Node.js environment. When given a `...Sync`
 suffix (eg `OpenSync`) then the verb is synchronous. Callback functions are now required
@@ -112,11 +111,11 @@ These interfaces may be suitable for many messaging applications, even though
 they do not give access to the full services available from MQ such as transactions.
 
 ## Unimplemented capabilities
-All the application-level MQI verbs are now implemented.
+All the application-level MQI verbs are implemented.
 
 There are no structure definitions for most MQ elements in message contents such
 as the MQCIH structure. When putting messages, JavaScript Buffers and
-strings can be used; when getting messages, data is always returned in a Buffer. T
+strings can be used; when getting messages, data is always returned in a Buffer.
 
 However there is now a definition and sample program to manipulate the Dead
 Letter Header (MQDLH). This should be considered experimental for now - there
@@ -167,24 +166,13 @@ The package includes a couple of verbs that are not standard in the MQI.
 *MQConstants.lookup()* method in Java.
 
 ## Requirements
-This package was developed using
-* MQ V9.1 on Linux x64
-* node version 10 or greater
+* node version 10.20 or greater. Older versions will no longer work because
+of requirements from the ffi-napi package
+* On platforms other than Windows and Linux x64, you must also install
+the MQ client package
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
-
-### FFI package prereq change
-Version 0.9.0 of this package has changed the prereq package used to
-access the C libraries from "node-ffi" to "node-ffi-napi". The older
-package appears to be unmaintained and does not work with node v10 unless
-accessed directly from a git commit level. That level has not been pushed
-to npm. The prereq change
-should be transparent. However, if you are using the node v8 stream, then
-you may see a message: "Warning: N-API is an experimental feature". This
-warning is not produced from v8.12.0 onwards; it can also be suppressed via
-the --no-warnings flag. The message is not generated for the v6 or v10
-streams.
 
 ## Installation:
 To install this package, you can pull it straight from the
@@ -207,15 +195,38 @@ the Redistributable Client packages and unpack them automatically. The
 installation of this library succeeds even if the download and unpack of the
 MQ runtime libraries fails in some way.
 
+Note: IBM removes older levels of the Redistributable Client packages when
+they become unsupported. If you want to continue to use older versions of
+this package (which will reference those unsupported MQ versions) then you
+will have to keep a local copy of the tar/zip files and unpack it as part
+of your build process, using the MQIJS_* environment variables to control
+installation and runtime.
+
 If you do not want this automatic installation of the MQ runtime, then set the
 environment variable `MQIJS_NOREDIST` to any value before running npm install.
 The MQ libraries are then be found at runtime using mechanisms such as
-searching `LD_LIBRARY_PATH`.
+searching `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows).
 
+### MacOS
+The MQ client package for MacOS can be found at
+[this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit).
+Download a suitable version and unpack it in a local directory.
+The environment variable `DYLD_LIBRARY_PATH` then needs to be set to the lib64 directory within
+that tree before running the program.
+
+For example 
+
+`export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
+
+
+### Other platforms
 For other MQ-supported platforms and environments, the C runtime can be
-installed from your MQ installation media, or from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
+installed from your MQ installation media, or from the full Client downloads at
+[this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
+
 The Redistributable Client packages for Windows and Linux x64 are also available
-directly from [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
+directly from
+[this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
 ## Sample applications
 See the samples [README](samples/README.md) file for more information about the sample programs.
