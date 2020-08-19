@@ -108,20 +108,20 @@ function putMessage(hConn,hObj) {
     pmo.OriginalMsgHandle = mh;
 
     mq.Put(hObj,mqmd,pmo,msg,function(err) {
+      // Delete the message handle after the put has completed
+      var dmho = new mq.MQDMHO();
+      mq.DltMh(hConn,mh,dmho, function(err){
+        if (err) {
+          console.log(formatErr(err));
+        } else {
+          console.log("MQDLTMH successful");
+        }
+      });
+
       if (err) {
         console.log(formatErr(err));
       } else {
         console.log("MQPUT successful");
-      }
-    });
-
-    // And finally in this phase, delete the message handle
-    var dmho = new mq.MQDMHO();
-    mq.DltMh(hConn,mh,dmho, function(err){
-      if (err) {
-        console.log(formatErr(err));
-      } else {
-        console.log("MQDLTMH successful");
       }
     });
   });
