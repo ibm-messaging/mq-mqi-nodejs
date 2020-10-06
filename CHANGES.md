@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## xx xxx 2020
+* Allow override of VRM and fixpack levels
+* Update URLs to KnowledgeCenter to point at "latest" instead of specific version
+
 ## 25 July 2020
 * Update for MQ 9.2.0
 

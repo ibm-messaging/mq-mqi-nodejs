@@ -105,7 +105,7 @@ connections from MQ Light clients via AMQP channels.
 * The MQTT protocol has an implementation [here](https://www.npmjs.com/package/mqtt). MQ supports
 connections from MQTT clients via the XR service and Telemetry channels.
 * MQ V9.0.4 includes a simple REST API for messaging that is accessible from any environment.
-See [here](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pro.doc/q130020_.htm#q130020___messagingapi) for more information.
+See [here](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.pro.doc/q130020_.htm#q130020___messagingapi) for more information.
 
 These interfaces may be suitable for many messaging applications, even though
 they do not give access to the full services available from MQ such as transactions.
@@ -207,6 +207,18 @@ environment variable `MQIJS_NOREDIST` to any value before running npm install.
 The MQ libraries are then be found at runtime using mechanisms such as
 searching `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows).
 
+The post-installation program will usually be pointing at the most recent Continuous Delivery
+version of MQ (for example 9.1.4.0). These versions of MQ do not have fixpacks released. However
+you can override both the version (VRM) and fixpack to be installed, assuming that full VRMF
+level is still available for download. Setting the environment variables `MQIJS_VRM` and 
+`MQIJS_FIXPACK` will select a specific Redistributable Client package to be installed. Note that
+installing an older VRM than the default in the current version of this package may not work, if 
+newer options have been introduced to the MQI. At the time of writing this paragraph, the latest 
+version of MQ is 9.2.0 (with no later CD releases), but there is a 9.2.0.1 fixpack. If
+you want to pick that up instead of the base 9.2.0 referred to in postinstall.js, then 
+set `MQIJS_FIXPACK=1` before running `npm install`. 
+
+
 ### MacOS
 The MQ client package for MacOS can be found at
 [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit).
@@ -214,10 +226,18 @@ Download a suitable version and unpack it in a local directory.
 The environment variable `DYLD_LIBRARY_PATH` then needs to be set to the lib64 directory within
 that tree before running the program.
 
-For example 
+For example
 
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
+#### Errors and warnings during build
+If you get an error message such as "gyp: No Xcode or CLT version detected" while
+running `npm install` you may need to install the developer tools. Usually
+the command `xcode-select --install` will deal with this.
+
+You may also see a number of warnings from the C++ compiler as it compiles
+some of the FFI prerequisite packages. While undesirable, there should be no
+actual errors shown and the generated code does seem to work ok.
 
 ### Other platforms
 For other MQ-supported platforms and environments, the C runtime can be
