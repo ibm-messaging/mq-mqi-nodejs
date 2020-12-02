@@ -1,5 +1,5 @@
 {
-  "name": "ibmmq",
+  "name": "mqueser",
   "version": "0.9.15",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "ffi-napi": ">=3.0.1",
+    "ibmmq": "^0.9.15",
     "ref-array-di": ">=1.2.2",
     "ref-napi": "^2.0.2",
     "ref-struct-di": ">=1.1.1",
