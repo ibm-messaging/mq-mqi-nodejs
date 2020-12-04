@@ -160,7 +160,7 @@ To force client connections, even when there is a full MQ server set of librarie
 
 ## Extra operations
 The package includes a couple of verbs that are not standard in the MQI.
-* *GetDone()* is used to complete asynchronous retrieval of messages.
+* *GetDone()* is used to end asynchronous retrieval of messages.
 * *GetSync()* is equivalent of the traditional MQGET operation.
 * *Lookup()* extracts strings corresponding to MQI numbers, similar to the
 *MQConstants.lookup()* method in Java.
@@ -173,6 +173,11 @@ the MQ client package
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first.
+
+Note: Unexpected failures (SEGV) have been seen with some versions of Node at v10
+and v12. The Node v14 engine does not seem to fail in the same way, so that is
+the minimum preferred version for this package. A warning is now generated during the
+install process to suggest (but not enforce) that you upgrade to v14.
 
 ## Installation:
 To install this package, you can pull it straight from the
@@ -210,13 +215,14 @@ searching `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows).
 The post-installation program will usually be pointing at the most recent Continuous Delivery
 version of MQ (for example 9.1.4.0). These versions of MQ do not have fixpacks released. However
 you can override both the version (VRM) and fixpack to be installed, assuming that full VRMF
-level is still available for download. Setting the environment variables `MQIJS_VRM` and 
+level is still available for download. Setting the environment variables `MQIJS_VRM` and
 `MQIJS_FIXPACK` will select a specific Redistributable Client package to be installed. Note that
-installing an older VRM than the default in the current version of this package may not work, if 
-newer options have been introduced to the MQI. At the time of writing this paragraph, the latest 
-version of MQ is 9.2.0 (with no later CD releases), but there is a 9.2.0.1 fixpack. If
-you want to pick that up instead of the base 9.2.0 referred to in postinstall.js, then 
-set `MQIJS_FIXPACK=1` before running `npm install`. 
+installing an older VRM than the default in the current version of this package may not work, if
+newer options have been introduced to the MQI. At the time of writing this paragraph, the latest
+version of MQ was 9.2.0 (with no later CD releases), but there was also a 9.2.0.1 fixpack. If
+you want to pick that up instead of the base 9.2.0 referred to in postinstall.js, then
+set `MQIJS_FIXPACK=1` before running `npm install`. Once newer CD levels are available, then the
+postinstall script will point at those instead by default.
 
 
 ### MacOS
@@ -257,7 +263,6 @@ The samples directory includes a Dockerfile that can be used as the basis
 of generating an independent container to run MQ programs. The **run.docker**
 script builds and executes the container. Environment variables are used in
 the Dockerfile and the script to control connection to the queue manager.
-
 
 ## Documentation
 

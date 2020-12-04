@@ -1,14 +1,17 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## xx xxx 2020
+## 02 Dec 2020 : v0.9.16
+* Update for MQ 9.2.1
 * Allow override of VRM and fixpack levels
 * Update URLs to KnowledgeCenter to point at "latest" instead of specific version
+* Use explicit strings for platform variant 'require' (#104)
+* Recommend (but not enforce) Node v14 as preferred level during install (#100)
 
-## 25 July 2020
+## 25 July 2020 : v0.9.15
 * Update for MQ 9.2.0
 
-## 20 May 2020
+## 20 May 2020 : v0.9.14
 * Add support for Node 14
   * Various dependencies updated
 * Remove support for Node 8
