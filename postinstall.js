@@ -87,8 +87,10 @@ function removeDirRecursive(d) {
                 removeDirRecursive(ePath);
             } else {
                 // Keep runmqsc as it might be useful for creating CCDTs locally,
-                // particularly in a containerised runtime
-                if (!e.match(/runmqsc/))
+                // particularly in a containerised runtime. And runmqakm might be 
+		// needed if you want to manage certs locally rather than outside
+		// a container.
+                if (!e.match(/runmqsc/) && !e.match(/runmqakm/))
                   fs.unlinkSync(ePath);
             }
         });
