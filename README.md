@@ -225,6 +225,7 @@ set `MQIJS_FIXPACK=1` before running `npm install`. Once newer CD levels are ava
 postinstall script will point at those instead by default.
 
 
+
 ### MacOS
 The MQ client package for MacOS can be found at
 [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit).
@@ -235,6 +236,11 @@ that tree before running the program.
 For example
 
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
+
+
+If you want to download the redist binaries without 
+modifying postinstall.js after executing `npm install`, you can set the env var `MQIJS_DARWIN_REDIST` to enable it.
+
 
 #### Errors and warnings during build
 If you get an error message such as "gyp: No Xcode or CLT version detected" while

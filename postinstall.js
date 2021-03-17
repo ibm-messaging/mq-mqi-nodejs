@@ -18,6 +18,10 @@ var macDir=baseDir+"/mactoolkit";
 // This is the version (VRM) of MQ associated with this level of package
 var vrm="9.2.1";
 
+// Allow installing it on darwin with an environment variable
+// so we do not need to do the post install stuff modifying node_modules/ibmmq stuff
+var downloadInDarwin=process.env['MQIJS_DARWIN_REDIST'];
+
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
 // same format eg "1.2.3". Note that IBM keeps a limited set of versions for
@@ -178,16 +182,16 @@ if (currentPlatform === 'win32') {
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
   unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
-//} else if (currentPlatform === 'darwin'){
+} else if (currentPlatform === 'darwin' && downloadInDarwin){
 //  The MacOS client for MQ is released under a different license - 'Developers' not
 //  'Redistributable' - so we will not try to automatically download it. But all the
 //  pieces are in this script to enable it at some point.
-//
-//  dir=macDir
-//  title="IBM MacOS Toolkit for Developers"
-//  file=vrmf + "-IBM-MQ-Toolkit-MacX64" + ".tar.gz"
-//  unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
-//  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
+
+ dir=macDir
+ title="IBM MacOS Toolkit for Developers"
+ file=vrmf + "-IBM-MQ-Toolkit-MacX64" + ".tar.gz"
+ unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
+ unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");
