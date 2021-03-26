@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.2.1";
+var vrm="9.2.2";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
@@ -145,20 +145,8 @@ function removeUnneeded() {
   cleanup();
 }
 
-function checkNodeVersion() {
-  // V10/V12 seem to have unexpected internal failures in some levels,
-  // possibly related to the ffi-napi package. But V14
-  // looks to be OK. Rather than enforce that as a prereq level, at least
-  // give a warning to point at V14 as a preferred version.
-  var major=process.versions.node.split('.')[0];
-  if (major < preferredVersion) {
-    console.warn("Current Node version is " + process.versions.node);
-    console.warn("Preferred version is at least " + preferredVersion);
-  }
-}
 
 // Start main processing here.
-checkNodeVersion();
 
 // If a particular environment variable is set, do not try to install
 // the Redist client package. I did consider doing this automatically by
@@ -182,14 +170,15 @@ if (currentPlatform === 'win32') {
   unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 //} else if (currentPlatform === 'darwin'){
 //  The MacOS client for MQ is released under a different license - 'Developers' not
-//  'Redistributable' - so we will not try to automatically download it. But all the
-//  pieces are in this script to enable it at some point.
+//  'Redistributable' - so we should not try to automatically download it. 
+//
+//  As another issue, the MacOS client is now being delivered in signed pkg format, not zip. So this won't
+//  work. I'm leaving this bit of code in just to remind us of the directory from which
+//  the file can be downloaded but enabling it is not going to help.
 //
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
-//  file=vrmf + "-IBM-MQ-Toolkit-MacX64" + ".tar.gz"
-//  unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
-//  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
+//  file=vrmf + "-IBM-MQ-Toolkit-MacX64" + ".pkg"
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");
