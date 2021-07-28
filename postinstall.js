@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.2.2";
+var vrm="9.2.3";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
@@ -61,7 +61,7 @@ function cleanup() {
     var doNotRemove = process.env['MQIJS_NOREMOVE_DOWNLOAD'];
     if (doNotRemove == null) {
       console.log("Removing " + file);
-      fs.unlink(file);
+      fs.unlinkSync(file);
     } else {
       console.log("Preserving " + file);
     }

@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 23 Jul 2021 : v0.9.18
+* Update for MQ 9.2.3
+* Fix RFH2 structure (#125)
+* Use unlinkSync in postinstall (#127)
+
 ## 26 Mar 2021 : v0.9.17
 * Update for MQ 9.2.2
 * Don't delete runmqakm from Redist package
