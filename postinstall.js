@@ -9,14 +9,14 @@ var https = require('https');
 const execSync = require('child_process').execSync;
 
 // How to get to the MQ Redistributable Client package
-var protocol = "https://"
+var protocol = "https://";
 var host="public.dhe.ibm.com";
 var baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
 var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
-var vrm="9.1.5";
-var vrmf=vrm + ".0";
-var macVrmf="9.1.5.0" 
+var vrm="9.1.0";
+var vrmf=vrm + ".8";
+var macVrmf="9.1.0.8";
 var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
 var redistTitle="IBM MQ Redistributable C Client";
 
