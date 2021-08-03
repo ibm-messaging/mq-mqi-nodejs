@@ -1,48 +1,89 @@
+# © Copyright IBM Corporation 2019, 2021
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu 
+
+# This Dockerfile has two separate stages.
+#
+# The first stage is builds the Node program, where we need tools like the C compiler for the ref-napi capability.
+# It also downloads the MQ client.
+# The second stage is a runtime-only container that holds just the things we need to
+# execute the compiled program.
+#
+# Files and directories are copied from the builder container to the runtime container as needed.
+# I've used two different base images, trying to get the runtime image as small
+# as possible while still using a "regular" libc-based container.
+
+###########################################################
+# This starts the BUILD phase
+###########################################################
+# Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu
 #FROM ubuntu:16.04
-FROM debian:stretch-slim
+FROM debian:stretch-slim AS builder
 
 # Set some parameters.
 ENV NODE_VERSION 14
-ENV NODE_USER  app
-ENV NODE_GROUP mqclient
 ENV APP_DIR    /usr/local/nodejs/mqput
-
-# This is a queue predefined in the MQ Developer Edition server container
-ENV DOCKER_Q    DEV.QUEUE.1
-ENV DOCKER_QMGR QM1
 
 WORKDIR ${APP_DIR}
 
 # Create the application directory so we can put stuff in there immediately
 RUN mkdir -p ${APP_DIR}
 
-# Update the base image and make sure we've installed basic capabilities
+# Update the base image and make sure we've installed basic capabilities including
+# the C++ compiler needed for the ref-napi dependency. Also install node and npm.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \
     && curl --silent -k --location https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y  nodejs  \
-    && npm install -g npm \
-# Define the userid and set up the location for the program
-   && groupadd -r ${NODE_GROUP} && useradd -r -m -g ${NODE_GROUP} ${NODE_USER} 
+    && npm install -g npm
 
 # Copy project files into the container. In this source directory, the
 # package file has been given a different name, to avoid any attempt to
 # reference it with the rest of the samples. But it gets renamed to the
 # correct name during this copy.
-COPY amqsput.js ${APP_DIR}/
+COPY amqsput.js     ${APP_DIR}/
 COPY package.docker ${APP_DIR}/package.json
 
 # Now get all the prereq packages installed and cleanup the
-# pieces that are not needed after building the C interface pieces.
+# pieces that are not needed after building the C interface.
 RUN npm install \
    && apt-get autoremove -y curl make gcc g++ python git \
    && apt-get purge -y \
    && rm -rf /var/lib/apt/lists/* \
    && chmod a+rx ${APP_DIR}/*
 
-USER ${NODE_USER}
-# Now ready to run the amqsput program.
+###########################################################
+# This starts the RUNTIME phase
+###########################################################
+# Now that there is a container with the compiled program we can build a smaller
+# runtime image. Start from one of the smaller base container images. This container
+# is an official Node image with the runtime already embedded
+FROM  node:16-slim
+
+# This is a queue predefined in the MQ Developer Edition server container. Though
+# the values can be overridden by setting environment variables during the 'docker run' phase.
+ENV DOCKER_Q    DEV.QUEUE.1
+ENV DOCKER_QMGR QM1
 ENV MQSERVER SYSTEM.DEF.SVRCONN/TCP/localhost
+
+ENV APP_DIR    /usr/local/nodejs/mqput
+WORKDIR ${APP_DIR}
+
+# Copy over the tree containing the program and all its dependencies
+# including the ref-napi compiled code and the MQ client libraries which
+# have been installed under the node_modules directory
+COPY --from=builder ${APP_DIR}/ ${APP_DIR}
+
+# We are now ready to run the amqsput program.
 CMD node amqsput ${DOCKER_Q} ${DOCKER_QMGR}

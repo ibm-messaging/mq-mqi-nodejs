@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+# 03 Aug 2021: (no new version)
+* Update sample Dockerfile to split into separate build/run images
+
 ## 23 Jul 2021 : v0.9.18
 * Update for MQ 9.2.3
 * Fix RFH2 structure (#125)
@@ -10,7 +13,6 @@ Newest updates are at the top of this file.
 * Update for MQ 9.2.2
 * Don't delete runmqakm from Redist package
 * Update ref-napi, ffi-napi to get fix for #108
-
 
 ## 02 Dec 2020 : v0.9.16
 * Update for MQ 9.2.1
