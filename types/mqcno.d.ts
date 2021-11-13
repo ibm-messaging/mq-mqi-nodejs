@@ -1,0 +1,65 @@
+declare module "ibmmq" {
+  /**
+   * This is a class containing the fields needed for the MQCNO
+   * (MQ Connection Options) structure. See the
+   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q095410_.htm|MQ Knowledge Center}
+   * for more details on the usage of each field.
+   * Not all of the underlying fields may be exposed in this object.
+   */
+  class MQCNO {
+    Options: MQC_MQCNO;
+    SecurityParms: MQCSP;
+    CCDTUrl: string;
+    ClientConn: MQCD;
+    SSLConfig: MQSCO;
+    ApplName: string;
+  }
+
+  enum MQC_MQCNO {
+    MQCNO_ACCOUNTING_MQI_DISABLED = 8192,
+    MQCNO_ACCOUNTING_MQI_ENABLED = 4096,
+    MQCNO_ACCOUNTING_Q_DISABLED = 32768,
+    MQCNO_ACCOUNTING_Q_ENABLED = 16384,
+    MQCNO_ACTIVITY_TRACE_DISABLED = 268435456,
+    MQCNO_ACTIVITY_TRACE_ENABLED = 134217728,
+    MQCNO_ALL_CONVS_SHARE = 262144,
+    MQCNO_CD_FOR_OUTPUT_ONLY = 524288,
+    MQCNO_CLIENT_BINDING = 2048,
+    MQCNO_CURRENT_LENGTH = 256,
+    MQCNO_CURRENT_VERSION = 7,
+    MQCNO_FASTPATH_BINDING = 1,
+    MQCNO_GENERATE_CONN_TAG = 2097152,
+    MQCNO_HANDLE_SHARE_BLOCK = 64,
+    MQCNO_HANDLE_SHARE_NONE = 32,
+    MQCNO_HANDLE_SHARE_NO_BLOCK = 128,
+    MQCNO_ISOLATED_BINDING = 512,
+    MQCNO_LENGTH_1 = 12,
+    MQCNO_LENGTH_2 = 24,
+    MQCNO_LENGTH_3 = 152,
+    MQCNO_LENGTH_4 = 168,
+    MQCNO_LENGTH_5 = 200,
+    MQCNO_LENGTH_6 = 224,
+    MQCNO_LENGTH_7 = 256,
+    MQCNO_LOCAL_BINDING = 1024,
+    MQCNO_NONE = 0,
+    MQCNO_NO_CONV_SHARING = 65536,
+    MQCNO_RECONNECT = 16777216,
+    MQCNO_RECONNECT_AS_DEF = 0,
+    MQCNO_RECONNECT_DISABLED = 33554432,
+    MQCNO_RECONNECT_Q_MGR = 67108864,
+    MQCNO_RESTRICT_CONN_TAG_QSG = 16,
+    MQCNO_RESTRICT_CONN_TAG_Q_MGR = 8,
+    MQCNO_SERIALIZE_CONN_TAG_QSG = 4,
+    MQCNO_SERIALIZE_CONN_TAG_Q_MGR = 2,
+    MQCNO_SHARED_BINDING = 256,
+    MQCNO_STANDARD_BINDING = 0,
+    MQCNO_USE_CD_SELECTION = 1048576,
+    MQCNO_VERSION_1 = 1,
+    MQCNO_VERSION_2 = 2,
+    MQCNO_VERSION_3 = 3,
+    MQCNO_VERSION_4 = 4,
+    MQCNO_VERSION_5 = 5,
+    MQCNO_VERSION_6 = 6,
+    MQCNO_VERSION_7 = 7,
+  }
+}

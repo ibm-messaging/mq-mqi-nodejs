@@ -5,7 +5,8 @@
   "main": "./lib/mqi.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node postinstall.js"
+    "postinstall": "node postinstall.js",
+    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript"
   },
   "author": "Mark Taylor",
   "license": "Apache-2.0",
@@ -14,6 +15,14 @@
     "url": "https://github.com/ibm-messaging/mq-mqi-nodejs"
   },
   "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@typescript-eslint/eslint-plugin": "^5.2.0",
+    "@typescript-eslint/parser": "^5.2.0",
+    "eslint": "^8.1.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-jsdoc": "^37.0.3",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^4.0.0",
     "jshint": "^2.13.0"
   },
   "dependencies": {
