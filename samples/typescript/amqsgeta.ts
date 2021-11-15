@@ -1,4 +1,3 @@
-"use strict";
 /*
   Copyright (c) IBM Corporation 2017
 
@@ -30,30 +29,31 @@
  */
 
 // Import the MQ package
-var mq = require("ibmmq");
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+import * as mq from "ibmmq";
+import { MQC, MQObject, MQQueueManager } from "ibmmq";
 
 // Import any other packages needed
-var StringDecoder = require("string_decoder").StringDecoder;
-var decoder = new StringDecoder("utf8");
+import { StringDecoder } from "string_decoder";
+const decoder = new StringDecoder("utf8");
 
 // The default queue manager and queue to be used
-var qMgr = "QM1";
-var qName = "DEV.QUEUE.1";
-var msgId = null;
+let qMgr = "QM1";
+let qName = "DEV.QUEUE.1";
+let msgId: string | null = null;
 
-// Some global variables
-var connectionHandle;
-var queueHandle;
+// Some global letiables
+let connectionHandle: MQQueueManager;
 
-var waitInterval = 3; // max seconds to wait for a new message
-var ok = true;
-var exitCode = 0;
+let queueHandle: MQObject;
+
+const waitInterval = 3; // max seconds to wait for a new message
+let ok = true;
+let exitCode = 0;
 
 /*
  * Format any error messages
  */
-function formatErr(err) {
+function formatErr(err: Error) {
   if (err) {
     ok = false;
     return "MQ call failed at " + err.message;
@@ -62,8 +62,9 @@ function formatErr(err) {
   }
 }
 
-function hexToBytes(hex) {
-  for (var bytes = [], c = 0; c < hex.length; c += 2)
+function hexToBytes(hex: string): number[] {
+  const bytes: number[] = [];
+  for (let c = 0; c < hex.length; c += 2)
     bytes.push(parseInt(hex.substr(c, 2), 16));
   return bytes;
 }
@@ -72,8 +73,8 @@ function hexToBytes(hex) {
  * Define which messages we want to get, and how.
  */
 function getMessages() {
-  var md = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  const md = new mq.MQMD();
+  const gmo = new mq.MQGMO();
 
   gmo.Options =
     MQC.MQGMO_NO_SYNCPOINT |
@@ -126,16 +127,16 @@ function getCB(err, hObj, gmo, md, buf, hConn) {
 /*
  * When we're done, close any queues and connections.
  */
-function cleanup(hConn, hObj) {
-  mq.Close(hObj, 0, function (err) {
-    if (err) {
-      console.log(formatErr(err));
+function cleanup(hConn: MQQueueManager, hObj: MQObject) {
+  mq.Close(hObj, 0, function (closeErr) {
+    if (closeErr) {
+      console.log(formatErr(closeErr));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function (err) {
-      if (err) {
-        console.log(formatErr(err));
+    mq.Disc(hConn, function (discErr) {
+      if (discErr) {
+        console.log(formatErr(discErr));
       } else {
         console.log("MQDISC successful");
       }
@@ -151,7 +152,7 @@ function cleanup(hConn, hObj) {
 console.log("Sample AMQSGETA.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qName = myArgs[0];
 }
@@ -166,23 +167,23 @@ mq.setTuningParameters({ syncMQICompat: true });
 
 // Connect to the queue manager, including a callback function for
 // when it completes.
-mq.Conn(qMgr, function (err, hConn) {
-  if (err) {
-    console.log(formatErr(err));
+mq.Conn(qMgr, function (connErr, hConn) {
+  if (connErr) {
+    console.log(formatErr(connErr));
     ok = false;
   } else {
     console.log("MQCONN to %s successful ", qMgr);
     connectionHandle = hConn;
 
     // Define what we want to open, and how we want to open it.
-    var od = new mq.MQOD();
+    const od = new mq.MQOD();
     od.ObjectName = qName;
     od.ObjectType = MQC.MQOT_Q;
-    var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
-    mq.Open(hConn, od, openOptions, function (err, hObj) {
+    const openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+    mq.Open(hConn, od, openOptions, function (openErr, hObj) {
       queueHandle = hObj;
-      if (err) {
-        console.log(formatErr(err));
+      if (openErr) {
+        console.log(formatErr(openErr));
       } else {
         console.log("MQOPEN of %s successful", qName);
         // And now we can ask for the messages to be delivered.

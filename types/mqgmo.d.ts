@@ -22,7 +22,7 @@ declare module "ibmmq" {
     GroupStatus: string;
     SegmentStatus: string;
     Segmentation: string;
-    MsgToken: Buffer;
+    MsgToken: Buffer | integer[] | object | string;
     ReturnedLength: number;
     MsgHandle: number;
   }
