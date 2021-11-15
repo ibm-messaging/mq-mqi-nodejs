@@ -29,10 +29,10 @@
 ###########################################################
 # Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu
 #FROM ubuntu:16.04
-FROM debian:stretch-slim AS builder
+FROM debian:bullseye-slim AS builder
 
 # Set some parameters.
-ENV NODE_VERSION 14
+ENV NODE_VERSION 16
 ENV APP_DIR    /usr/local/nodejs/mqput
 
 WORKDIR ${APP_DIR}
@@ -52,7 +52,7 @@ RUN apt-get update \
 # package file has been given a different name, to avoid any attempt to
 # reference it with the rest of the samples. But it gets renamed to the
 # correct name during this copy.
-COPY amqsput.js     ${APP_DIR}/
+COPY *.js     ${APP_DIR}/
 COPY package.docker ${APP_DIR}/package.json
 
 # Now get all the prereq packages installed and cleanup the
