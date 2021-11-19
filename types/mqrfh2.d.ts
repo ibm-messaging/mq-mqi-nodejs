@@ -1,4 +1,4 @@
-declare module "ibmmq" {
+declare module 'ibmmq' {
   /*
    * mqrfh2 is a JavaScript object containing the fields we need for the MQRFH2
    * in a more idiomatic style than the C definition - in particular for
@@ -44,17 +44,5 @@ declare module "ibmmq" {
      * header structure and the entire message body (including the unparsed header)
      */
     static getProperties: (hdr: MQRFH2, buf: Buffer) => string;
-  }
-
-  enum MQC_MQRFH {
-    MQRFH_CURRENT_LENGTH = 32,
-    MQRFH_FLAGS_RESTRICTED_MASK = -65536,
-    MQRFH_LENGTH_1 = 32,
-    MQRFH_NONE = 0,
-    MQRFH_NO_FLAGS = 0,
-    MQRFH_STRUC_LENGTH_FIXED = 32,
-    MQRFH_STRUC_LENGTH_FIXED_2 = 36,
-    MQRFH_VERSION_1 = 1,
-    MQRFH_VERSION_2 = 2,
   }
 }
