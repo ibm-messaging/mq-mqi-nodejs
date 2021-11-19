@@ -27,9 +27,7 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-# Using a "slim" base image ends up being about 100MB smaller than the regular ubuntu
-#FROM ubuntu:16.04
-FROM debian:stretch-slim AS builder
+FROM ubuntu:18.04 as builder
 
 # Set some parameters.
 ENV NODE_VERSION 14
@@ -58,7 +56,7 @@ COPY package.docker ${APP_DIR}/package.json
 # Now get all the prereq packages installed and cleanup the
 # pieces that are not needed after building the C interface.
 RUN npm install \
-   && apt-get autoremove -y curl make gcc g++ python git \
+   && apt-get autoremove -y curl make gcc g++ python3 git \
    && apt-get purge -y \
    && rm -rf /var/lib/apt/lists/* \
    && chmod a+rx ${APP_DIR}/*

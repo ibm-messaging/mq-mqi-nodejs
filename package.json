@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "0.9.18",
+  "version": "0.9.19",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -14,7 +14,8 @@
     "url": "https://github.com/ibm-messaging/mq-mqi-nodejs"
   },
   "devDependencies": {
-    "jshint": "^2.13.0"
+    "@tsconfig/recommended": "^1.0.1",
+    "jshint": "^2.13.1"
   },
   "dependencies": {
     "ffi-napi": ">=4.0.3",

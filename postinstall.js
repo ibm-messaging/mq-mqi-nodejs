@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.2.3";
+var vrm="9.2.4";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
@@ -178,7 +178,7 @@ if (currentPlatform === 'win32') {
 //
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
-//  file=vrmf + "-IBM-MQ-Toolkit-MacX64" + ".pkg"
+//  file=vrmf + "-IBM-MQ-DevToolkit-MacX64" + ".pkg"
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");
