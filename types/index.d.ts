@@ -828,29 +828,172 @@ declare module 'ibmmq' {
     cb?: (err: MQError | null) => void
   ): void;
 
-  /// Left off on
-  /// * InqMp - Inquire on the values of a message property
+  /**
+   * InqMp - Inquire on the values of a message property
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager
+   * @param {Object}
+   *        handle - message handle
+   * @param {MQIMPO}
+   *        impo - Options for how the property is to be queried
+   * @param {MQPD}
+   *        pd - property descriptor
+   * @param {String}
+   *        name - the property name
+   * @param {Buffer}
+   *        value - buffer to be filled in with the property value if it's a
+   *        string or byte array
+   * @param {function}
+   *        callback - Called when the operation completes.
+   *        Parameters are (error,name,value,length,type). If the value is
+   *        not a simple type (boolean, string, number) then the length and
+   *        type parameters can be used for the application to decode the
+   *        returned Buffer.
+   * @throws {MQError}
+   *          Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *          When a parameter is of incorrect type
+   */
+  function InqMp(
+    jsQueueManager: MQQueueManager,
+    jsHMsg: HMSG,
+    jsImpo: MQIMPO,
+    jsPd: MQPD,
+    jsName: string,
+    valueBuffer?: Buffer,
+    cb?: (
+      err: MQError | null,
+      name: string,
+      value: boolean | string | number | Buffer | null,
+      length: number,
+      type: MQC_MQTYPE
+    ) => void
+  ): boolean | string | number | Buffer | null | void;
 
+  /**
+   * DltMp - Delete a message property
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager
+   * @param {Object}
+   *        handle - message handle
+   * @param {MQDMPO}
+   *        dmpo - Options for how the property is to be deleted
+   * @param {String}
+   *        name - the property name
+   * @param {function}
+   *        callback - Called when the operation completes.
+   *        Parameters are (error)
+   * @throws {MQError}
+   *        Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *        When a parameter is of incorrect type
+   */
+  function DltMp(
+    jsQueueManager: MQQueueManager,
+    jsHMsg: HMSG,
+    jsDmpo: MQDMPO,
+    jsName: string,
+    cb?: (err: MQError | null) => void
+  ): void;
+
+  /**
+   * Conn - simpler version of Connx.
+   * The callback is passed object containing the hConn on success
+   *
+   * @param {String}
+   *        qMgrName - the queue manager to connect to
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function ConnPromise(jsqMgrName: string): Promise<MQQueueManager>;
 
+  /**
+   * Connx - callback is passed object containing the hConn on success.
+   *
+   * @param {String}
+   *        qMgrName - the queue manager to connect to
+   * @param {MQCNO}
+   *        cno - connection options
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function ConnxPromise(
     jsqMgrName: string,
     jsCno: MQCNO
   ): Promise<MQQueueManager>;
 
+  /**
+   * Disc - Disconnect from the queue manager.
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function DiscPromise(jsQueueManager: MQQueueManager): Promise<void>;
 
+  /**
+   * Open - Open an object such as a queue or topic.
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager (hConn)
+   * @param {MQOD}
+   *        jsod - MQ Object Descriptor including the name and
+   *        type of object to open
+   * @param {number}
+   *        openOptions - how the object is intended to be used.
+   * @throws {MQError}
+   *          Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *          When a parameter is of incorrect type
+   */
   function OpenPromise(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
     jsOpenOptions: MQC_MQOO
   ): Promise<MQObject>;
 
+  /**
+   * Close, CloseSync - Close an opened object.
+   *
+   * @param {MQObject}
+   *        jsObject - reference to the object (contains hConn and hObj)
+   * @param {number}
+   *        closeOptions
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function ClosePromise(
     jsObject: MQObject,
     jsCloseOptions: MQC_MQCO
   ): Promise<void>;
 
+  /**
+   * Put -  Put a message to a queue or publish to a topic.
+   *
+   * @param {MQObject}
+   *        jsObject - reference to the opened object (hConn and hObj)
+   * @param {MQMD}
+   *        jsmd - the message Descriptor
+   * @param {MQPMO}
+   *        jspmo - Put Message Options
+   * @param {Object}
+   *        buf - containing the message contents. Can be a String or Buffer
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function PutPromise(
     jsObject: MQObject,
     jsmd: MQMD,
@@ -858,6 +1001,29 @@ declare module 'ibmmq' {
     buf: string | Buffer
   ): Promise<void>;
 
+  /**
+   * Put1Sync -  Put a message to a queue or publish to a topic.
+   *
+   * Put1 puts a single messsage to a queue or topic. Typically used
+   * for one-shot replies where it can be cheaper than multiple
+   * Open/Put/Close sequences
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager (hConn)
+   * @param {MQOD}
+   *        jsod - MQ Object Descriptor including the name and
+   *        type of object to open
+   * @param {MQMD}
+   *        jsmd - the message Descriptor
+   * @param {MQPMO}
+   *        jspmo - Put Message Options
+   * @param {Object}
+   *        buf - containing the message contents. Can be a String or Buffer
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
   function Put1Promise(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
@@ -865,4 +1031,30 @@ declare module 'ibmmq' {
     jspmo: MQPMO,
     buf: string | Buffer
   ): Promise<void>;
+
+  /**
+   * Sub - Subscribe to a topic.
+   * If using managed destinations where the queue manager creates a
+   * queue on your behalf, the reference to it is given to the callback
+   * function.
+   *
+   * @param {MQQueueManager}
+   *        queueManager - reference to the queue manager (hConn)
+   * @param {MQObject}
+   *        queueObject - the queue to which publications will be
+   *        delivered. Can be null to indicate a managed queue should
+   *        be allocated.
+   * @param {MQSD}
+   *        jssd - MQ Subscription Descriptor including the topic to be
+   *        subscribed.
+   * @throws {MQError}
+   *         Container for MQRC and MQCC values
+   * @throws {TypeError}
+   *         When a parameter is of incorrect type
+   */
+  function SubPromise(
+    jsQueueManager: MQQueueManager,
+    jsQueueObject: MQObject,
+    jssd: MQSD
+  ): Promise<{ hObj: MQObject; hSub: MQObject }>;
 }
