@@ -34,7 +34,7 @@
 
 // Import the MQ package
 import * as mq from "ibmmq";
-import { MQObject, MQQueueManager, MQC } from "ibmmq";
+import { MQC } from "ibmmq"; // Want to refer to this export directly for simplicity
 
 // The queue manager and queue to be used. These can be overridden on command line.
 let qMgr = "QM1";
@@ -52,7 +52,7 @@ function toHexString(byteArray: Buffer) {
 }
 
 // Define some functions that will be used from the main flow
-function putMessage(hObj: MQObject) {
+function putMessage(hObj: mq.MQObject) {
   const msg = "Hello from Node at " + new Date().toString();
 
   const mqmd = new mq.MQMD(); // Defaults are fine.
@@ -73,7 +73,7 @@ function putMessage(hObj: MQObject) {
 }
 
 // When we're done, close queues and connections
-function cleanup(hConn: MQQueueManager, hObj: MQObject) {
+function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log(formatErr(closeErr));

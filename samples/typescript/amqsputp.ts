@@ -35,21 +35,21 @@
 
 // Import the MQ package
 import * as mq from "ibmmq";
-import { MQC, MQObject, MQQueueManager } from "ibmmq";
+import { MQC } from "ibmmq"; // Want to refer to this export directly for simplicity
 
 // The queue manager and queue to be used. These can be overridden on command line.
 let qMgr = "QM1";
 let qName = "DEV.QUEUE.1";
 
-let ghObj: MQObject;
-let ghConn: MQQueueManager;
+let ghObj: mq.MQObject;
+let ghConn: mq.MQQueueManager;
 
 function formatErr(err: Error) {
   return "MQ call failed in " + err.message;
 }
 
 // When we're done, close queues and connections
-function cleanup(hConn: MQQueueManager, hObj: MQObject) {
+function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log("Cleanup: ", formatErr(closeErr));

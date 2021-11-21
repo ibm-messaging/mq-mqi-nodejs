@@ -30,7 +30,7 @@
 
 // Import the MQ package
 import * as mq from "ibmmq";
-import { MQC, MQObject, MQQueueManager } from "ibmmq";
+import { MQC } from "ibmmq"; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
 import { StringDecoder } from "string_decoder";
@@ -41,10 +41,9 @@ let qMgr = "QM1";
 let qName = "DEV.QUEUE.1";
 let msgId: string | null = null;
 
-// Some global letiables
-let connectionHandle: MQQueueManager;
-
-let queueHandle: MQObject;
+// Some global variables
+let connectionHandle: mq.MQQueueManager;
+let queueHandle: mq.MQObject;
 
 const waitInterval = 3; // max seconds to wait for a new message
 let ok = true;
@@ -87,7 +86,7 @@ function getMessages() {
   if (msgId != null) {
     console.log("Setting Match Option for MsgId");
     gmo.MatchOptions = MQC.MQMO_MATCH_MSG_ID;
-    md.MsgId = hexToBytes(msgId);
+    md.MsgId = Buffer.from(hexToBytes(msgId));
   }
 
   // Set up the callback handler to be invoked when there
@@ -102,7 +101,7 @@ function getMessages() {
  * include the message descriptor and the buffer containing
  * the message data.
  */
-function getCB(err, hObj, gmo, md, buf, hConn) {
+const getCB: mq.GetCallback = (err, hObj, gmo, md, buf, hconn) => {
   // If there is an error, prepare to exit by setting the ok flag to false.
   if (err) {
     if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
@@ -116,18 +115,18 @@ function getCB(err, hObj, gmo, md, buf, hConn) {
     // callback to be deleted after this one has completed.
     mq.GetDone(hObj);
   } else {
-    if (md.Format == "MQSTR") {
-      console.log("message <%s>", decoder.write(buf));
+    if (md!.Format == "MQSTR") {
+      console.log("message <%s>", decoder.write(buf!));
     } else {
-      console.log("binary message: " + buf);
+      console.log("binary message: " + buf!.toString());
     }
   }
-}
+};
 
 /*
  * When we're done, close any queues and connections.
  */
-function cleanup(hConn: MQQueueManager, hObj: MQObject) {
+function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log(formatErr(closeErr));

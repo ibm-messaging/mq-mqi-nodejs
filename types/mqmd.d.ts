@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQMD
    * (MQ Message Descriptor) structure. See the
@@ -13,7 +13,7 @@ declare module 'ibmmq' {
     Feedback: MQC_MQFB;
     Encoding: MQC_MQENC;
     CodedCharSetId: MQC_MQCCSI;
-    Format: MQC_MQFMT;
+    Format: MQFMT;
     Priority: MQC_MQPRI;
     Persistence: MQC_MQPER;
     MsgId: Buffer;

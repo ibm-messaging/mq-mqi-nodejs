@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * @property {number} getLoopPollTimeMs - Milliseconds between each full poll cycle.
    * Default is 10000 (10 seconds)
@@ -673,15 +673,27 @@ declare module 'ibmmq' {
     jsObject: MQObject,
     jsmd: MQMD,
     jsgmo: MQGMO,
-    cb: (
+    cb: GetCallback
+  ): void;
+
+  interface GetCallback {
+    (
       err: MQError,
       object: MQObject,
-      jsgmo: MQGMO | null,
-      jsmd: MQMD | null,
+      gmo: null,
+      md: null,
+      data: null,
+      mqQueueManager: MQQueueManager
+    ): void;
+    (
+      err: null,
+      object: MQObject,
+      gmo: MQGMO,
+      md: MQMD,
       data: Buffer | null,
       mqQueueManager: MQQueueManager
-    ) => void
-  ): void;
+    ): void;
+  }
 
   /**
    * GetDone -  Stop the Get processing by removing the listener

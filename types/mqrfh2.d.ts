@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /*
    * mqrfh2 is a JavaScript object containing the fields we need for the MQRFH2
    * in a more idiomatic style than the C definition - in particular for
@@ -21,7 +21,7 @@ declare module 'ibmmq' {
     StrucLength: number;
     Encoding: MQC_MQENC;
     CodedCharSetId: MQC_MQCCSI;
-    Format: Buffer;
+    Format: MQFMT;
     Flags: MQC_MQRFH;
     NameValueCCSID: number;
 

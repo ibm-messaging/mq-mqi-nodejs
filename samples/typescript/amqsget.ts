@@ -30,7 +30,7 @@
 
 // Import the MQ package
 import * as mq from "ibmmq";
-import { MQC, MQObject, MQRFH2 } from "ibmmq";
+import { MQC } from "ibmmq"; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
 import { StringDecoder } from "string_decoder";
@@ -48,14 +48,14 @@ function formatErr(err: Error) {
 }
 
 // Define some functions that will be used from the main flow
-function getMessages(hObj: MQObject) {
+function getMessages(hObj: mq.MQObject) {
   while (ok) {
     getMessage(hObj);
   }
 }
 
 // This function retrieves messages from the queue without waiting.
-function getMessage(hObj: MQObject) {
+function getMessage(hObj: mq.MQObject) {
   const buf = Buffer.alloc(1024);
   let hdr;
   const mqmd = new mq.MQMD();
@@ -77,9 +77,9 @@ function getMessage(hObj: MQObject) {
       ok = false;
     } else {
       const format = mqmd.Format;
-      switch (format.toString()) {
+      switch (format) {
         case MQC.MQFMT_RF_HEADER_2:
-          hdr = MQRFH2.getHeader(buf);
+          hdr = mq.MQRFH2.getHeader(buf);
           const props = mq.MQRFH2.getProperties(hdr, buf);
           console.log("RFH2 HDR is %j", hdr);
           console.log("Properties are '%s'", props);
@@ -106,8 +106,8 @@ function getMessage(hObj: MQObject) {
   });
 }
 
-function printBody(format: Buffer, buf: Buffer, len: number) {
-  if (format.toString() == "MQSTR") {
+function printBody(format: mq.MQFMT, buf: Buffer, len: number) {
+  if (format == "MQSTR") {
     console.log("message len=%d <%s>", len, decoder.write(buf.slice(0, len)));
   } else {
     console.log("binary message: " + buf.toString());
@@ -115,7 +115,7 @@ function printBody(format: Buffer, buf: Buffer, len: number) {
 }
 
 // When we're done, close queues and connections
-function cleanup(hConn: mq.MQQueueManager, hObj: MQObject) {
+function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log(formatErr(closeErr));

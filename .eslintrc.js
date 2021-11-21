@@ -101,6 +101,7 @@ module.exports = {
     ],
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-parameter-properties": "off",
     "@typescript-eslint/no-shadow": [
       "warn",
@@ -149,9 +150,6 @@ module.exports = {
     "id-match": "error",
     "import/order": "off",
     indent: "off",
-    "jsdoc/check-alignment": "error",
-    "jsdoc/check-indentation": "error",
-    "jsdoc/newline-after-description": "error",
     "max-classes-per-file": ["error", 10],
     "max-len": "off",
     "new-parens": "error",
