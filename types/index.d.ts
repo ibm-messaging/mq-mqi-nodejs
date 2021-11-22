@@ -1,3 +1,24 @@
+/// <reference path="./mqc.d.ts"/>
+/// <reference path="./mqcbc.d.ts"/>
+/// <reference path="./mqcbd.d.ts"/>
+/// <reference path="./mqcd.d.ts"/>
+/// <reference path="./mqcno.d.ts"/>
+/// <reference path="./mqcsp.d.ts"/>
+/// <reference path="./mqctlo.d.ts"/>
+/// <reference path="./mqdlh.d.ts"/>
+/// <reference path="./mqgmo.d.ts"/>
+/// <reference path="./mqistrings.js"/>
+/// <reference path="./mqmd.d.ts"/>
+/// <reference path="./mqmho.d.ts"/>
+/// <reference path="./mqmpo.d.ts"/>
+/// <reference path="./mqod.d.ts"/>
+/// <reference path="./mqpmo.d.ts"/>
+/// <reference path="./mqrfh2.d.ts"/>
+/// <reference path="./mqsco.d.ts"/>
+/// <reference path="./mqsd.d.ts"/>
+/// <reference path="./mqsro.d.ts"/>
+/// <reference path="./mqsts.d.ts"/>
+
 declare module "ibmmq" {
   /**
    * @property {number} getLoopPollTimeMs - Milliseconds between each full poll cycle.
