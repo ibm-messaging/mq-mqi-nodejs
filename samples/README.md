@@ -66,6 +66,12 @@ You may need to run `npm link` or `npm link ibmmq` from the samples directory or
 the root of the repository if the program cannot find the ibmmq module. See
 the [npm documentation](https://docs.npmjs.com/cli/link.html) for more information.
 
+## Running in a container
+The `run.docker` script builds and runs a container with the `amqsput` program. Two
+Dockerfiles are provided. The default uses images based around debian/ubuntu containers.
+If you set the `FROM` environment variable to "UBI" then images from the Red Hat Universal
+Base Images repository are used instead.
+
 ## More information
 Comments in the programs explain what they are doing. For more detailed information about the
 MQ API, the functions, structures, and constants, see the

@@ -22,52 +22,46 @@
 #
 # Files and directories are copied from the builder container to the runtime container as needed.
 # I've used two different base images, trying to get the runtime image as small
-# as possible while still using a "regular" libc-based container.
+# as possible. Generally, the builder needs a C/C++ compiler to deal with native code during
+# the npm install phase. But the runtime doesn't need that.
+#
+# The base images are taken from the Red Hat Universal Base Images repository
 
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM ubuntu:18.04 as builder
+FROM registry.access.redhat.com/ubi8/nodejs-14 AS builder
 
 # Set some parameters.
-ENV NODE_VERSION 16
-ENV APP_DIR    /usr/local/nodejs/mqput
+ENV APP_DIR    /opt/app-root/src/nodejs/mqput
 
 WORKDIR ${APP_DIR}
 
-# Create the application directory so we can put stuff in there immediately
-RUN mkdir -p ${APP_DIR}
+USER 0
 
-# Update the base image and make sure we've installed basic capabilities including
-# the C++ compiler needed for the ref-napi dependency. Also install node and npm.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \
-    && curl --silent -k --location https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get install -y  nodejs  \
-    && npm install -g npm
+# Create the application directory so we can put stuff in there immediately. Change
+# ownership to the default non-root id that is part of this container. Then switch to it being
+# the active id.
+RUN mkdir -p ${APP_DIR} && chown -R 1001 ${APP_DIR}
+USER 1001
 
-# Copy project files into the container. In this source directory, the
+# Copy project files into the container. In the source directory, the
 # package file has been given a different name, to avoid any attempt to
 # reference it with the rest of the samples. But it gets renamed to the
 # correct name during this copy.
-COPY *.js     ${APP_DIR}/
+COPY amqsput.js     ${APP_DIR}/
 COPY package.docker ${APP_DIR}/package.json
 
-# Now get all the prereq packages installed and cleanup the
-# pieces that are not needed after building the C interface.
-RUN npm install \
-   && apt-get autoremove -y curl make gcc g++ python3 git \
-   && apt-get purge -y \
-   && rm -rf /var/lib/apt/lists/* \
-   && chmod a+rx ${APP_DIR}/*
+# Now get all the prereq packages installed. This will also download the
+# MQ client code and compile any native libraries from the dependency chain.
+RUN npm install
 
 ###########################################################
 # This starts the RUNTIME phase
 ###########################################################
 # Now that there is a container with the compiled program we can build a smaller
-# runtime image. Start from one of the smaller base container images. This container
-# is an official Node image with the runtime already embedded
-FROM  node:16-slim
+# runtime image.
+FROM  registry.access.redhat.com/ubi8/nodejs-14-minimal
 
 # This is a queue predefined in the MQ Developer Edition server container. Though
 # the values can be overridden by setting environment variables during the 'docker run' phase.
@@ -75,7 +69,7 @@ ENV DOCKER_Q    DEV.QUEUE.1
 ENV DOCKER_QMGR QM1
 ENV MQSERVER SYSTEM.DEF.SVRCONN/TCP/localhost
 
-ENV APP_DIR    /usr/local/nodejs/mqput
+ENV APP_DIR    /opt/app-root/src/nodejs/mqput
 WORKDIR ${APP_DIR}
 
 # Copy over the tree containing the program and all its dependencies

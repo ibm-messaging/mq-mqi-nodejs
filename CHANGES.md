@@ -1,7 +1,14 @@
 # Changelog
 Newest updates are at the top of this file.
 
-# 03 Aug 2021: (no new version)
+
+## 19 Nov 2021: v0.9.19
+* Update for MQ 9.2.4
+* New MQBNO structure for Uniform Cluster balance control
+* Add sample Dockerfile based around Red Hat UBI containers
+* Better reporting of MacOS dynamic loading
+
+## 03 Aug 2021: (no new version)
 * Update sample Dockerfile to split into separate build/run images
 
 ## 23 Jul 2021 : v0.9.18

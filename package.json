@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "0.9.18",
+  "version": "0.9.19",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -24,7 +24,8 @@
     "eslint-plugin-jsdoc": "^37.0.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.0.0",
-    "jshint": "^2.13.0"
+    "@tsconfig/recommended": "^1.0.1",
+    "jshint": "^2.13.1"
   },
   "dependencies": {
     "ffi-napi": ">=4.0.3",
