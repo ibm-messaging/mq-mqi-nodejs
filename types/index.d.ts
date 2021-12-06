@@ -713,7 +713,7 @@ declare module "ibmmq" {
       object: MQObject,
       gmo: MQGMO,
       md: MQMD,
-      data: Buffer | null,
+      data: Buffer,
       mqQueueManager: MQQueueManager
     ): void;
   }
