@@ -1,23 +1,23 @@
-/// <reference path="./mqc.d.ts"/>
-/// <reference path="./mqcbc.d.ts"/>
-/// <reference path="./mqcbd.d.ts"/>
-/// <reference path="./mqcd.d.ts"/>
-/// <reference path="./mqcno.d.ts"/>
-/// <reference path="./mqcsp.d.ts"/>
-/// <reference path="./mqctlo.d.ts"/>
-/// <reference path="./mqdlh.d.ts"/>
-/// <reference path="./mqgmo.d.ts"/>
-/// <reference path="./mqistrings.js"/>
-/// <reference path="./mqmd.d.ts"/>
-/// <reference path="./mqmho.d.ts"/>
-/// <reference path="./mqmpo.d.ts"/>
-/// <reference path="./mqod.d.ts"/>
-/// <reference path="./mqpmo.d.ts"/>
-/// <reference path="./mqrfh2.d.ts"/>
-/// <reference path="./mqsco.d.ts"/>
-/// <reference path="./mqsd.d.ts"/>
-/// <reference path="./mqsro.d.ts"/>
-/// <reference path="./mqsts.d.ts"/>
+/// <reference types="./mqc.d.ts"/>
+/// <reference types="./mqcbc.d.ts"/>
+/// <reference types="./mqcbd.d.ts"/>
+/// <reference types="./mqcd.d.ts"/>
+/// <reference types="./mqcno.d.ts"/>
+/// <reference types="./mqcsp.d.ts"/>
+/// <reference types="./mqctlo.d.ts"/>
+/// <reference types="./mqdlh.d.ts"/>
+/// <reference types="./mqgmo.d.ts"/>
+/// <reference types="./mqistrings.d.ts"/>
+/// <reference types="./mqmd.d.ts"/>
+/// <reference types="./mqmho.d.ts"/>
+/// <reference types="./mqmpo.d.ts"/>
+/// <reference types="./mqod.d.ts"/>
+/// <reference types="./mqpmo.d.ts"/>
+/// <reference types="./mqrfh2.d.ts"/>
+/// <reference types="./mqsco.d.ts"/>
+/// <reference types="./mqsd.d.ts"/>
+/// <reference types="./mqsro.d.ts"/>
+/// <reference types="./mqsts.d.ts"/>
 
 declare module "ibmmq" {
   /**
