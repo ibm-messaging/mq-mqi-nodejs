@@ -18,6 +18,7 @@
 /// <reference types="./mqsd.d.ts"/>
 /// <reference types="./mqsro.d.ts"/>
 /// <reference types="./mqsts.d.ts"/>
+/// <reference types="./mqistrings.d.ts"/>
 
 declare module "ibmmq" {
   /**
