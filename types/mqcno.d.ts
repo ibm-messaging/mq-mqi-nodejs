@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQCNO
    * (MQ Connection Options) structure. See the
@@ -13,5 +13,6 @@ declare module 'ibmmq' {
     ClientConn: MQCD;
     SSLConfig: MQSCO;
     ApplName: string;
+    BalanceParms: MQBNO;
   }
 }

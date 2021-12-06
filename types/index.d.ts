@@ -1,3 +1,4 @@
+/// <reference types="./mqbno.d.ts"/>
 /// <reference types="./mqc.d.ts"/>
 /// <reference types="./mqcbc.d.ts"/>
 /// <reference types="./mqcbd.d.ts"/>

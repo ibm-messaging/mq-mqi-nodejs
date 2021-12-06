@@ -20,6 +20,9 @@ declare module "ibmmq" {
   function MQBL_STR(MQC_MQBL): string;
   function MQBMHO_STR(MQC_MQBMHO): string;
   function MQBND_STR(MQC_MQBND): string;
+  function MQBNO_BALTYPE_STR(MQC_MQBNO_BALTYPE): string;
+  function MQBNO_OPTIONS_STR(MQC_MQBNO_OPTIONS): string;
+  function MQBNO_TIMEOUT_STR(MQC_MQBNO_TIMEOUT): string;
   function MQBO_STR(MQC_MQBO): string;
   function MQBPLOCATION_STR(MQC_MQBPLOCATION): string;
   function MQBT_STR(MQC_MQBT): string;
