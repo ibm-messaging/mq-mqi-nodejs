@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQCMHO
    * (MQ Create Message Handle Options) structure. See the
@@ -6,7 +6,7 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQCMHO {
-    Options: MQC_MQCMHO;
+    Options: number;    
   }
 
   /**
@@ -16,6 +16,6 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQDMHO {
-    Options: MQC_MQDMHO;
+    Options: number;    
   }
 }

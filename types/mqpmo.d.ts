@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQPMO
    * (MQ Put Message Options) structure. See the
@@ -9,7 +9,7 @@ declare module 'ibmmq' {
    * but probably should have been. It's also forced to be set elsewhere.
    */
   class MQPMO {
-    Options: number;
+    Options:number; // The compiler seems to have problems with validating bitwise values - would be nice to have a {MQPMO} set here
     Context: string;
     ResolvedQName: string;
     ResolvedQMgrName: string;

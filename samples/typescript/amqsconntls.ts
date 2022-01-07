@@ -68,7 +68,7 @@ if (myArgs[1]) {
 
 // The program starts here.
 // Connect to the queue manager.
-console.log("Sample AMQSCONNTLS.JS start");
+console.log("Sample AMQSCONNTLS.TS start");
 
 // Create default MQCNO and MQSCO structures
 const cno = new mq.MQCNO();
@@ -130,3 +130,4 @@ mq.Connx(qMgr, cno, function (connErr, conn) {
     });
   }
 });
+

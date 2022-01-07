@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /*
    * MQGMO is a JavaScript object containing the fields we need for the MQGMO
    * in a more idiomatic style than the C definition - in particular for
@@ -15,14 +15,14 @@ declare module 'ibmmq' {
    * but probably should have been. It's also forced to be set elsewhere.
    */
   class MQGMO {
-    Options: MQC_MQGMO;
+    Options: number;   
     WaitInterval: number;
     ResolvedQName: string | null;
-    MatchOptions: MQC_MQMO;
+    MatchOptions: number;  
     GroupStatus: string;
     SegmentStatus: string;
     Segmentation: string;
-    MsgToken: Buffer | integer[] | object | string;
+    MsgToken: Buffer;
     ReturnedLength: number;
     MsgHandle: number;
   }

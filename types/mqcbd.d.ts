@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQCBD
    * (MQ CallBack Descriptor) structure. See the
@@ -8,7 +8,7 @@ declare module 'ibmmq' {
    */
   class MQCBD {
     CallbackType: MQC_MQCBT;
-    Options: MQC_MQCBDO;
+    Options: number;    
     CallbackArea: string;
     CallbackFunction: string;
     CallbackName: string;

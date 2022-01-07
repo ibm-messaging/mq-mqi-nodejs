@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQSCO
    * (MQ SSL/TLS Configuration Options) structure. See the
@@ -15,7 +15,7 @@ declare module 'ibmmq' {
     KeyResetCount: MQC_MQSCO;
     FipsRequired: boolean;
     EncryptionPolicySuiteB: MQC_MQ_SUITE_B[];
-    CertificateValPolicy: MQC_MQ_CERT_VAL;
+    CertificateValPolicy: MQC_MQ_CERT;
     CertificateLabel: string;
   }
 }

@@ -142,13 +142,13 @@ function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
     if (closeErr) {
       console.log(formatErr(closeErr));
     } else {
-      //console.log("MQCLOSE successful");
+      // console.log("MQCLOSE successful");
     }
     mq.Disc(hConn, function (discErr) {
       if (discErr) {
         console.log(formatErr(discErr));
       } else {
-        //console.log("MQDISC successful");
+        // console.log("MQDISC successful");
       }
     });
   });
@@ -158,7 +158,7 @@ function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
 // Connect to the queue manager. If that works, the callback function
 // opens the queue, and then we can put a message.
 
-console.log("Sample AMQSDLH.JS start");
+console.log("Sample AMQSDLH.TS start");
 
 // Get command line parameters
 const myArgs = process.argv.slice(2); // Remove redundant parms
@@ -196,3 +196,4 @@ mq.Connx(qMgr, cno, function (connxErr, hConn) {
     });
   }
 });
+

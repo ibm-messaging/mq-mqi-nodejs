@@ -19,7 +19,7 @@ declare module "ibmmq" {
     PutApplName: string;
     PutDate: string;
     PutTime: string;
-    StrucLength: MQC_MQDLH;
+    StrucLength: number;
 
     /**
      * The getBuffer function returns a version of the structure that can

@@ -185,10 +185,18 @@ cd <something>
 npm install ibmmq
 ~~~
 
-Installation of the package will automatically install any
-prerequisite packages downloadable from the npm repository.
+### Prerequisite components
 
-It also requires the MQ C client libraries to be installed/available.
+Installation of the package will automatically install any
+prerequisite packages downloadable from the npm repository. By
+default, it will pull in packages listed in both the `dependencies` and the `devDependencies`
+sections. For environments where you only want to run a program, then
+adding an option `npm install --only=prod` or setting the `NODE_ENV` environment
+variable to `production` will cause downloads of only the runtime dependencies.
+
+### The MQ C Client libraries
+
+The package also requires the MQ C client libraries to be installed/available.
 
 For Windows and Linux x64, the npm installation process tries to access
 the Redistributable Client packages and unpack them automatically. The
@@ -223,9 +231,9 @@ postinstall script will point at those instead by default.
 ### MacOS
 The MQ client package for MacOS can be found at
 [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit).
-Download a suitable version and unpack it in a local directory.
-The environment variable `DYLD_LIBRARY_PATH` then needs to be set to the lib64 directory within
-that tree before running the program.
+Download a suitable version and install it in a local directory. The package is signed, and is not a
+simple tar/zip format. The environment variable `DYLD_LIBRARY_PATH` then should be set to the
+lib64 directory within that tree before running the program.
 
 For example
 
@@ -264,6 +272,14 @@ the Dockerfile and the script to control connection to the queue manager.
 The package contains JSDoc comments that can be formatted using the **makedoc** script in the root directory. The generated documentation is then accessible
 via a web browser.
 
+## TypeScript
+
+The package includes a set of type definitions, suitable for use with TypeScript programs. Some of the sample programs
+have also been converted to use types. See the `samples/typescript` directory. These definitions have been tested with the
+`tsc` compiler, the `ts-node` front-end, and inside the VSCode IDE.
+
+The initial release of the these definitions should be considered a beta level, to gain feedback on the structure and 
+naming. It is possible that elements of the types will change in future.
 
 ## History
 
@@ -293,3 +309,5 @@ you accept the terms in the CLA.
 Thanks to the IBM App Connect team for the initial implementation of the
 asynchronous MQI variations. Their work has been adopted and adapted into
 this library.
+
+Thanks to Andre Asselin for the TypeScript definitions and sample program conversions.

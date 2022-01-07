@@ -48,7 +48,7 @@ function sleep(ms: number) {
 
 // The program starts here.
 // Connect to the queue manager.
-console.log("Sample AMQSCONN.JS start");
+console.log("Sample AMQSCONN.TS start");
 
 // Create default MQCNO structure
 const cno = new mq.MQCNO();
@@ -96,3 +96,4 @@ mq.Connx(qMgr, cno, function (connErr, conn) {
       .catch(() => {});
   }
 });
+

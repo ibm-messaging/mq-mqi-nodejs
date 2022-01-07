@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQSD
    * (MQ Subscription Descriptor) structure. See the
@@ -7,7 +7,7 @@ declare module 'ibmmq' {
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQSD {
-    Options: MQC_MQSO;
+    Options: number;  
     ObjectName: string;
     AlternateUserId: string;
     AlternateSecurityId: Buffer;
@@ -16,7 +16,7 @@ declare module 'ibmmq' {
     SubName: string;
     SubUserData: string;
     SubCorrelId: Buffer;
-    PubPriority = MQC_MQPRI;
+    PubPriority: MQC_MQPRI;
     PubAccountingToken: Buffer;
     PubApplIdentityData: string;
     SelectionString: string;

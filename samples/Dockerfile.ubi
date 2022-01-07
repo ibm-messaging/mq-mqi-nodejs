@@ -54,7 +54,7 @@ COPY package.docker ${APP_DIR}/package.json
 
 # Now get all the prereq packages installed. This will also download the
 # MQ client code and compile any native libraries from the dependency chain.
-RUN npm install
+RUN npm install --only=prod
 
 ###########################################################
 # This starts the RUNTIME phase

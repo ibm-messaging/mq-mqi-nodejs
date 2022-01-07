@@ -151,7 +151,7 @@ function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
  * Connect to the queue manager. If that works, the callback function
  * opens the queue, and then we can start to retrieve messages.
  */
-console.log("Sample AMQSBRA.JS start");
+console.log("Sample AMQSBRA.TS start");
 
 // Get command line parameters
 const myArgs = process.argv.slice(2); // Remove redundant parms
@@ -200,3 +200,5 @@ setInterval(function () {
     process.exit(exitCode);
   }
 }, (waitInterval + 2) * 1000);
+
+

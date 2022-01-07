@@ -7,7 +7,7 @@ declare module "ibmmq" {
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQCNO {
-    Options: MQC_MQCNO;
+    Options: number;   
     SecurityParms: MQCSP;
     CCDTUrl: string;
     ClientConn: MQCD;

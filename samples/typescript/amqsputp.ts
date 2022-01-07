@@ -70,7 +70,7 @@ function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
 // Connect to the queue manager. If that works, the callback function
 // opens the queue, and then we can put a message.
 
-console.log("Sample AMQSPUTP.JS start");
+console.log("Sample AMQSPUTP.TS start");
 
 // Get command line parameters
 const myArgs = process.argv.slice(2); // Remove redundant parms
@@ -134,3 +134,4 @@ mq.ConnxPromise(qMgr, cno)
     console.log(formatErr(err));
     cleanup(ghConn, ghObj);
   });
+

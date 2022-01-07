@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQSRO
    * (MQ Subscription Request Options) structure. See the
@@ -6,7 +6,7 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQSRO {
-    Options: MQC_MQSRO;
+    Options: number;   
     NumPubs: number;
   }
 }

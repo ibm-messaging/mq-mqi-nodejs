@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQIMPO
    * (MQ Inquire Message Property Options) structure. See the
@@ -6,7 +6,7 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQIMPO {
-    Options: MQC_MQIMPO;
+    Options: number;    
     ReturnedName: string;
     TypeString: string;
     ReturnedEncoding: MQC_MQENC;
@@ -20,7 +20,7 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQSMPO {
-    Options: MQC_MQSMPO;
+    Options: number;    
   }
 
   /**
@@ -30,7 +30,7 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQDMPO {
-    Options: MQC_MQDMPO;
+    Options: number;    
   }
 
   /**
@@ -40,9 +40,9 @@ declare module 'ibmmq' {
    * for more details on the usage of each field.
    */
   class MQPD {
-    Options: MQC_MQPD_OPTIONS;
+    Options: number;          
     Support: MQC_MQPD_SUPPORT;
     Context: MQC_MQPD_CONTEXT;
-    CopyOptions: MQC_MQCOPY;
+    CopyOptions: number;    
   }
 }

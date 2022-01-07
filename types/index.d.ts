@@ -1,68 +1,26 @@
-/// <reference types="./mqbno.d.ts"/>
-/// <reference types="./mqc.d.ts"/>
-/// <reference types="./mqcbc.d.ts"/>
-/// <reference types="./mqcbd.d.ts"/>
-/// <reference types="./mqcd.d.ts"/>
-/// <reference types="./mqcno.d.ts"/>
-/// <reference types="./mqcsp.d.ts"/>
-/// <reference types="./mqctlo.d.ts"/>
-/// <reference types="./mqdlh.d.ts"/>
-/// <reference types="./mqgmo.d.ts"/>
-/// <reference types="./mqistrings.d.ts"/>
-/// <reference types="./mqmd.d.ts"/>
-/// <reference types="./mqmho.d.ts"/>
-/// <reference types="./mqmpo.d.ts"/>
-/// <reference types="./mqod.d.ts"/>
-/// <reference types="./mqpmo.d.ts"/>
-/// <reference types="./mqrfh2.d.ts"/>
-/// <reference types="./mqsco.d.ts"/>
-/// <reference types="./mqsd.d.ts"/>
-/// <reference types="./mqsro.d.ts"/>
-/// <reference types="./mqsts.d.ts"/>
-/// <reference types="./mqistrings.d.ts"/>
+/// <reference path="./mqc.d.ts"/>
+/// <reference path="./mqbno.d.ts"/>
+/// <reference path="./mqcbc.d.ts"/>
+/// <reference path="./mqcbd.d.ts"/>
+/// <reference path="./mqcd.d.ts"/>
+/// <reference path="./mqcno.d.ts"/>
+/// <reference path="./mqcsp.d.ts"/>
+/// <reference path="./mqctlo.d.ts"/>
+/// <reference path="./mqdlh.d.ts"/>
+/// <reference path="./mqgmo.d.ts"/>
+/// <reference path="./mqmd.d.ts"/>
+/// <reference path="./mqmho.d.ts"/>
+/// <reference path="./mqmpo.d.ts"/>
+/// <reference path="./mqod.d.ts"/>
+/// <reference path="./mqpmo.d.ts"/>
+/// <reference path="./mqrfh2.d.ts"/>
+/// <reference path="./mqsco.d.ts"/>
+/// <reference path="./mqsd.d.ts"/>
+/// <reference path="./mqsro.d.ts"/>
+/// <reference path="./mqsts.d.ts"/>
+/// <reference path="./mqistrings.d.ts"/>
 
 declare module "ibmmq" {
-  /**
-   * @property {number} getLoopPollTimeMs - Milliseconds between each full poll cycle.
-   * Default is 10000 (10 seconds)
-   * @property {number} getLoopDelayTimeMs - Milliseconds to delay after a partial poll cycle.
-   * Default is 250 (1/4 second)
-   * @property {number} maxConsecutiveGets - How many messages to get from a queue before trying a different queue.
-   * Default is 100
-   * @property {boolean} syncMQICompat - Make the MQI verbs all use the Synchronous model (the
-   * original style for this package).
-   * Default is false
-   * @property {boolean} debugLog - Turn on debug logging dynamically.
-   * Default is false
-   */
-  interface TuningParameters {
-    getLoopPollTimeMs?: number;
-    getLoopDelayTimeMs?: number;
-    maxConsecutiveGets?: number;
-    syncMQICompat?: boolean;
-    debugLongCalls?: boolean;
-    debugLog?: boolean;
-  }
-
-  /**
-   * setTuningParameters - Override values used to tune behaviour
-   * <p>These properties affect the "fairness" heuristics that manage the
-   * scheduling of message retrieval in a high-workload system.
-   *
-   * @throws {TypeError}
-   * When the parameter or its properties is of incorrect type
-   * @example
-   * console.log("Tuning parms are %j",mq.getTuningParameters());
-   * mq.setTuningParameters({maxConsecutiveGets:20});
-   * console.log("Tuning parms are now %j",mq.getTuningParameters());
-   */
-  function setTuningParameters(parms: TuningParameters);
-
-  /**
-   * getTuningParameters
-   * @return Object containing the current values
-   */
-  function getTuningParameters(): TuningParameters;
 
   /**
    * MQQueueManager contains the connection to the queue manager. Fields
@@ -84,8 +42,10 @@ declare module "ibmmq" {
    * @class
    */
   class MQAttr {
-    constructor(selector: MQC_MQCA | MQC_MQIA, value?: MQC_MQQA | string);
+    constructor(selector: MQC_MQCA | MQC_MQIA, value?: number | string);
     /** The MQIA/MQCA selector value. For example MQIA_INHIBIT_PUT
+    All valid selectors are in the MQCA/IA sets. Other attributes such as MQCACF_*
+    are not permitted for the MQINQ/MQSET verbs.
      */
     selector: MQC_MQCA | MQC_MQIA;
     /**
@@ -112,22 +72,6 @@ declare module "ibmmq" {
     version: string;
     verb: string;
   }
-
-  /**
-   * Lookup returns the string corresponding to a value. For example,
-   * convert 2195 to MQRC_UNEXPECTED_ERROR.
-   *
-   * <p>Note: Unlike the Java equivalent, this does not accept regular expressions
-   * for the range. It must be an explicit value.
-   *
-   * @param {String}
-   *        range - eg "MQRC" or "MQIA"
-   * @param {int}
-   *        value - the value to convert
-   * @return {String} The string or null if no matching value or range.
-   *
-   */
-  function Lookup(range: string, val: number): string | null;
 
   /**
    * ConnxSync - callback is passed object containing the hConn on success.
@@ -264,7 +208,7 @@ declare module "ibmmq" {
   function OpenSync(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: MQC_MQOO,
+    jsOpenOptions: number,
     cb: (err: MQError | null, obj: MQObject) => void
   );
 
@@ -289,7 +233,7 @@ declare module "ibmmq" {
   function Open(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: MQC_MQOO,
+    jsOpenOptions: number,  
     cb: (err: MQError | null, obj: MQObject) => void
   ): void;
 
@@ -310,7 +254,7 @@ declare module "ibmmq" {
    */
   function CloseSync(
     jsObject: MQObject,
-    jsCloseOptions: MQC_MQCO,
+    jsCloseOptions: number,  
     cb?: (err: MQError | null) => void
   );
 
@@ -331,7 +275,7 @@ declare module "ibmmq" {
    */
   function Close(
     jsObject: MQObject,
-    jsCloseOptions: MQC_MQCO,
+    jsCloseOptions: number,  
     cb: (err: MQError | null) => void
   ): void;
 
@@ -934,7 +878,7 @@ declare module "ibmmq" {
   ): void;
 
   /**
-   * Conn - simpler version of Connx.
+   * ConnPromise - simpler version of Connx.
    * The callback is passed object containing the hConn on success
    *
    * @param {String}
@@ -947,7 +891,7 @@ declare module "ibmmq" {
   function ConnPromise(jsqMgrName: string): Promise<MQQueueManager>;
 
   /**
-   * Connx - callback is passed object containing the hConn on success.
+   * ConnxPromise - callback is passed object containing the hConn on success.
    *
    * @param {String}
    *        qMgrName - the queue manager to connect to
@@ -964,7 +908,7 @@ declare module "ibmmq" {
   ): Promise<MQQueueManager>;
 
   /**
-   * Disc - Disconnect from the queue manager.
+   * DiscPromise - Disconnect from the queue manager.
    *
    * @param {MQQueueManager}
    *        queueManager - reference to the queue manager
@@ -976,7 +920,7 @@ declare module "ibmmq" {
   function DiscPromise(jsQueueManager: MQQueueManager): Promise<void>;
 
   /**
-   * Open - Open an object such as a queue or topic.
+   * OpenPromise - Open an object such as a queue or topic.
    *
    * @param {MQQueueManager}
    *        queueManager - reference to the queue manager (hConn)
@@ -993,11 +937,11 @@ declare module "ibmmq" {
   function OpenPromise(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: MQC_MQOO
+    jsOpenOptions: number   
   ): Promise<MQObject>;
 
   /**
-   * Close, CloseSync - Close an opened object.
+   * ClosePromise - Close an opened object.
    *
    * @param {MQObject}
    *        jsObject - reference to the object (contains hConn and hObj)
@@ -1010,11 +954,11 @@ declare module "ibmmq" {
    */
   function ClosePromise(
     jsObject: MQObject,
-    jsCloseOptions: MQC_MQCO
+    jsCloseOptions: number  
   ): Promise<void>;
 
   /**
-   * Put -  Put a message to a queue or publish to a topic.
+   * PutPromise -  Put a message to a queue or publish to a topic.
    *
    * @param {MQObject}
    *        jsObject - reference to the opened object (hConn and hObj)
@@ -1037,7 +981,7 @@ declare module "ibmmq" {
   ): Promise<void>;
 
   /**
-   * Put1Sync -  Put a message to a queue or publish to a topic.
+   * Put1Promise -  Put a message to a queue or publish to a topic.
    *
    * Put1 puts a single messsage to a queue or topic. Typically used
    * for one-shot replies where it can be cheaper than multiple
@@ -1068,7 +1012,7 @@ declare module "ibmmq" {
   ): Promise<void>;
 
   /**
-   * Sub - Subscribe to a topic.
+   * SubPromise - Subscribe to a topic.
    * If using managed destinations where the queue manager creates a
    * queue on your behalf, the reference to it is given to the callback
    * function.
@@ -1092,4 +1036,64 @@ declare module "ibmmq" {
     jsQueueObject: MQObject,
     jssd: MQSD
   ): Promise<{ hObj: MQObject; hSub: MQObject }>;
+
+  /**
+   * Lookup returns the string corresponding to a value. For example,
+   * convert 2195 to MQRC_UNEXPECTED_ERROR.
+   *
+   * <p>Note: Unlike the Java equivalent, this does not accept regular expressions
+   * for the range. It must be an explicit value.
+   *
+   * @param {String}
+   *        range - eg "MQRC" or "MQIA"
+   * @param {int}
+   *        value - the value to convert
+   * @return {String} The string or null if no matching value or range.
+   *
+   */
+  function Lookup(range: string, val: number): string | null;
+
+  /**
+   * @property {number} getLoopPollTimeMs - Milliseconds between each full poll cycle.
+   * Default is 10000 (10 seconds)
+   * @property {number} getLoopDelayTimeMs - Milliseconds to delay after a partial poll cycle.
+   * Default is 250 (1/4 second)
+   * @property {number} maxConsecutiveGets - How many messages to get from a queue before trying a different queue.
+   * Default is 100
+   * @property {boolean} syncMQICompat - Make the MQI verbs all use the Synchronous model (the
+   * original style for this package).
+   * Default is false
+   * @property {boolean} debugLog - Turn on debug logging dynamically.
+   * Default is false
+   */
+  interface TuningParameters {
+    getLoopPollTimeMs?: number;
+    getLoopDelayTimeMs?: number;
+    maxConsecutiveGets?: number;
+    syncMQICompat?: boolean;
+    debugLongCalls?: boolean;
+    debugLog?: boolean;
+  }
+
+  /**
+   * setTuningParameters - Override values used to tune behaviour
+   * <p>These properties affect the "fairness" heuristics that manage the
+   * scheduling of message retrieval in a high-workload system.
+   *
+   * @throws {TypeError}
+   * When the parameter or its properties is of incorrect type
+   * @example
+   * console.log("Tuning parms are %j",mq.getTuningParameters());
+   * mq.setTuningParameters({maxConsecutiveGets:20});
+   * console.log("Tuning parms are now %j",mq.getTuningParameters());
+   */
+  function setTuningParameters(parms: TuningParameters);
+
+  /**
+   * getTuningParameters
+   * @return Object containing the current values
+   */
+  function getTuningParameters(): TuningParameters;
+
+
 }

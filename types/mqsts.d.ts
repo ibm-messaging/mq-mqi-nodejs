@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQSTS
    * (MQ Status reporting) structure. See the
@@ -20,7 +20,7 @@ declare module 'ibmmq' {
 
     ObjectString: string;
     SubName: string;
-    OpenOptions: MQC_MQSTAT;
-    SubOptions: MQC_MQSTAT;
+    OpenOptions: number;    
+    SubOptions: number;    
   }
 }
