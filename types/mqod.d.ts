@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQOD
    * (MQ Object Descriptor) structure. See the
@@ -8,10 +8,10 @@ declare module 'ibmmq' {
    */
   class MQOD {
     ObjectType: MQC_MQOT;
-    ObjectName: string;
-    ObjectQMgrName: string;
-    DynamicQName: string;
-    AlternateUserId: string;
+    ObjectName: string | null;
+    ObjectQMgrName: string | null;
+    DynamicQName: string | null;
+    AlternateUserId: string | null;
     AlternateSecurityId: Buffer;
     ResolvedQName: string;
     ResolvedQMgrName: string;

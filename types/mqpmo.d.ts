@@ -1,4 +1,4 @@
-declare module 'ibmmq' {
+declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQPMO
    * (MQ Put Message Options) structure. See the
@@ -13,7 +13,7 @@ declare module 'ibmmq' {
     Context: string;
     ResolvedQName: string;
     ResolvedQMgrName: string;
-    OriginalMsgHandle: number;
+    OriginalMsgHandle: HMSG;
     NewMsgHandle: number;
     Action: number;
     PubLevel: number;

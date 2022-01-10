@@ -470,7 +470,7 @@ declare module "ibmmq" {
    */
   function Sub(
     jsQueueManager: MQQueueManager,
-    jsQueueObject: MQObject,
+    jsQueueObject: MQObject | null,
     jssd: MQSD,
     cb: (
       err: MQError,
@@ -859,7 +859,7 @@ declare module "ibmmq" {
     jssmpo: MQSMPO,
     name: string,
     jspd: MQPD,
-    value: number | string | boolean | Buffer | null,
+    value?: number | string | boolean | Buffer | null,
     cb?: (err: MQError | null) => void
   ): void;
 

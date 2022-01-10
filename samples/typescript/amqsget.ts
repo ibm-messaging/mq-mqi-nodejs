@@ -43,7 +43,7 @@ let qName = "DEV.QUEUE.1";
 // Global variables
 let ok = true;
 
-function formatErr(err: Error) {
+function formatErr(err: mq.MQError) {
   return "MQ call failed in " + err.message;
 }
 
