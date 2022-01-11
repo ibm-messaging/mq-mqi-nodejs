@@ -83,7 +83,7 @@ function inqQmgr(hObj: mq.MQObject) {
 // Connect to the queue manager. If that works, the callback function
 // opens the queue manager for inquiry, and then we can do the real query.
 
-console.log("Sample AMQSINQ.JS start");
+console.log("Sample AMQSINQ.TS start");
 
 // Get command line parameters
 const myArgs = process.argv.slice(2); // Remove redundant parms

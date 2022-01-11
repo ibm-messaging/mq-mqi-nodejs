@@ -92,7 +92,7 @@ function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
 // Connect to the queue manager. If that works, the callback function
 // opens the topic, and then we can put a message.
 
-console.log("Sample AMQSPUB.JS start");
+console.log("Sample AMQSPUB.TS start");
 
 // Get command line parameters
 const myArgs = process.argv.slice(2); // Remove redundant parms

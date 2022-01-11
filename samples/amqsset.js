@@ -71,6 +71,7 @@ function setQ(hObj) {
 
    try {
     mq.Set(hObj,selectors);
+    console.log("MQSET of queue successful");
    } catch (err) {
      console.log(err.message);
    }
@@ -101,10 +102,6 @@ mq.Connx(qMgr, cno, function(err,hConn) {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
-     // In this case, we want to INQUIRE on attributes of the queue manager so we
-     // get an object handle that refers to that qmgr.
-     // No ObjectName is needed for this inquiry - the fact that it is the Q_MGR type
-     // is sufficient.
      var od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
@@ -113,7 +110,7 @@ mq.Connx(qMgr, cno, function(err,hConn) {
        if (err) {
          console.log(formatErr(err));
        } else {
-         console.log("MQOPEN of queue manager successful");
+         console.log("MQOPEN of queue successful");
          setQ(hObj);
        }
        cleanup(hConn,hObj);
