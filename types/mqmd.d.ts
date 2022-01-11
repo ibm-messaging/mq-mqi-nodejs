@@ -32,7 +32,7 @@ declare module "ibmmq" {
     GroupId: Buffer;
     MsgSeqNumber: number;
     Offset: number;
-    MsgFlags: MQC_MQMF;
+    MsgFlags: number;
     OriginalLength: MQC_MQOL;
   }
 }
