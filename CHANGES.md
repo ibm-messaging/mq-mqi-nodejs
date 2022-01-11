@@ -2,6 +2,10 @@
 Newest updates are at the top of this file.
 
 
+## 04 Jan 2022: v0.9.20            
+* Added Typescript definition files (#132)
+* Added some missing definitions in mqidefs
+
 ## 19 Nov 2021: v0.9.19
 * Update for MQ 9.2.4
 * New MQBNO structure for Uniform Cluster balance control

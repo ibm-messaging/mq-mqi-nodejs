@@ -1,11 +1,12 @@
 {
   "name": "ibmmq",
-  "version": "0.9.19",
+  "version": "0.9.20",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node postinstall.js"
+    "postinstall": "node postinstall.js",
+    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript"
   },
   "author": "Mark Taylor",
   "license": "Apache-2.0",
@@ -13,9 +14,18 @@
     "type": "git",
     "url": "https://github.com/ibm-messaging/mq-mqi-nodejs"
   },
+  "typings": "./types/index.d.ts",
   "devDependencies": {
+    "@types/node": "^17.0.8",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
+    "eslint": "^8.6.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsdoc": "^37.5.1",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^4.0.0",
     "@tsconfig/recommended": "^1.0.1",
-    "jshint": "^2.13.1"
+    "jshint": "^2.13.3"
   },
   "dependencies": {
     "ffi-napi": ">=4.0.3",
