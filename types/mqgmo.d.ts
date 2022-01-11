@@ -24,6 +24,6 @@ declare module "ibmmq" {
     Segmentation: string;
     MsgToken: Buffer;
     ReturnedLength: number;
-    MsgHandle: number;
+    MsgHandle: HMSG;
   }
 }

@@ -13,7 +13,7 @@ declare module "ibmmq" {
     Context: string;
     ResolvedQName: string;
     ResolvedQMgrName: string;
-    OriginalMsgHandle: number;
+    OriginalMsgHandle: HMSG;
     NewMsgHandle: number;
     Action: number;
     PubLevel: number;
