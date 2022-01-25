@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017,2022
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -142,7 +142,11 @@ function printProperty(
   } else {
     console.log("Property name  : %s",name);
     if (type != MQC.MQTYPE_BYTE_STRING) {
-      console.log("         value : " + value!.toString());
+      if (type == MQC.MQTYPE_NULL) {
+        console.log("         value : " + "null");
+      } else {
+        console.log("         value : " + value!.toString());
+      }
     } else {
       let ba = "[";
       for (let i=0;i<len;i++) {

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017,2022
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -59,8 +59,11 @@ function putMessage(hObj: mq.MQObject) {
   const pmo = new mq.MQPMO();
 
   // Describe how the Put should behave
+  // The TypeScript interface has a choice of how to provide MQI bitwise
+  // value such as the pmo.Options field. This line shows the use of
+  // an array instead of the usual bitwise OR code.
   pmo.Options =
-    MQC.MQPMO_NO_SYNCPOINT | MQC.MQPMO_NEW_MSG_ID | MQC.MQPMO_NEW_CORREL_ID;
+    [ MQC.MQPMO_NO_SYNCPOINT,   MQC.MQPMO_NEW_MSG_ID,  MQC.MQPMO_NEW_CORREL_ID];
 
   mq.Put(hObj, mqmd, pmo, msg, function (err) {
     if (err) {

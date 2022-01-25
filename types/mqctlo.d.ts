@@ -7,6 +7,6 @@ declare module "ibmmq" {
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQCTLO {
-    Options: number;     
+    Options: number |MQC_MQCTLO[];     
   }
 }

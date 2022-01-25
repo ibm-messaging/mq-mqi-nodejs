@@ -208,7 +208,7 @@ declare module "ibmmq" {
   function OpenSync(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: number,
+    jsOpenOptions: number | MQC_MQOO[],
     cb: (err: MQError | null, obj: MQObject) => void
   );
 
@@ -233,7 +233,7 @@ declare module "ibmmq" {
   function Open(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: number,  
+    jsOpenOptions: number | MQC_MQOO[],
     cb: (err: MQError | null, obj: MQObject) => void
   ): void;
 
@@ -254,7 +254,7 @@ declare module "ibmmq" {
    */
   function CloseSync(
     jsObject: MQObject,
-    jsCloseOptions: number,  
+    jsCloseOptions: number | MQC_MQCO[],
     cb?: (err: MQError | null) => void
   );
 
@@ -275,7 +275,7 @@ declare module "ibmmq" {
    */
   function Close(
     jsObject: MQObject,
-    jsCloseOptions: number,  
+    jsCloseOptions: number | MQC_MQCO[],
     cb: (err: MQError | null) => void
   ): void;
 
@@ -643,21 +643,17 @@ declare module "ibmmq" {
     cb: GetCallback
   ): void;
 
+  // Some error situations return a valid  message (gmo/md/data) and
+  // some don't. Some "errors" in this interface are "warnings" in the base
+  // MQI definition. So we can't split out this function into separate scenarios
+  // when giving the parameter types.
   interface GetCallback {
     (
-      err: MQError,
+      err: MQError | null,
       object: MQObject,
-      gmo: null,
-      md: null,
-      data: null,
-      mqQueueManager: MQQueueManager
-    ): void;
-    (
-      err: null,
-      object: MQObject,
-      gmo: MQGMO,
-      md: MQMD,
-      data: Buffer,
+      gmo: MQGMO |null,
+      md: MQMD | null,
+      data: Buffer | null,
       mqQueueManager: MQQueueManager
     ): void;
   }
@@ -937,7 +933,7 @@ declare module "ibmmq" {
   function OpenPromise(
     jsQueueManager: MQQueueManager,
     jsod: MQOD,
-    jsOpenOptions: number   
+    jsOpenOptions: number | MQC_MQOO[]
   ): Promise<MQObject>;
 
   /**
@@ -954,7 +950,7 @@ declare module "ibmmq" {
    */
   function ClosePromise(
     jsObject: MQObject,
-    jsCloseOptions: number  
+    jsCloseOptions: number | MQC_MQCO[]
   ): Promise<void>;
 
   /**

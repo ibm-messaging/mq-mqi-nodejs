@@ -6,7 +6,7 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQIMPO {
-    Options: number;    
+    Options: number | MQC_MQIMPO[];    
     ReturnedName: string;
     TypeString: string;
     ReturnedEncoding: MQC_MQENC;
@@ -20,7 +20,7 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQSMPO {
-    Options: number;    
+    Options: number | MQC_MQSMPO[];    
   }
 
   /**
@@ -30,7 +30,7 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQDMPO {
-    Options: number;    
+    Options: number | MQC_MQDMPO[];    
   }
 
   /**
@@ -40,9 +40,9 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQPD {
-    Options: number;          
+    Options: number | MQC_MQPD_OPTIONS[];          
     Support: MQC_MQPD_SUPPORT;
     Context: MQC_MQPD_CONTEXT;
-    CopyOptions: number;    
+    CopyOptions: number | MQC_MQCOPY[];    
   }
 }

@@ -7,7 +7,7 @@ declare module "ibmmq" {
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQMD {
-    Report: MQC_MQRO;
+    Report: number | MQC_MQRO[];  
     MsgType: MQC_MQMT;
     Expiry: MQC_MQEI;
     Feedback: MQC_MQFB;
@@ -32,7 +32,7 @@ declare module "ibmmq" {
     GroupId: Buffer;
     MsgSeqNumber: number;
     Offset: number;
-    MsgFlags: number;
+    MsgFlags: number | MQC_MQMF[];
     OriginalLength: MQC_MQOL;
   }
 }

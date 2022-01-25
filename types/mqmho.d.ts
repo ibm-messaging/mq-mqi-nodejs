@@ -6,7 +6,7 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQCMHO {
-    Options: number;    
+    Options: number |MQC_MQCMHO[];    
   }
 
   /**
@@ -16,6 +16,6 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQDMHO {
-    Options: number;    
+    Options: number|MQC_MQDMHO[];    
   }
 }

@@ -15,10 +15,10 @@ declare module "ibmmq" {
    * but probably should have been. It's also forced to be set elsewhere.
    */
   class MQGMO {
-    Options: number;   
+    Options: number | MQC_MQGMO[];   
     WaitInterval: number;
     ResolvedQName: string | null;
-    MatchOptions: number;  
+    MatchOptions: number | MQC_MQMO[];  
     GroupStatus: string;
     SegmentStatus: string;
     Segmentation: string;

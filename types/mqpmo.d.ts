@@ -9,7 +9,7 @@ declare module "ibmmq" {
    * but probably should have been. It's also forced to be set elsewhere.
    */
   class MQPMO {
-    Options:number; // The compiler seems to have problems with validating bitwise values - would be nice to have a {MQPMO} set here
+    Options:number | MQC_MQPMO[]; 
     Context: string;
     ResolvedQName: string;
     ResolvedQMgrName: string;

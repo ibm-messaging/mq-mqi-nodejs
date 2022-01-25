@@ -8,10 +8,10 @@ declare module "ibmmq" {
    */
   class MQCBD {
     CallbackType: MQC_MQCBT;
-    Options: number;    
+    Options: number | MQC_MQCBD[];    
     CallbackArea: string;
     CallbackFunction: string;
     CallbackName: string;
-    MaxMsgLength: MQC_MQCBD;
+    MaxMsgLength: number;
   }
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2017, 2019
+  Copyright (c) IBM Corporation 2017, 2022
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ function getMessages() {
 function getCB(
   err: mq.MQError | null,
   hObj: mq.MQObject,
-  gmo: mq.MQGMO | null,
+  gmo: mq.MQGMO |null ,
   md: mq.MQMD | null,
   buf: Buffer | null,
   hConn: mq.MQQueueManager
@@ -119,10 +119,20 @@ function getCB(
     }
     // After the first message has been browsed, change the option
     // to retrieve further messages on the queue.
+    //
+    // Because the TypeScript definitions allow the MQGMO.Options field to be either an array
+    // OR a number, we have to explicitly coerce it to be a number in order to use the bitwise
+    // operators. Otherwise we get a compile error. Only the first of the two bitwise lines seems
+    // to need the cast; by the time we get to the second line, we know it is a number.
+    //
+    // The "!" characters are also assertions that the GMO is not a null value
+    // even though the parameters to this function could be null. We will have already
+    // bailed out if that were the case.
+    //
     // First remove the original option using a bitwise operation to clear the flag
-    gmo!.Options &= ~MQC.MQGMO_BROWSE_FIRST;
+    gmo!.Options = ((gmo!.Options as number) & ~MQC.MQGMO_BROWSE_FIRST);
     // And then set the new flag.
-    gmo!.Options |= MQC.MQGMO_BROWSE_NEXT;
+    gmo!.Options = (gmo!.Options | MQC.MQGMO_BROWSE_NEXT);
   }
 }
 
@@ -200,5 +210,3 @@ setInterval(function () {
     process.exit(exitCode);
   }
 }, (waitInterval + 2) * 1000);
-
-

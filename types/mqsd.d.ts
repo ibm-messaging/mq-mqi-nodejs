@@ -7,7 +7,7 @@ declare module "ibmmq" {
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQSD {
-    Options: number;  
+    Options: number | MQC_MQSO[];  
     ObjectName: string;
     AlternateUserId: string;
     AlternateSecurityId: Buffer;

@@ -278,8 +278,45 @@ The package includes a set of type definitions, suitable for use with TypeScript
 have also been converted to use types. See the `samples/typescript` directory. These definitions have been tested with the
 `tsc` compiler, the `ts-node` front-end, and inside the VSCode IDE.
 
-The initial release of the these definitions should be considered a beta level, to gain feedback on the structure and 
+The initial release of the these definitions should be considered a beta level, to gain feedback on the structure and
 naming. It is possible that elements of the types will change in future.
+
+### Bitwise vs Array Options fields
+
+To help with syntax checking, many of the fields in the MQI that are normally set with bitwise operations (for example,
+`pmo.Options = MQPMO_SYNCPOINT|MQPMO_NEW_CORREL_ID`) can now also be set using an array syntax such
+as `pmo.Options = [MQPMO_SYNCPOINT, MQPMO_NEW_CORREL_ID]`. Once you make a choice in your application on which
+style to use, you should stay consistent throughout the program. If input to an MQI function uses arrays, then the field
+will still be an array on return from the function. It doesn't change shape within the MQI call. But sometimes you may still need
+an explicit definition as the fields are defined as having either a number or an array type and the compiler may not know which it
+is set to at some places when it needs to validate the code.
+
+If you are using the array format, then any elements with the real value 0 will 
+not show up in the array after an MQI call. For example, `MQPMO_NONE` would not be in the 
+array following an MQPUT call even if you had set it in the original array.
+
+
+Interrogating and modifying the options fields has to be done by being explicit about how the field is being used. For example,
+
+```
+  pmo.Options = [MQC.MQPMO_NO_SYNCPOINT, MQC.MQPMO_NEW_MSG_ID, MQC.MQPMO_NEW_CORREL_ID];
+  mq.PutSync( ... )
+
+  var opts = pmo.Options as mq.MQC_MQPMO[]; // Be explicit
+  if (opts.includes(MQC.MQPMO_SYNCPOINT)) {
+    console.log("Array includes value SYNCPOINT");
+  } else {
+    console.log("Array does not include value SYNCPOINT");
+  }
+```
+
+and an example from the `amqsbra.ts`example where we use the bitwise operations to modify
+a field:
+
+```
+  gmo!.Options = ((gmo!.Options as number) & ~MQC.MQGMO_BROWSE_FIRST);
+  gmo!.Options = (gmo!.Options | MQC.MQGMO_BROWSE_NEXT);
+```
 
 ## History
 

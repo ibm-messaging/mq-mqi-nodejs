@@ -20,7 +20,7 @@ declare module "ibmmq" {
 
     ObjectString: string;
     SubName: string;
-    OpenOptions: number;    
-    SubOptions: number;    
+    OpenOptions: number | MQC_MQOO[];    
+    SubOptions: number | MQC_MQSO[];    
   }
 }

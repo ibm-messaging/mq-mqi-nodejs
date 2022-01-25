@@ -6,7 +6,7 @@ declare module "ibmmq" {
    * for more details on the usage of each field.
    */
   class MQSRO {
-    Options: number;   
+    Options: number | MQC_MQSRO[];   
     NumPubs: number;
   }
 }

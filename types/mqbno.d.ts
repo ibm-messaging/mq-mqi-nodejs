@@ -6,6 +6,6 @@ declare module "ibmmq" {
   class MQBNO {
     ApplType: MQC_MQBNO_BALTYPE;
     Timeout: MQC_MQBNO_TIMEOUT;
-    Options: number;
+    Options: number | MQC_MQBNO_OPTIONS[];
   }
 }
