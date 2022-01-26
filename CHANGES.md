@@ -1,7 +1,7 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## xx xxx 2022: v0.9.21
+## 26 Jan 2022: v0.9.21
 * Add array syntax for setting Options fields in MQI structures as alternative to bitwise operators
 * Minor corrections to the TypeScript definitions and samples
 
