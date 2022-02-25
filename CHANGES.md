@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 25 Feb 2022: v0.9.22
+* Update for MQ 9.2.5
+
 ## 26 Jan 2022: v0.9.21
 * Add array syntax for setting Options fields in MQI structures as alternative to bitwise operators
 * Minor corrections to the TypeScript definitions and samples

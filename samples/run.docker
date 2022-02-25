@@ -25,7 +25,7 @@ then
     --network host \
     -e MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$h(1414)" \
     -e DOCKER_QMGR="QM1" \
-    -e DOCKER_Q="SYSTEM.DEFAULT.LOCAL.QUEUE" \
+    -e DOCKER_Q="DEV.QUEUE.2" \
     -it \
       mq-node-demo
 fi
