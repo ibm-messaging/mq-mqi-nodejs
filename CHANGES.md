@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 13 Apr 2022: v0.9.23
+* Pull in #140 fix
+
 ## 25 Feb 2022: v0.9.22
 * Update for MQ 9.2.5
 
