@@ -64,7 +64,7 @@ function inqQmgr(hObj: mq.MQObject) {
    // We will request 3 attributes of the queue manager.
    const selectors = [new mq.MQAttr(MQC.MQCA_Q_MGR_NAME),
                       new mq.MQAttr(MQC.MQCA_DEAD_LETTER_Q_NAME),
-                      new mq.MQAttr(MQC.MQIA_CODED_CHAR_SET_ID)
+                      new mq.MQAttr(MQC.MQIA_CODED_CHAR_SET_ID),
                      ];
 
    try {
@@ -94,7 +94,7 @@ if (myArgs[0]) {
 const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE;
 
-mq.Connx(qMgr, cno, function(connErr,hConn) {
+mq.Connx(qMgr, cno, function (connErr,hConn) {
    if (connErr) {
      console.log(formatErr(connErr));
    } else {
@@ -109,7 +109,7 @@ mq.Connx(qMgr, cno, function(connErr,hConn) {
      od.ObjectName = null;
      od.ObjectType = MQC.MQOT_Q_MGR;
      const openOptions = MQC.MQOO_INQUIRE;
-     mq.Open(hConn,od,openOptions,function(openErr,hObj) {
+     mq.Open(hConn,od,openOptions,function (openErr,hObj) {
        if (openErr) {
          console.log(formatErr(openErr));
        } else {

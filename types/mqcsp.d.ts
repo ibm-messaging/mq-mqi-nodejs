@@ -12,5 +12,6 @@ declare module "ibmmq" {
   class MQCSP {
     UserId: string;
     Password: string;
+    InitialKey: string;
   }
 }

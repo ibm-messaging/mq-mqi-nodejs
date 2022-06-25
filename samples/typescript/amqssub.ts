@@ -66,7 +66,7 @@ function getMessage(hObj: mq.MQObject) {
                 MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
-  mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {
+  mq.GetSync(hObj,mqmd,gmo,buf,function (err,len) {
     if (err) {
        if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
          console.log("no more messages");
@@ -96,13 +96,13 @@ function cleanup(hConn: mq.MQQueueManager, hObjPubQ: mq.MQObject, hObjSubscripti
     console.log("MQCLOSE (Subscription) ended with reason "  + mqerr.toString());
   }
 
-  mq.Close(hObjPubQ, 0, function(closeErr) {
+  mq.Close(hObjPubQ, 0, function (closeErr) {
     if (closeErr) {
       console.log("MQCLOSE (PubQ) ended with reason " + closeErr.mqrc.toString());
     } else {
       console.log("MQCLOSE (PubQ) successful");
     }
-    mq.Disc(hConn, function(discErr) {
+    mq.Disc(hConn, function (discErr) {
       if (discErr) {
         console.log("MQDISC ended with reason " + discErr.mqrc.toString());
       } else {
@@ -128,7 +128,7 @@ if (myArgs[1]) {
 }
 
 // Do the connect, including a callback function
-mq.Conn(qMgr, function(connErr,hConn) {
+mq.Conn(qMgr, function (connErr,hConn) {
    if (connErr) {
      console.log("MQCONN ended with reason code " + connErr.mqrc.toString());
    } else {
@@ -142,7 +142,7 @@ mq.Conn(qMgr, function(connErr,hConn) {
                   | MQC.MQSO_FAIL_IF_QUIESCING
                   | MQC.MQSO_MANAGED;
 
-     mq.Sub(hConn,null,sd,function(subErr,hObjPubQ,hObjSubscription) {
+     mq.Sub(hConn,null,sd,function (subErr,hObjPubQ,hObjSubscription) {
        if (subErr) {
          console.log("MQSUB ended with reason " + subErr.mqrc.toString());
        } else {

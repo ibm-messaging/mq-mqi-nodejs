@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2022
 
@@ -61,7 +61,7 @@ function publishMessage(hObj: mq.MQObject) {
   // Add in the flag that gives a warning if noone is
   // subscribed to this topic.
   pmo.Options |= MQC.MQPMO_WARN_IF_NO_SUBS_MATCHED;
-  mq.Put(hObj,mqmd,pmo,msg,function(err) {
+  mq.Put(hObj,mqmd,pmo,msg,function (err) {
     if (err) {
       console.error(formatErr(err));
     } else {
@@ -72,13 +72,13 @@ function publishMessage(hObj: mq.MQObject) {
 
 // When we're done, close topics and connections
 function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
-  mq.Close(hObj, 0, function(closeErr) {
+  mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.error(formatErr(closeErr));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(discErr) {
+    mq.Disc(hConn, function (discErr) {
       if (discErr) {
         console.error(formatErr(discErr));
       } else {
@@ -114,7 +114,7 @@ if (false) {
   cno.SecurityParms = csp;
 }
 
-mq.Connx(qMgr, cno, function(connErr,hConn) {
+mq.Connx(qMgr, cno, function (connErr,hConn) {
    if (connErr) {
      console.error(formatErr(connErr));
    } else {
@@ -133,7 +133,7 @@ mq.Connx(qMgr, cno, function(connErr,hConn) {
      od.ObjectString = topicString;
      od.ObjectType = MQC.MQOT_TOPIC;
      const openOptions = MQC.MQOO_OUTPUT;
-     mq.Open(hConn,od,openOptions,function(openErr,hObj) {
+     mq.Open(hConn,od,openOptions,function (openErr,hObj) {
        if (openErr) {
          console.error(formatErr(openErr));
        } else {

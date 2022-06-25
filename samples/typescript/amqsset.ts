@@ -42,13 +42,13 @@ function formatErr(err: mq.MQError) {
 
 // When we're done, close queues and connections
 function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
-  mq.Close(hObj, 0, function(closeErr) {
+  mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log(formatErr(closeErr));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(discErr) {
+    mq.Disc(hConn, function (discErr) {
       if (discErr) {
         console.log(formatErr(discErr));
       } else {
@@ -96,7 +96,7 @@ if (myArgs[1]) {
 const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE;
 
-mq.Connx(qMgr, cno, function(connErr,hConn) {
+mq.Connx(qMgr, cno, function (connErr,hConn) {
    if (connErr) {
      console.log(formatErr(connErr));
    } else {
@@ -107,7 +107,7 @@ mq.Connx(qMgr, cno, function(connErr,hConn) {
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
      const openOptions = MQC.MQOO_SET;
-     mq.Open(hConn,od,openOptions,function(openErr,hObj) {
+     mq.Open(hConn,od,openOptions,function (openErr,hObj) {
        if (openErr) {
          console.log(formatErr(openErr));
        } else {
