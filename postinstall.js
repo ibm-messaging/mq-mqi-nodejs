@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.2.5";
+var vrm="9.3.0";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the

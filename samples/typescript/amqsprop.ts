@@ -45,7 +45,6 @@ let qMgr = "QM1";
 let qName = "DEV.QUEUE.1";
 
 // Global variables
-let ok = true;
 let propsToRead = true;
 
 function formatErr(err: Error) {
@@ -65,7 +64,7 @@ function putMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   const pmo = new mq.MQPMO();
   const cmho = new mq.MQCMHO();
 
-  mq.CrtMh(hConn, cmho,function(createErr,mh) {
+  mq.CrtMh(hConn, cmho,function (createErr,mh) {
     if (createErr) {
       console.log(formatErr(createErr));
     } else {
@@ -104,10 +103,10 @@ function putMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
     // Make sure the message handle is used during the Put
     pmo.OriginalMsgHandle = mh;
 
-    mq.Put(hObj,mqmd,pmo,msg,function(putErr) {
+    mq.Put(hObj,mqmd,pmo,msg,function (putErr) {
       // Delete the message handle after the put has completed
       const dmho = new mq.MQDMHO();
-      mq.DltMh(hConn,mh,dmho, function(deleteErr){
+      mq.DltMh(hConn,mh,dmho, function (deleteErr){
         if (deleteErr) {
           console.log(formatErr(deleteErr));
         } else {
@@ -173,7 +172,7 @@ function getMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
   const cmho = new mq.MQCMHO();
   const dmho = new mq.MQDMHO();
 
-  mq.CrtMh(hConn, cmho,function(err,mh) {
+  mq.CrtMh(hConn, cmho,function (err,mh) {
     if (err) {
       console.log(formatErr(err));
     } else {
@@ -195,14 +194,13 @@ function getMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
       gmo.MsgHandle = mh;
 
       // Get the message.
-      mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {
-        if (err) {
-           if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
+      mq.GetSync(hObj,mqmd,gmo,buf,function (err2,len) {
+        if (err2) {
+           if (err2.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
              console.log("no more messages");
            } else {
-             console.log(formatErr(err));
+             console.log(formatErr(err2));
            }
-           ok = false;
         } else {
           const impo = new mq.MQIMPO();
           const pd  = new mq.MQPD();
@@ -225,9 +223,9 @@ function getMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
         }
       });
       // Finally in this phase, delete the message handle
-      mq.DltMh(hConn,mh,dmho, function(err){
-        if (err) {
-          console.log(formatErr(err));
+      mq.DltMh(hConn,mh,dmho, function (err2){
+        if (err2) {
+          console.log(formatErr(err2));
         } else {
           console.log("MQDLTMH successful");
         }
@@ -239,13 +237,13 @@ function getMessage(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
 
 // When we're done, close queues and connections
 function cleanup(hConn: mq.MQQueueManager, hObj: mq.MQObject) {
-  mq.Close(hObj, 0, function(closeErr) {
+  mq.Close(hObj, 0, function (closeErr) {
     if (closeErr) {
       console.log(formatErr(closeErr));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(discErr) {
+    mq.Disc(hConn, function (discErr) {
       if (discErr) {
         console.log(formatErr(discErr));
       } else {
@@ -273,7 +271,7 @@ if (myArgs[1]) {
 const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE;
 
-mq.Connx(qMgr, cno, function(err,hConn) {
+mq.Connx(qMgr, cno, function (err,hConn) {
    if (err) {
      console.log(formatErr(err));
    } else {
@@ -284,9 +282,9 @@ mq.Connx(qMgr, cno, function(err,hConn) {
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
      const openOptions = MQC.MQOO_OUTPUT | MQC.MQOO_INPUT_AS_Q_DEF;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
-       if (err) {
-         console.log(formatErr(err));
+     mq.Open(hConn,od,openOptions,function (err2,hObj) {
+       if (err2) {
+         console.log(formatErr(err2));
        } else {
          console.log("MQOPEN of %s successful",qName);
          putMessage(hConn,hObj);

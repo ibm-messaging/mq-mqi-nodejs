@@ -143,7 +143,7 @@ mq.Conn(qMgr, function(err,hConn) {
 
      mq.Sub(hConn,null,sd,function(err,hObjPubQ,hObjSubscription) {
        if (err) {
-         console.log("MQSUB ended with reason " + err.mqrc);
+         console.log("MQSUB ended with reason ", err.mqrc);
        } else {
          console.log("MQSUB to topic %s successful", topicString);
          // And loop getting messages until done.

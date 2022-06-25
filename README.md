@@ -170,6 +170,11 @@ The package includes a couple of verbs that are not standard in the MQI.
 of requirements from the ffi-napi package
 * On platforms other than Windows and Linux x64, you must also install
 the MQ client package
+* The package makes use of the `libffi` capabilities for direct access to the
+MQ API. For some platforms the libffi and ffi-napi components may need
+additional configuration before they can be build. That package is not available at all 
+on z/OS - there is no way that this
+package can run on that platform even with handcrafting build steps.
 
 I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first. See [this document](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#environment-setup-and-configuration) for more information on Windows.
@@ -256,6 +261,8 @@ installed from your MQ installation media, or from the full Client downloads at
 The Redistributable Client packages for Windows and Linux x64 are also available
 directly from
 [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
+
+As noted above, this package cannot run on z/OS as the prerequisite elements are not available there.
 
 ## Sample applications
 See the samples [README](samples/README.md) file for more information about the sample programs.

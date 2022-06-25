@@ -7,7 +7,7 @@ declare module "ibmmq" {
    * Note the warnings in the
    * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q095520_.htm |MQ Knowledge Center}
    * about the process-wide, once-only definition of this structure and
-   * the MQRC_SSL_ALREADY_INITIALIZED warning reason code.
+   * the MQRC_SSL_ALREADY_INITIALIZED warning reason code. From MQ 9.2.5 that can be avoided with the EnvironmentScope option
    */
   class MQSCO {
     KeyRepository: string;
@@ -17,5 +17,6 @@ declare module "ibmmq" {
     EncryptionPolicySuiteB: MQC_MQ_SUITE_B[];
     CertificateValPolicy: MQC_MQ_CERT;
     CertificateLabel: string;
+    KeyRepoPassword: string;
   }
 }
