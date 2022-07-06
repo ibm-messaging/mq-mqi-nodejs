@@ -14,10 +14,13 @@
     "url": "https://github.com/ibm-messaging/mq-mqi-nodejs"
   },
   "dependencies": {
-    "ffi-napi": ">=2.4.5",
-    "ref-array-di": ">=1.2.0",
-    "ref-napi": "^1.4.1",
-    "ref-struct-di": ">=1.1.0",
-    "unzipper": ">=0.10.10"
+    "ffi-napi": "^4.0.3",
+    "ref-array-di": "^1.2.2",
+    "ref-napi": "^3.0.3",
+    "ref-struct-di": "^1.1.1",
+    "unzipper": "^0.10.11"
+  },
+  "engines": {
+    "node": ">=16.15.1"
   }
 }
