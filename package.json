@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -17,14 +17,14 @@
   "typings": "./types/index.d.ts",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
-    "@types/node": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.29.0",
-    "@typescript-eslint/parser": "^5.29.0",
-    "eslint": "^8.18.0",
+    "@types/node": "^18.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "eslint": "^8.21.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jsdoc": "^39.3.3",
+    "eslint-plugin-jsdoc": "^39.3.4",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-prettier": "^4.0.0"
+    "eslint-plugin-prettier": "^4.2.1"
   },
   "dependencies": {
     "ffi-napi": "^4.0.3",

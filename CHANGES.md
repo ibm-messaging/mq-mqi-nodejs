@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+# 01 Aug 2022: v1.0.1
+* Merge #145
+* Update various dependency versions
+
 ## 23 Jun 2022: v1.0.0 
 * Update for MQ 9.3.0
 * Add MQI parameters for keystore passwords
