@@ -67,15 +67,13 @@ function cleanup() {
     }
   } catch(err) {
   }
-
-  // Always exit OK, even after an error so the rest of the install succeeds.
-  process.exit(0);
 }
 
 function printError(err) {
   console.error("Error occurred downloading " + title + ": " + err.message);
   console.error("You will need to manually install it.");
   cleanup();
+  process.exit(1);
 }
 
 // Equivalent of "rm -rf"
@@ -87,7 +85,7 @@ function removeDirRecursive(d) {
                 removeDirRecursive(ePath);
             } else {
                 // Keep runmqsc as it might be useful for creating CCDTs locally,
-                // particularly in a containerised runtime. And runmqakm might be 
+                // particularly in a containerised runtime. And runmqakm might be
 		// needed if you want to manage certs locally rather than outside
 		// a container.
                 if (!e.match(/runmqsc/) && !e.match(/runmqakm/))
@@ -143,6 +141,7 @@ function removeUnneeded() {
   }
 
   cleanup();
+  process.exit(0);
 }
 
 
@@ -170,7 +169,7 @@ if (currentPlatform === 'win32') {
   unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
 //} else if (currentPlatform === 'darwin'){
 //  The MacOS client for MQ is released under a different license - 'Developers' not
-//  'Redistributable' - so we should not try to automatically download it. 
+//  'Redistributable' - so we should not try to automatically download it.
 //
 //  As another issue, the MacOS client is now being delivered in signed pkg format, not zip. So this won't
 //  work. I'm leaving this bit of code in just to remind us of the directory from which
