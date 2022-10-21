@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 21 Oct 2022: v1.0.2
+* Update for MQ 9.3.1
+* Update various dependency versions
+* Postinstall script deletes more unnecessary files
+
 # 01 Aug 2022: v1.0.1
 * Merge #145
 * Update various dependency versions

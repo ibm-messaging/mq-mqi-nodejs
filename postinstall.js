@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.3.0";
+var vrm="9.3.1";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
@@ -54,7 +54,7 @@ var preferredVersion=14;
 //currentPlatform='darwin'; // for forcing a platform test
 
 // Some functions used at the end of the operation
-function cleanup() {
+function cleanup(rc) {
   // Always run to try to delete the downloaded zip/tar file
   try {
     // Allow it to be overridden for debug purposes
@@ -67,33 +67,39 @@ function cleanup() {
     }
   } catch(err) {
   }
+  // This script originally deliberately ignored errors in downloading
+  // the redist client package. But when npm changed policy to not 
+  // print a lot of status output during script execution it was harder
+  // to see that something was broken. So we now exit with an error if 
+  // requested.
+  process.exit(rc);
 }
 
 function printError(err) {
   console.error("Error occurred downloading " + title + ": " + err.message);
   console.error("You will need to manually install it.");
-  cleanup();
-  process.exit(1);
+  cleanup(1);
 }
 
 // Equivalent of "rm -rf"
 function removeDirRecursive(d) {
   if (fs.existsSync(d)) {
-        fs.readdirSync(d).forEach(function(e) {
-            var ePath = path.join(d, e);
-            if (fs.lstatSync(ePath).isDirectory()) {
-                removeDirRecursive(ePath);
-            } else {
-                // Keep runmqsc as it might be useful for creating CCDTs locally,
-                // particularly in a containerised runtime. And runmqakm might be
-		// needed if you want to manage certs locally rather than outside
-		// a container.
-                if (!e.match(/runmqsc/) && !e.match(/runmqakm/))
-                  fs.unlinkSync(ePath);
-            }
-        });
-        fs.rmdirSync(d); // This fails on the directory containing runmqsc but that's fine
-    }
+    fs.readdirSync(d).forEach(function(e) {
+      var ePath = path.join(d, e);
+      if (fs.lstatSync(ePath).isDirectory()) {
+        removeDirRecursive(ePath);
+      } else {
+        // Keep runmqsc as it might be useful for creating CCDTs locally,
+        // particularly in a containerised runtime. And runmqakm might be
+        // needed if you want to manage certs locally rather than outside
+        // a container.
+        if (!e.match(/runmqsc/) && !e.match(/runmqakm/) && !e.match(/run.*cred/)) {
+          fs.unlinkSync(ePath);
+        }  
+      }
+    });
+    fs.rmdirSync(d); // This fails on the directory containing runmqsc but that's fine
+  }
 }
 
 function removePattern(d,type) {
@@ -110,7 +116,26 @@ function removePattern(d,type) {
   }
 }
 
-// Remove directories from the client that are not needed for Node execution
+function removeUnthreaded(d) {
+  if (fs.lstatSync(d).isDirectory()) {
+    fs.readdirSync(d).forEach(function(e) {
+      if (e.match(/.*.so/) && !(e.match(/.*_r.so/))) {
+        var t = e.replace('.so','_r.so');
+        var tpath = path.join(d,t);
+        if (fs.existsSync(tpath)) {
+          var ePath = path.join(d, e);
+          try {
+            fs.unlinkSync(ePath);
+          } catch (err) {
+          }
+        }
+      }
+    });
+  }
+}
+
+// Remove directories from the client that are not needed for Node execution. This
+// should help shrink any runtime container a bit
 function removeUnneeded() {
   var d;
   var doNotRemove = process.env['MQIJS_NOREMOVE'];
@@ -134,14 +159,23 @@ function removeUnneeded() {
       d= path.join(newBaseDir,"lib");
       removePattern(d,/lib.*so/);
       removePattern(d,/amqtrc.fmt/);
+      removePattern(d,/amqlcelp.*/);
+
       d= path.join(newBaseDir,"lib64");
       removePattern(d,/libimq.*so/);
       removePattern(d,/libedit.so/);
+      removePattern(d,/amq.*.dll/);
+      removePattern(d,/amqlcelp$/);
+
+      // Get rid of all the non-threaded libraries
+      removeUnthreaded(d);
+
+      d= path.join(newBaseDir,"lap");
+      removePattern(d,/.*.jar/);
     }
   }
 
-  cleanup();
-  process.exit(0);
+  cleanup(0);
 }
 
 
@@ -196,7 +230,9 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 var url = protocol + host + "/" + dir + "/" + file;
-//url = "http://localhost:8000/"+file; // My local version for testing
+if (process.env['MQIJS_LOCALURL'] != null) {
+  url = "http://localhost:8000/"+file; // My local version for testing this script
+}
 console.log("Getting " + url);
 
 var client = http;

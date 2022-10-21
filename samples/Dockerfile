@@ -27,10 +27,10 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM ubuntu:18.04 as builder
+FROM ubuntu:20.04 as builder
 
 # Set some parameters.
-ENV NODE_VERSION 14
+ENV NODE_VERSION 18
 ENV APP_DIR    /usr/local/nodejs/mqput
 
 WORKDIR ${APP_DIR}
@@ -55,7 +55,7 @@ COPY package.docker ${APP_DIR}/package.json
 
 # Now get all the prereq packages installed and cleanup the
 # pieces that are not needed after building the C interface.
-RUN npm install --only=prod \
+RUN npm install --omit=dev  \
    && apt-get autoremove -y curl make gcc g++ python3 git \
    && apt-get purge -y \
    && rm -rf /var/lib/apt/lists/* \
@@ -67,7 +67,7 @@ RUN npm install --only=prod \
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
 # is an official Node image with the runtime already embedded
-FROM  node:16-slim
+FROM  node:18-slim
 
 # This is a queue predefined in the MQ Developer Edition server container. Though
 # the values can be overridden by setting environment variables during the 'docker run' phase.

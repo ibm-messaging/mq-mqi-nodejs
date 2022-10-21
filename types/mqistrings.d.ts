@@ -44,6 +44,7 @@ declare module "ibmmq" {
   function MQCCT_STR(MQC_MQCCT): string;
   function MQCC_STR(MQC_MQCC): string;
   function MQCDC_STR(MQC_MQCDC): string;
+  function MQCEX_STR(MQC_MQCEX): string;
   function MQCFACCESS_STR(MQC_MQCFACCESS): string;
   function MQCFCONLOS_STR(MQC_MQCFCONLOS): string;
   function MQCFOFFLD_STR(MQC_MQCFOFFLD): string;
