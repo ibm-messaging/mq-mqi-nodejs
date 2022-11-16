@@ -17,6 +17,8 @@ var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
 var vrm="9.3.1";
+// This is the default fixpack or CSU level that we might want to apply
+var defaultFp="0";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
@@ -30,11 +32,15 @@ if (vrmenv != null) {
 
 // Set the fixpack which is also part of the downloadable name. Default
 // to 0, which is the only allowable level for CD versions of MQ. Only
-// the LTS level gets fixpacks.
-var vrmf=vrm + ".0";
-// Allow overriding the fixpack if VRM indicates an LTS version
+// the LTS level gets fixpacks. CD versions will start to receive
+// "CSU" ("cumulative security update") releases which are equivalent
+// to fixpacks in the installation/version sense. 
+var vrmf=vrm + "." + defaultFp;
+
+// Allow overriding the fixpack for both LTS and CD versions to permit
+// picking up a CSU.
 var fixpack=process.env['MQIJS_FIXPACK'];
-if (fixpack != null && vrm.endsWith('.0')) {
+if (fixpack != null /*&& vrm.endsWith('.0')*/) {
   vrmf=vrm+"."+fixpack;
 }
 

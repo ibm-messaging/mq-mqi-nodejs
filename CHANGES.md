@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 16 Nov 2022: v1.0.3
+* Fix missing MQCA_ checks #150
+* Replace CLA with DCO file
+ 
 ## 21 Oct 2022: v1.0.2
 * Update for MQ 9.3.1
 * Update various dependency versions
