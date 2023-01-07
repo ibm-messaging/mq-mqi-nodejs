@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 07 Jan 2023: v1.0.4
+* Fix typescript declaration (#152) 
+* Fix more missing MQCA_ checks
+* Add internal trace option for most functions
+
 ## 16 Nov 2022: v1.0.3
 * Fix missing MQCA_ checks #150
 * Replace CLA with DCO file

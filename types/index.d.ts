@@ -380,7 +380,7 @@ declare module "ibmmq" {
    */
   function SubSync(
     jsQueueManager: MQQueueManager,
-    jsQueueObject: MQObject,
+    jsQueueObject: MQObject | null,
     jssd: MQSD,
     cb?: (
       err: MQError,
@@ -1029,7 +1029,7 @@ declare module "ibmmq" {
    */
   function SubPromise(
     jsQueueManager: MQQueueManager,
-    jsQueueObject: MQObject,
+    jsQueueObject: MQObject | null,
     jssd: MQSD
   ): Promise<{ hObj: MQObject; hSub: MQObject }>;
 
