@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 15 Feb 2023: v1.0.5
+* Update for MQ 9.3.2
+* Update various dependency versions
+
 ## 07 Jan 2023: v1.0.4
 * Fix typescript declaration (#152) 
 * Fix more missing MQCA_ checks

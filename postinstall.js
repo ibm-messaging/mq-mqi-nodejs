@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.3.1";
+var vrm="9.3.2";
 // This is the default fixpack or CSU level that we might want to apply
 var defaultFp="0";
 
@@ -31,9 +31,9 @@ if (vrmenv != null) {
 }
 
 // Set the fixpack which is also part of the downloadable name. Default
-// to 0, which is the only allowable level for CD versions of MQ. Only
-// the LTS level gets fixpacks. CD versions will start to receive
-// "CSU" ("cumulative security update") releases which are equivalent
+// to 0, which is the base level for CD versions of MQ. Only
+// the LTS level gets fixpacks but CD versions do now receive
+// CSU ("cumulative security update") releases which are equivalent
 // to fixpacks in the installation/version sense. 
 var vrmf=vrm + "." + defaultFp;
 
@@ -197,8 +197,7 @@ if (doit != null) {
   process.exit(0);
 }
 
-//Check if the install is for an environment
-// where there is a Redistributable Client.
+// Check if the install is for an environment where there is a Redistributable Client.
 if (currentPlatform === 'win32') {
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
@@ -217,7 +216,7 @@ if (currentPlatform === 'win32') {
 //
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
-//  file=vrmf + "-IBM-MQ-DevToolkit-MacX64" + ".pkg"
+//  file=vrmf + "-IBM-MQ-DevToolkit-MacOS" + ".pkg"
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");

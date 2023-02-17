@@ -5,10 +5,10 @@
   "main": "amqsput.ts",
   "license": "Apache-2.0",
   "dependencies": {
-    "ibmmq": ">=1.0.4"
+    "ibmmq": ">=1.0.5"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
-    "typescript": "^4.9.4"
+    "@types/node": "^18.13.0",
+    "typescript": "^4.9.5"
   }
 }

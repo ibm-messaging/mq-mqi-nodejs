@@ -13,6 +13,7 @@ declare module "ibmmq" {
   function MQAUTHENTICATE_STR(MQC_MQAUTHENTICATE): string;
   function MQAUTHOPT_STR(MQC_MQAUTHOPT): string;
   function MQAUTH_STR(MQC_MQAUTH): string;
+  function MQAUTOCLUS_STR(MQC_MQAUTOCLUS): string;
   function MQAUTO_STR(MQC_MQAUTO): string;
   function MQBACF_STR(MQC_MQBACF): string;
   function MQBALANCED_STR(MQC_MQBALANCED): string;
@@ -47,6 +48,7 @@ declare module "ibmmq" {
   function MQCEX_STR(MQC_MQCEX): string;
   function MQCFACCESS_STR(MQC_MQCFACCESS): string;
   function MQCFCONLOS_STR(MQC_MQCFCONLOS): string;
+  function MQCFC_STR(MQC_MQCFC): string;
   function MQCFOFFLD_STR(MQC_MQCFOFFLD): string;
   function MQCFOP_STR(MQC_MQCFOP): string;
   function MQCFO_REFRESH_STR(MQC_MQCFO_REFRESH): string;
@@ -122,7 +124,8 @@ declare module "ibmmq" {
   function MQEXT_STR(MQC_MQEXT): string;
   function MQFB_STR(MQC_MQFB): string;
   function MQFC_STR(MQC_MQFC): string;
-  function MQFIELD_STR(MQC_MQFIELD): string;
+  function MQFSENC_STR(MQC_MQFSENC): string;
+  function MQFS_STR(MQC_MQFS): string;
   function MQFUN_STR(MQC_MQFUN): string;
   function MQGACF_STR(MQC_MQGACF): string;
   function MQGMO_STR(MQC_MQGMO): string;
@@ -137,6 +140,8 @@ declare module "ibmmq" {
   function MQIACH_STR(MQC_MQIACH): string;
   function MQIAMO64_STR(MQC_MQIAMO64): string;
   function MQIAMO_STR(MQC_MQIAMO): string;
+  function MQIAMO_MONITOR_DATATYPE_STR(MQC_MQIAMO_MONITOR_DATATYPE): string;
+  function MQIAMO_MONITOR_FLAGS_STR(MQC_MQIAMO_MONITOR_FLAGS): string;
   function MQIASY_STR(MQC_MQIASY): string;
   function MQIAV_STR(MQC_MQIAV): string;
   function MQIA_STR(MQC_MQIA): string;
@@ -158,6 +163,7 @@ declare module "ibmmq" {
   function MQLDAPC_STR(MQC_MQLDAPC): string;
   function MQLDAP_AUTHORMD_STR(MQC_MQLDAP_AUTHORMD): string;
   function MQLDAP_NESTGRP_STR(MQC_MQLDAP_NESTGRP): string;
+  function MQLOGTYPE_STR(MQC_MQLOGTYPE): string;
   function MQLR_STR(MQC_MQLR): string;
   function MQMASTER_STR(MQC_MQMASTER): string;
   function MQMATCH_STR(MQC_MQMATCH): string;
@@ -179,11 +185,17 @@ declare module "ibmmq" {
   function MQMLP_TOLERATE_STR(MQC_MQMLP_TOLERATE): string;
   function MQMMBI_STR(MQC_MQMMBI): string;
   function MQMODE_STR(MQC_MQMODE): string;
+  function MQMON_OVERRIDE_STR(MQC_MQMON_OVERRIDE): string;
   function MQMON_STR(MQC_MQMON): string;
+  function MQMON_AVAILABILITY_STR(MQC_MQMON_AVAILABILITY): string;
   function MQMO_STR(MQC_MQMO): string;
   function MQMT_STR(MQC_MQMT): string;
   function MQMULC_STR(MQC_MQMULC): string;
   function MQNC_STR(MQC_MQNC): string;
+  function MQNHABACKLOG_STR(MQC_MQNHABACKLOG): string;
+  function MQNHACONNACTV_STR(MQC_MQNHACONNACTV): string;
+  function MQNHAINSYNC_STR(MQC_MQNHAINSYNC): string;
+  function MQNHAROLE_STR(MQC_MQNHAROLE): string;
   function MQNPMS_STR(MQC_MQNPMS): string;
   function MQNPM_STR(MQC_MQNPM): string;
   function MQNSH_STR(MQC_MQNSH): string;
@@ -217,6 +229,7 @@ declare module "ibmmq" {
   function MQQA_BACKOUT_STR(MQC_MQQA_BACKOUT): string;
   function MQQA_GET_STR(MQC_MQQA_GET): string;
   function MQQA_PUT_STR(MQC_MQQA_PUT): string;
+  function MQQA_SHAREABLE_STR(MQC_MQQA_SHAREABLE): string;
   function MQQDT_STR(MQC_MQQDT): string;
   function MQQFS_STR(MQC_MQQFS): string;
   function MQQF_STR(MQC_MQQF): string;
@@ -248,6 +261,7 @@ declare module "ibmmq" {
   function MQREORG_STR(MQC_MQREORG): string;
   function MQRFH_STR(MQC_MQRFH): string;
   function MQRL_STR(MQC_MQRL): string;
+  function MQRMHF_STR(MQC_MQRMHF): string;
   function MQROUTE_STR(MQC_MQROUTE): string;
   function MQRO_STR(MQC_MQRO): string;
   function MQRP_STR(MQC_MQRP): string;
@@ -278,6 +292,7 @@ declare module "ibmmq" {
   function MQSTDBY_STR(MQC_MQSTDBY): string;
   function MQST_STR(MQC_MQST): string;
   function MQSUBTYPE_STR(MQC_MQSUBTYPE): string;
+  function MQSUB_DURABILITY_STR(MQC_MQSUB_DURABILITY): string;
   function MQSUB_STR(MQC_MQSUB): string;
   function MQSUS_STR(MQC_MQSUS): string;
   function MQSVC_CONTROL_STR(MQC_MQSVC_CONTROL): string;
@@ -339,6 +354,10 @@ declare module "ibmmq" {
   function MQZAO_STR(MQC_MQZAO): string;
   function MQZAT_STR(MQC_MQZAT): string;
   function MQZCI_STR(MQC_MQZCI): string;
+  function MQZID_AUTHORITY_STR(MQC_MQZID_AUTHORITY): string;
+  function MQZID_NAME_STR(MQC_MQZID_NAME): string;
+  function MQZID_USERID_STR(MQC_MQZID_USERID): string;
+  function MQZID_STR(MQC_MQZID): string;
   function MQZIO_STR(MQC_MQZIO): string;
   function MQZSE_STR(MQC_MQZSE): string;
   function MQZSL_STR(MQC_MQZSL): string;
