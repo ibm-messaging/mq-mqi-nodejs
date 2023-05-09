@@ -162,8 +162,6 @@ if (myArgs[2]) {
   msgId  = myArgs[2];
 }
 
-mq.setTuningParameters({syncMQICompat:true});
-
 
 // Connect to the queue manager, including a callback function for
 // when it completes.

@@ -1,12 +1,14 @@
 {
   "name": "ibmmq",
-  "version": "1.0.5",
-  "description": "Bindings to call IBM MQ API",
+  "version": "0.0.3",
+  "description": "Bindings to call IBM MQ API using N-API",
   "main": "./lib/mqi.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --napi-modules ./samples/amqsput.js",
     "postinstall": "node postinstall.js",
-    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript"
+    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript",
+    "build": "node-gyp rebuild",
+    "clean": "node-gyp clean"
   },
   "author": "Mark Taylor",
   "license": "Apache-2.0",
@@ -27,13 +29,10 @@
     "eslint-plugin-prettier": "^4.2.1"
   },
   "dependencies": {
-    "ffi-napi": "^4.0.3",
-    "ref-array-di": "^1.2.2",
-    "ref-napi": "^3.0.3",
-    "ref-struct-di": "^1.1.1",
-    "unzipper": "^0.10.11"
+    "node-addon-api": "^5.0.0",
+     "unzipper": "^0.10.11"
   },
   "engines": {
-    "node": ">=10.20"
+    "node": ">=16.20"
   }
 }
