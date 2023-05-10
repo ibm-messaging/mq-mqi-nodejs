@@ -23,12 +23,12 @@ void copyGMOtoC(Env env, Object jsgmo, PMQGMO pmqgmo) {
   bool b;
 
   pmqgmo->Version = MQGMO_VERSION_4; // Assume for now we will always use this */
-  pmqgmo->Options = jsgmo.Get("Options").As<Number>();
+  pmqgmo->Options = getMQLong(jsgmo,"Options");
   // Force the FIQ option to always be set for good practice
   pmqgmo->Options |= MQGMO_FAIL_IF_QUIESCING;
 
-  pmqgmo->WaitInterval = jsgmo.Get("WaitInterval").As<Number>();
-  pmqgmo->MatchOptions = jsgmo.Get("MatchOptions").As<Number>();
+  pmqgmo->WaitInterval = getMQLong(jsgmo,"WaitInterval");
+  pmqgmo->MatchOptions = getMQLong(jsgmo,"MatchOptions");
   pmqgmo->MsgHandle = jsgmo.Get("MsgHandle").As<BigInt>().Int64Value(&b);
 
   setMQIBytes(env, pmqgmo->MsgToken, jsgmo, "MsgToken", MQ_MSG_TOKEN_LENGTH);

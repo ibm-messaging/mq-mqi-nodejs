@@ -35,7 +35,7 @@ Object BEGIN(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_BEGIN_HCONN].As<Number>();
+  hConn = info[IDX_BEGIN_HCONN].As<Number>().Int32Value();
 
   CALLMQI("MQBEGIN")(hConn, &CC, &RC);
   Object result = Object::New(env);
@@ -60,7 +60,7 @@ Object CMIT(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_CMIT_HCONN].As<Number>();
+  hConn = info[IDX_CMIT_HCONN].As<Number>().Int32Value();
 
   CALLMQI("MQCMIT")(hConn, &CC, &RC);
   Object result = Object::New(env);
@@ -85,7 +85,7 @@ Object BACK(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_BACK_HCONN].As<Number>();
+  hConn = info[IDX_BACK_HCONN].As<Number>().Int32Value();
 
   CALLMQI("MQBACK")(hConn, NULL, &CC, &RC);
   Object result = Object::New(env);

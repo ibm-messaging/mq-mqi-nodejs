@@ -24,11 +24,11 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
 
   setMQIString(env, pmqcd->ChannelName, jscd, "ChannelName", MQ_CHANNEL_NAME_LENGTH);
   setMQIString(env, pmqcd->ConnectionName, jscd, "ConnectionName", MQ_CONN_NAME_LENGTH);
-  pmqcd->DiscInterval = jscd.Get("DiscInterval").As<Number>();
+  pmqcd->DiscInterval = getMQLong(jscd,"DiscInterval");
   setMQIString(env, pmqcd->SecurityExit, jscd, "SecurityExit", MQ_EXIT_NAME_LENGTH);
   setMQIString(env, pmqcd->SecurityUserData, jscd, "SecurityUserData", MQ_EXIT_DATA_LENGTH);
-  pmqcd->MaxMsgLength = jscd.Get("MaxMsgLength").As<Number>();
-  pmqcd->HeartbeatInterval = jscd.Get("HeartbeatInterval").As<Number>();
+  pmqcd->MaxMsgLength = getMQLong(jscd,"MaxMsgLength");
+  pmqcd->HeartbeatInterval =getMQLong(jscd,"HeartbeatInterval");
   setMQIString(env, pmqcd->SSLCipherSpec, jscd, "SSLCipherSpec", MQ_SSL_CIPHER_SPEC_LENGTH);
 
   Value v = jscd.Get("SSLPeerName");
@@ -36,31 +36,26 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
     pmqcd->SSLPeerNamePtr = strdup(v.As<String>().Utf8Value().c_str());
     pmqcd->SSLPeerNameLength = strlen((char *)pmqcd->SSLPeerNamePtr);
   }
-  pmqcd->SSLClientAuth = jscd.Get("SSLClientAuth").As<Number>();
-  pmqcd->KeepAliveInterval = jscd.Get("KeepAliveInterval").As<Number>();
-  ;
-  pmqcd->SharingConversations = jscd.Get("SharingConversations").As<Number>();
-  ;
-  pmqcd->PropertyControl = jscd.Get("PropertyControl").As<Number>();
-  ;
-  pmqcd->ClientChannelWeight = jscd.Get("ClientChannelWeight").As<Number>();
-  ;
-  pmqcd->ConnectionAffinity = jscd.Get("ConnectionAffinity").As<Number>();
-  ;
-  pmqcd->DefReconnect = jscd.Get("DefReconnect").As<Number>();
-  ;
+  pmqcd->SSLClientAuth = getMQLong(jscd,"SSLClientAuth");
+  pmqcd->KeepAliveInterval = getMQLong(jscd,"KeepAliveInterval");
+  pmqcd->SharingConversations = getMQLong(jscd,"SharingConversations");
+  pmqcd->PropertyControl = getMQLong(jscd,"PropertyControl");
+  pmqcd->ClientChannelWeight = getMQLong(jscd,"ClientChannelWeight");
+  pmqcd->ConnectionAffinity = getMQLong(jscd,"ConnectionAffinity");
+  pmqcd->DefReconnect = getMQLong(jscd,"DefReconnect");
+  
   setMQIString(env, pmqcd->CertificateLabel, jscd, "CertificateLabel", MQ_CERT_LABEL_LENGTH);
 
   Array a = jscd.Get("HdrCompList").As<Array>();
   for (i = 0; i < 2; i++) {
     Value v = a[i];
     // Object o = v.As<Object>();
-    pmqcd->HdrCompList[i] = v.As<Number>();
+    pmqcd->HdrCompList[i] = v.As<Number>().Int32Value();
   }
   a = jscd.Get("MsgCompList").As<Array>();
   for (i = 0; i < 16; i++) {
     Value v = a[i];
-    pmqcd->MsgCompList[i] = v.As<Number>();
+    pmqcd->MsgCompList[i] = v.As<Number>().Int32Value();
   }
 
   return;

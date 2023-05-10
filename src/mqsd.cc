@@ -22,12 +22,12 @@
 void copySDtoC(Env env, Object jssd, PMQSD pmqsd) {
 
   pmqsd->Version = 1; // Only version for now
-  pmqsd->Options = jssd.Get("Options").As<Number>();
+  pmqsd->Options = getMQLong(jssd,"Options");
 
   setMQIString(env, pmqsd->ObjectName, jssd, "ObjectName", MQ_Q_NAME_LENGTH);
   setMQIString(env, pmqsd->AlternateUserId, jssd, "AlternateUserId", MQ_USER_ID_LENGTH);
   setMQIBytes(env, pmqsd->AlternateSecurityId, jssd, "AlternateSecurityId", MQ_SECURITY_ID_LENGTH);
-  pmqsd->SubExpiry = jssd.Get("SubExpiry").As<Number>();
+  pmqsd->SubExpiry = getMQLong(jssd,"SubExpiry");
 
   setMQICharV(env, &pmqsd->ObjectString, jssd, "ObjectString", true);
   setMQICharV(env, &pmqsd->SubName, jssd, "SubName", true);
@@ -35,13 +35,13 @@ void copySDtoC(Env env, Object jssd, PMQSD pmqsd) {
 
    setMQIBytes(env, pmqsd->SubCorrelId, jssd, "SubCorrelId", MQ_CORREL_ID_LENGTH);
 
-   pmqsd->PubPriority = jssd.Get("PubPriority").As<Number>();
+   pmqsd->PubPriority = getMQLong(jssd,"PubPriority");
 
    setMQIBytes(env, pmqsd->PubAccountingToken, jssd, "PubAccountingToken", MQ_ACCOUNTING_TOKEN_LENGTH);
 
    setMQIString(env, pmqsd->PubApplIdentityData, jssd, "PubApplIdentityData", MQ_APPL_IDENTITY_DATA_LENGTH);
    setMQICharV(env, &pmqsd->SelectionString, jssd, "SelectionString", true);
-   pmqsd->SubLevel = jssd.Get("SubLevel").As<Number>();
+   pmqsd->SubLevel = getMQLong(jssd,"SubLevel");
 
    /* The resolved topic is output-only so force an empty charv */
    setMQICharV(env, &pmqsd->ResObjectString, jssd, NULL, true);

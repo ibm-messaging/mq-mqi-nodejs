@@ -20,8 +20,8 @@
 #include "mqi.h"
 
 void copySROtoC(Env env, Object jssro, PMQSRO pmqsro) {
-  pmqsro->Options = jssro.Get("Options").As<Number>();
-  pmqsro->NumPubs = jssro.Get("NumPubs").As<Number>();
+  pmqsro->Options = getMQLong(jssro,"Options");
+  pmqsro->NumPubs = getMQLong(jssro,"NumPubs");
   return;
 };
 

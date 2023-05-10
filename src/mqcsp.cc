@@ -36,7 +36,7 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
     pmqcsp->CSPUserIdOffset = 0;
     pmqcsp->CSPUserIdLength = strlen(cUserId);
 
-    pmqcsp->AuthenticationType = jscsp.Get("_authenticationType").As<Number>();
+    pmqcsp->AuthenticationType = getMQLong(jscsp,"_authenticationType");
   }
 
   Object Password = jscsp.Get("Password").As<Object>();

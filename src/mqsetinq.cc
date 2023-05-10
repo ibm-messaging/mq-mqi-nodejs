@@ -48,8 +48,8 @@ Object INQ(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_INQ_HCONN].As<Number>();
-  hObj = info[IDX_INQ_HOBJ].As<Number>();
+  hConn = info[IDX_INQ_HCONN].As<Number>().Int32Value();
+  hObj = info[IDX_INQ_HOBJ].As<Number>().Int32Value();
   jsSelectors = info[IDX_INQ_ATTRS].As<Array>();
 
   // Allocate an array of the same length as the selectors in case all
@@ -61,15 +61,12 @@ Object INQ(const CallbackInfo &info) {
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {
     Value jsSelectorV = jsSelectors[i];
     Object jsSelector = jsSelectorV.As<Object>();
-    selector = jsSelector.Get("selector").As<Number>();
-    debugf(LOG_DEBUG, "Selector %d - %d", i, selector);
-    dumpObject(env, "MQAttr", jsSelector);
+    selector = getMQLong(jsSelector,"selector");
     mqSelectors[i] = selector;
     if (selector >= MQIA_FIRST && selector <= MQIA_LAST) {
       intAttrCount++;
     } else if (selector >= MQCA_FIRST && selector <= MQCA_LAST) {
-      charLen = jsSelector.Get("_length").As<Number>();
-      debugf(LOG_DEBUG, "    Len: %d", charLen);
+      charLen = jsSelector.Get("_length").As<Number>().Int32Value();
 
       if (charLen > 0) {
         charAttrLen += charLen;
@@ -113,7 +110,7 @@ Object INQ(const CallbackInfo &info) {
           nameCount = 1;
         }
       } else if (selector >= MQCA_FIRST && selector <= MQCA_LAST) {
-        charLen = jsSelector.Get("_length").As<Number>();
+        charLen = getMQLong(jsSelector,"_length");
         if (charLen > 0) {
           jsSelector.Set("value", getMQIString(env, &charAttrs[charIndex], charLen * nameCount));
           charIndex += charLen;
@@ -157,10 +154,10 @@ Object SET(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_SET_HCONN].As<Number>();
-  hObj = info[IDX_SET_HOBJ].As<Number>();
+  hConn = info[IDX_SET_HCONN].As<Number>().Int32Value();
+  hObj = info[IDX_SET_HOBJ].As<Number>().Int32Value();
   jsSelectors = info[IDX_SET_ATTRS].As<Array>();
-  charAttrLen = info[IDX_SET_CHARATTR_LEN].As<Number>();
+  charAttrLen = info[IDX_SET_CHARATTR_LEN].As<Number>().Int32Value();
 
   // Allocate an array of the same length as the selectors in case all
   // are requesting MQIA values. Not all of
@@ -173,14 +170,14 @@ Object SET(const CallbackInfo &info) {
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {
     Value jsSelectorV = jsSelectors[i];
     Object jsSelector = jsSelectorV.As<Object>();
-    selector = jsSelector.Get("selector").As<Number>();
+    selector = getMQLong(jsSelector,"selector");
     debugf(LOG_DEBUG, "Selector %d - %d", i, selector);
     dumpObject(env, "MQAttr", jsSelector);
     mqSelectors[i] = selector;
     if (selector >= MQIA_FIRST && selector <= MQIA_LAST) {
-      intAttrValues[intAttrCount++] = jsSelector.Get("value").As<Number>();
+      intAttrValues[intAttrCount++] = getMQLong(jsSelector,"value");
     } else if (selector >= MQCA_FIRST && selector <= MQCA_LAST) {
-      charLen = jsSelector.Get("_length").As<Number>();
+      charLen = getMQLong(jsSelector,"_length");
       debugf(LOG_DEBUG, "    Len: %d", charLen);
       memcpy(&charAttrs[offset], jsSelector.Get("value").As<String>().Utf8Value().c_str(), charLen);
       offset += charLen;

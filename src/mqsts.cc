@@ -21,7 +21,6 @@
 #include "mqi.h"
 
 void copySTStoC(Env env, Object jssts, PMQSTS pmqsts) {
-  *pmqsts = {MQSTS_DEFAULT};
   setMQICharV(env, &pmqsts->ObjectString, jssts, NULL, true);
   setMQICharV(env, &pmqsts->SubName, jssts, NULL, true);
 

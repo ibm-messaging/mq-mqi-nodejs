@@ -38,8 +38,8 @@ Object STAT(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_STAT_HCONN].As<Number>();
-  statusType = info[IDX_STAT_STATUSTYPE].As<Number>();
+  hConn = info[IDX_STAT_HCONN].As<Number>().Int32Value();
+  statusType = info[IDX_STAT_STATUSTYPE].As<Number>().Int32Value();
   jssts = info[IDX_STAT_STS].As<Object>();
 
   copySTStoC(env, jssts, &mqsts);

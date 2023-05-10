@@ -36,16 +36,16 @@ Object CRTMH(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_CRTMH_HCONN].As<Number>();
+  hConn = info[IDX_CRTMH_HCONN].As<Number>().Int32Value();
   jsCmho = info[IDX_CRTMH_CMHO].As<Object>();
-  cmho.Options = jsCmho.Get("Options").As<Number>(); // Only item to copy over
+  cmho.Options = getMQLong(jsCmho,"Options"); // Only item to copy over
 
   CALLMQI("MQCRTMH")(hConn, &cmho, &hMsg, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
-  result.Set("jsHMsg", BigInt::New(env, hMsg)); // Message handles are 64-bit
+  result.Set("jsHMsg", BigInt::New(env, (int64_t)hMsg)); // Message handles are 64-bit
 
   return result;
 }
@@ -69,9 +69,9 @@ Object DLTMH(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_DLTMH_HCONN].As<Number>();
+  hConn = info[IDX_DLTMH_HCONN].As<Number>().Int32Value();
   jsDmho = info[IDX_DLTMH_DMHO].As<Object>();
-  dmho.Options = jsDmho.Get("Options").As<Number>(); // Only item to copy over
+  dmho.Options = getMQLong(jsDmho,"Options"); // Only item to copy over
   hMsg = info[IDX_DLTMH_HMSG].As<BigInt>().Int64Value(&b);
 
   CALLMQI("MQDLTMH")(hConn, &hMsg, &dmho, &CC, &RC);

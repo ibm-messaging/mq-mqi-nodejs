@@ -46,17 +46,17 @@ Object SETMP(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_SETMP_HCONN].As<Number>();
+  hConn = info[IDX_SETMP_HCONN].As<Number>().Int32Value();
   hMsg = info[IDX_SETMP_HMSG].As<BigInt>().Int64Value(&b);
 
   jssmpo = info[IDX_SETMP_SMPO].As<Object>();
-  smpo.Options = jssmpo.Get("Options").As<Number>(); // Only item to copy over
+  smpo.Options = getMQLong(jssmpo,"Options"); // Only item to copy over
 
   jspd = info[IDX_SETMP_PD].As<Object>();
-  pd.Options = jspd.Get("Options").As<Number>();
-  pd.CopyOptions = jspd.Get("CopyOptions").As<Number>();
-  pd.Support = jspd.Get("Support").As<Number>();
-  pd.Context = jspd.Get("Context").As<Number>();
+  pd.Options = getMQLong(jspd,"Options");
+  pd.CopyOptions = getMQLong(jspd,"CopyOptions");
+  pd.Support = getMQLong(jspd,"Support");
+  pd.Context = getMQLong(jspd,"Context");
 
   name.VSPtr = strdup(info[IDX_SETMP_NAME].As<String>().Utf8Value().c_str());
   name.VSLength = strlen((char *)name.VSPtr);
@@ -71,12 +71,12 @@ Object SETMP(const CallbackInfo &info) {
     len = strlen((char *)valuePtr);
     type = MQTYPE_STRING;
   } else if (info[IDX_SETMP_VALUE].IsNumber()) {
-    valueInt = info[IDX_SETMP_VALUE].As<Number>();
+    valueInt = info[IDX_SETMP_VALUE].As<Number>().Int32Value();
     valuePtr = (void *)&valueInt;
     len = sizeof(valueInt);
     type = MQTYPE_INT32;
   } else if (info[IDX_SETMP_VALUE].IsBoolean()) {
-    valueInt = info[IDX_SETMP_VALUE].As<Boolean>() ? 1 : 0;
+    valueInt = info[IDX_SETMP_VALUE].As<Boolean>().Value() ? 1 : 0;
     valuePtr = (void *)&valueInt;
     len = sizeof(valueInt);
     type = MQTYPE_BOOLEAN;
@@ -129,9 +129,9 @@ Object DLTMP(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_DLTMP_HCONN].As<Number>();
+  hConn = info[IDX_DLTMP_HCONN].As<Number>().Int32Value();
   jsDmpo = info[IDX_DLTMP_DMPO].As<Object>();
-  dmpo.Options = jsDmpo.Get("Options").As<Number>(); // Only item to copy over
+  dmpo.Options = jsDmpo.Get("Options").As<Number>().Int32Value(); // Only item to copy over
   hMsg = info[IDX_DLTMP_HMSG].As<BigInt>().Int64Value(&b);
 
   CALLMQI("MQDLTMP")(hConn, &hMsg, &dmpo, &CC, &RC);
@@ -172,11 +172,11 @@ Object INQMP(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_INQMP_HCONN].As<Number>();
+  hConn = info[IDX_INQMP_HCONN].As<Number>().Int32Value();
   hMsg = info[IDX_INQMP_HMSG].As<BigInt>().Int64Value(&b);
 
   jsimpo = info[IDX_INQMP_IMPO].As<Object>();
-  impo.Options = jsimpo.Get("Options").As<Number>(); // Only item to copy over
+  impo.Options = getMQLong(jsimpo,"Options"); // Only item to copy over
 
   // Make sure there's space for the name of the property when it's
   // returned. 1024 ought to be big enough for anyone for now.
@@ -185,10 +185,10 @@ Object INQMP(const CallbackInfo &info) {
   impo.ReturnedName.VSCCSID = MQCCSI_APPL;
   
   jspd = info[IDX_INQMP_PD].As<Object>();
-  pd.Options = jspd.Get("Options").As<Number>();
-  pd.CopyOptions = jspd.Get("CopyOptions").As<Number>();
-  pd.Support = jspd.Get("Support").As<Number>();
-  pd.Context = jspd.Get("Context").As<Number>();
+  pd.Options = getMQLong(jspd,"Options");
+  pd.CopyOptions = getMQLong(jspd,"CopyOptions");
+  pd.Support = getMQLong(jspd,"Support");
+  pd.Context = getMQLong(jspd,"Context");
 
   name.VSPtr = strdup(info[IDX_INQMP_NAME].As<String>().Utf8Value().c_str());
   name.VSLength = strlen((char *)name.VSPtr);

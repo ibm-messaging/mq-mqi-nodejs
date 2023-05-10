@@ -99,7 +99,7 @@ Object PUT1(const CallbackInfo &info) {
 
   Put1Worker *w = new Put1Worker(cb, info);
 
-  w->hConn = info[IDX_PUT1_HCONN].As<Number>();
+  w->hConn = info[IDX_PUT1_HCONN].As<Number>().Int32Value();
 
   w->jsod = info[IDX_PUT1_OD].As<Object>();
   w->jsmd = info[IDX_PUT1_MD].As<Object>();

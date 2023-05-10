@@ -9,7 +9,11 @@
 #include <napi.h>
 #include <map>
 
-#include <cmqc.h>
+#if defined(WIN32)
+#include "windows/cmqc.h"
+#else
+#include "linux/cmqc.h"
+#endif
 #include <cmqxc.h>
 
 using namespace Napi;
@@ -91,6 +95,7 @@ String getMQIString(Env env,PMQCHAR in,size_t len);
 void getMQIBytes(Env env, unsigned char *in,Object out, const char *field,size_t len);
 void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output);
 String getMQICharV(Env env, PMQCHARV v, bool free);
+int32_t getMQLong(Object, const char *);
 
 
 /* Debug functions */

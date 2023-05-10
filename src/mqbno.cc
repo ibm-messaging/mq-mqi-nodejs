@@ -20,9 +20,9 @@
 #include "mqi.h"
 
 void copyBNOtoC(Env env, Object jsbno, PMQBNO pmqbno) {
-  pmqbno->ApplType = jsbno.Get("ApplType").As<Number>();
-  pmqbno->Timeout = jsbno.Get("Timeout").As<Number>();
-  pmqbno->Options = jsbno.Get("Options").As<Number>();
+  pmqbno->ApplType = getMQLong(jsbno,"ApplType");
+  pmqbno->Timeout = getMQLong(jsbno,"Timeout");
+  pmqbno->Options = getMQLong(jsbno,"Options");
 }
 
 void copyBNOfromC(Env env, Object jsbno, PMQBNO pmqbno) {

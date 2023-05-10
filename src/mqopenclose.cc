@@ -86,8 +86,8 @@ Object OPEN(const CallbackInfo &info) {
   OpenWorker *w = new OpenWorker(cb, info);
 
   w->jsod = info[IDX_OPEN_OD].As<Object>();
-  w->Options = info[IDX_OPEN_OPTIONS].As<Number>();
-  w->hConn = info[IDX_OPEN_HCONN].As<Number>();
+  w->Options = info[IDX_OPEN_OPTIONS].As<Number>().Int32Value();
+  w->hConn = info[IDX_OPEN_HCONN].As<Number>().Int32Value();
   w->pmqod = &w->mqod;
 
   copyODtoC(env, w->jsod, w->pmqod);
@@ -172,9 +172,9 @@ Object CLOSE(const CallbackInfo &info) {
 
   CloseWorker *w = new CloseWorker(cb, info);
 
-  w->Options = info[IDX_CLOSE_OPTIONS].As<Number>();
-  w->hConn = info[IDX_CLOSE_HCONN].As<Number>();
-  w->hObj = info[IDX_CLOSE_HOBJ].As<Number>();
+  w->Options = info[IDX_CLOSE_OPTIONS].As<Number>().Int32Value();
+  w->hConn = info[IDX_CLOSE_HCONN].As<Number>().Int32Value();
+  w->hObj = info[IDX_CLOSE_HOBJ].As<Number>().Int32Value();
 
   if (async) {
     w->Queue();

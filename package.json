@@ -1,10 +1,9 @@
 {
   "name": "ibmmq",
-  "version": "0.0.3",
+  "version": "2.0.0",
   "description": "Bindings to call IBM MQ API using N-API",
   "main": "./lib/mqi.js",
   "scripts": {
-    "test": "node --napi-modules ./samples/amqsput.js",
     "postinstall": "node postinstall.js",
     "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript",
     "build": "node-gyp rebuild",
@@ -18,21 +17,23 @@
   },
   "typings": "./types/index.d.ts",
   "devDependencies": {
+ "node-gyp": "^9.3.0",
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^18.13.0",
+    "@types/node": "^18.16.6",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "eslint": "^8.34.0",
-    "eslint-plugin-import": "^2.27.5", 
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsdoc": "^40.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.2.1"
   },
+  "gypfile": true,
   "dependencies": {
     "node-addon-api": "^5.0.0",
-     "unzipper": "^0.10.11"
+    "unzipper": "^0.10.11"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=16.0"
   }
 }

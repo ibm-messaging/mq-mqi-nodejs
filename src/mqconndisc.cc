@@ -128,21 +128,21 @@ Object CONNX(const CallbackInfo &info) {
 
   Value v = info[IDX_CONNX_CNO];
   if (v.IsObject()) {
-    dumpObject(env, "MQCNO", v.As<Object>());
+    //dumpObject(env, "MQCNO", v.As<Object>());
   } else {
-    debugf(LOG_OBJECT,"CNO is not an object");
+    //debugf(LOG_OBJECT,"CNO is not an object");
   }  
   if (v.IsObject()) {
     w->jscno = v.As<Object>();
     if (!w->jscno.IsNull()) {
       w->pCno = &w->cno;
-      w->cno.Options = w->jscno.Get("Options").As<Number>();
+      w->cno.Options = getMQLong(w->jscno,"Options");
 
       v = w->jscno.Get("ClientConn");
       if (v.IsObject()) {
-        dumpObject(env, "MQCD", v.As<Object>());
+        //dumpObject(env, "MQCD", v.As<Object>());
       } else {
-        debugf(LOG_OBJECT,"CD is not an object - isempty? %s. Type:%d [%s]", v.IsEmpty()?"true":"false", v.Type(), napiType(v.Type()));
+        //debugf(LOG_OBJECT,"CD is not an object - isempty? %s. Type:%d [%s]", v.IsEmpty()?"true":"false", v.Type(), napiType(v.Type()));
       }  
       if (v.IsObject()) {
         w->jscd = v.As<Object>();
@@ -163,7 +163,7 @@ Object CONNX(const CallbackInfo &info) {
         }
       }
 
-      v = w->jscno.Get("SecurityParms");
+      v = w->jscno.Get("SecurityParms"); 
       if (v.IsObject()) {
         w->jscsp = v.As<Object>();
         w->cno.SecurityParmsPtr = &w->csp;
@@ -190,6 +190,7 @@ Object CONNX(const CallbackInfo &info) {
           w->cno.Version = 7;
         }
       }
+
 
       v = w->jscno.Get("BalanceParms");
       if (v.IsObject()) {
@@ -283,7 +284,7 @@ Object DISC(const CallbackInfo &info) {
   }
   DiscWorker *w = new DiscWorker(cb, info);
 
-  w->hConn = info[IDX_DISC_HCONN].As<Number>();
+  w->hConn = info[IDX_DISC_HCONN].As<Number>().Int32Value();
   if (async) {
     w->Queue();
   } else {

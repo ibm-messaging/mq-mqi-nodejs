@@ -22,21 +22,21 @@
 void copyMDtoC(Env env, Object jsmd, PMQMD pmqmd) {
 
   pmqmd->Version  = MQMD_VERSION_2;
-  pmqmd->Report   = jsmd.Get("Report").As<Number>();
-  pmqmd->MsgType  = jsmd.Get("MsgType").As<Number>();
-  pmqmd->Expiry   = jsmd.Get("Expiry").As<Number>();
-  pmqmd->Feedback = jsmd.Get("Feedback").As<Number>();
-  pmqmd->Encoding = jsmd.Get("Encoding").As<Number>();
-  pmqmd->CodedCharSetId = jsmd.Get("CodedCharSetId").As<Number>();
+  pmqmd->Report   = getMQLong(jsmd,"Report");
+  pmqmd->MsgType  = getMQLong(jsmd,"MsgType");
+  pmqmd->Expiry   = getMQLong(jsmd,"Expiry");
+  pmqmd->Feedback = getMQLong(jsmd,"Feedback");
+  pmqmd->Encoding = getMQLong(jsmd,"Encoding");
+  pmqmd->CodedCharSetId = getMQLong(jsmd,"CodedCharSetId");
   setMQIString(env,pmqmd->Format, jsmd,"Format", MQ_FORMAT_LENGTH);
   
-  pmqmd->Priority = jsmd.Get("Priority").As<Number>();
-  pmqmd->Persistence = jsmd.Get("Persistence").As<Number>();
+  pmqmd->Priority = getMQLong(jsmd,"Priority");
+  pmqmd->Persistence = getMQLong(jsmd,"Persistence");
 
   setMQIBytes(env,pmqmd->MsgId,jsmd,"MsgId",MQ_MSG_ID_LENGTH);
   setMQIBytes(env,pmqmd->CorrelId,jsmd,"Correld",MQ_CORREL_ID_LENGTH);
   
-  pmqmd->BackoutCount = jsmd.Get("BackoutCount").As<Number>();
+  pmqmd->BackoutCount = getMQLong(jsmd,"BackoutCount");
 
   setMQIString(env,pmqmd->ReplyToQ , jsmd,"ReplyToQ",MQ_Q_NAME_LENGTH);
   setMQIString(env,pmqmd->ReplyToQMgr, jsmd,"ReplyToQMgr", MQ_Q_MGR_NAME_LENGTH);
@@ -45,7 +45,7 @@ void copyMDtoC(Env env, Object jsmd, PMQMD pmqmd) {
   setMQIBytes(env,pmqmd->AccountingToken,jsmd,"AccountingToken",MQ_ACCOUNTING_TOKEN_LENGTH);
   
   setMQIString(env,pmqmd->ApplIdentityData, jsmd,"ApplIdentityData", MQ_APPL_IDENTITY_DATA_LENGTH);
-  pmqmd->PutApplType = jsmd.Get("PutApplType").As<Number>();
+  pmqmd->PutApplType = getMQLong(jsmd,"PutApplType");
   setMQIString(env,pmqmd->PutApplName, jsmd, "PutApplName", MQ_PUT_APPL_NAME_LENGTH);
   setMQIString(env,pmqmd->PutDate, jsmd, "PutDate", MQ_PUT_DATE_LENGTH);
   setMQIString(env,pmqmd->PutTime, jsmd, "PutTime", MQ_PUT_TIME_LENGTH);
@@ -53,10 +53,10 @@ void copyMDtoC(Env env, Object jsmd, PMQMD pmqmd) {
 
   setMQIBytes(env,pmqmd->GroupId,jsmd,"GroupId",MQ_GROUP_ID_LENGTH);
 
-  pmqmd->MsgSeqNumber = jsmd.Get("MsgSeqNumber").As<Number>();
-  pmqmd->Offset       = jsmd.Get("Offset").As<Number>();
-  pmqmd->MsgFlags     = jsmd.Get("MsgFlags").As<Number>();
-  pmqmd->OriginalLength = jsmd.Get("OriginalLength").As<Number>();
+  pmqmd->MsgSeqNumber = getMQLong(jsmd,"MsgSeqNumber");
+  pmqmd->Offset       = getMQLong(jsmd,"Offset");
+  pmqmd->MsgFlags     = getMQLong(jsmd,"MsgFlags");
+  pmqmd->OriginalLength = getMQLong(jsmd,"OriginalLength");
 } 
 
 void copyMDfromC(Env env, Object jsmd, PMQMD pmqmd) {

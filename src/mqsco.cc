@@ -23,15 +23,15 @@ void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
 
   setMQIString(env,pmqsco->KeyRepository, jssco, "KeyRepository",MQ_SSL_KEY_REPOSITORY_LENGTH);
   setMQIString(env,pmqsco->CryptoHardware,jssco, "CryptoHardware", MQ_SSL_CRYPTO_HARDWARE_LENGTH);
-  pmqsco->KeyResetCount     = jssco.Get("KeyResetCount").As<Number>();
-  pmqsco->FipsRequired      = jssco.Get("FipsRequired").As<Number>();
+  pmqsco->KeyResetCount     = getMQLong(jssco,"KeyResetCount");
+  pmqsco->FipsRequired      = jssco.Get("FipsRequired").As<Boolean>()?MQSSL_FIPS_YES:MQSSL_FIPS_NO;
 
   Array a = jssco.Get("EncryptionPolicySuiteB").As<Array>();
   for (int i = 0;i<4;i++) {
     Value v = a[i];
-    pmqsco->EncryptionPolicySuiteB[i] = v.As<Number>();
+    pmqsco->EncryptionPolicySuiteB[i] = v.As<Number>().Int32Value();
   }
-  pmqsco->CertificateValPolicy = jssco.Get("CertificateValPolicy").As<Number>();
+  pmqsco->CertificateValPolicy = getMQLong(jssco,"CertificateValPolicy");
   setMQIString(env, pmqsco->CertificateLabel , jssco,"CertificateLabel",MQ_CERT_LABEL_LENGTH);
 
   Value v = jssco.Get("KeyRepoPassword");

@@ -87,8 +87,8 @@ Object SUB(const CallbackInfo &info) {
 
   SubWorker *w = new SubWorker(cb, info);
 
-  w->hConn = info[IDX_SUB_HCONN].As<Number>();
-  w->hObjQ = info[IDX_SUB_HOBJQ].As<Number>();
+  w->hConn = info[IDX_SUB_HCONN].As<Number>().Int32Value();
+  w->hObjQ = info[IDX_SUB_HOBJQ].As<Number>().Int32Value();
 
   w->jssd = info[IDX_SUB_SD].As<Object>();
   w->pmqsd = &w->mqsd;
@@ -133,11 +133,11 @@ Object SUBRQ(const CallbackInfo &info) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  hConn = info[IDX_SUBRQ_HCONN].As<Number>();
-  hSub = info[IDX_SUBRQ_HSUB].As<Number>();
+  hConn = info[IDX_SUBRQ_HCONN].As<Number>().Int32Value();
+  hSub = info[IDX_SUBRQ_HSUB].As<Number>().Int32Value();
   jssro = info[IDX_SUBRQ_SRO].As<Object>();
-  hSub = info[IDX_SUBRQ_HSUB].As<Number>();
-  action = info[IDX_SUBRQ_ACTION].As<Number>();
+  hSub = info[IDX_SUBRQ_HSUB].As<Number>().Int32Value();
+  action = info[IDX_SUBRQ_ACTION].As<Number>().Int32Value();
 
   copySROtoC(env, jssro, &mqsro);
 

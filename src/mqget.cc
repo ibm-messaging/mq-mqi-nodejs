@@ -100,8 +100,8 @@ Object GET(const CallbackInfo &info) {
 
   GetWorker *w = new GetWorker(cb, info);
 
-  w->hConn = info[IDX_GET_HCONN].As<Number>();
-  w->hObj  = info[IDX_GET_HOBJ].As<Number>();
+  w->hConn = info[IDX_GET_HCONN].As<Number>().Int32Value();
+  w->hObj  = info[IDX_GET_HOBJ].As<Number>().Int32Value();
 
   w->jsmd = info[IDX_GET_MD].As<Object>();
   w->jsgmo = info[IDX_GET_GMO].As<Object>();

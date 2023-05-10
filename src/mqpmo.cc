@@ -22,19 +22,19 @@
 void copyPMOtoC(Env env, Object jspmo, PMQPMO pmqpmo) {
   bool b;
   pmqpmo->Version  = MQPMO_VERSION_3;
-  pmqpmo->Options          = jspmo.Get("Options").As<Number>();
+  pmqpmo->Options          = getMQLong(jspmo,"Options");
   // Force the FIQ option to always be set for good practice
   pmqpmo->Options |= MQPMO_FAIL_IF_QUIESCING;
 
   Object context = jspmo.Get("Context").As<Object>();
   if (!context.IsNull() && !context.IsUndefined()) {
-    pmqpmo->Context          = context.Get("_hObj").As<Number>();
+    pmqpmo->Context          = getMQLong(context,"_hObj");
   }
 
   pmqpmo->OriginalMsgHandle = jspmo.Get("OriginalMsgHandle").As<BigInt>().Int64Value(&b);
   pmqpmo->NewMsgHandle      = jspmo.Get("NewMsgHandle").As<BigInt>().Int64Value(&b);
-  pmqpmo->Action            = jspmo.Get("Action").As<Number>();
-  pmqpmo->PubLevel          = jspmo.Get("PubLevel").As<Number>();
+  pmqpmo->Action            = getMQLong(jspmo,"Action");
+  pmqpmo->PubLevel          = getMQLong(jspmo,"PubLevel");
   return;
 };
 
@@ -44,8 +44,8 @@ void copyPMOfromC(Env env, Object jspmo, PMQPMO pmqpmo) {
   jspmo.Set("ResolvedQName"   , getMQIString(env,pmqpmo->ResolvedQName, MQ_Q_NAME_LENGTH));
   jspmo.Set("ResolvedQMgrName", getMQIString(env,pmqpmo->ResolvedQMgrName, MQ_Q_MGR_NAME_LENGTH));
 
-  jspmo.Set("OriginalMsgHandle",  BigInt::New(env,pmqpmo->OriginalMsgHandle));
-  jspmo.Set("NewMsgHandle"     ,  BigInt::New(env,pmqpmo->NewMsgHandle));
+  jspmo.Set("OriginalMsgHandle",  BigInt::New(env,(int64_t)pmqpmo->OriginalMsgHandle));
+  jspmo.Set("NewMsgHandle"     ,  BigInt::New(env,(int64_t)pmqpmo->NewMsgHandle));
   jspmo.Set("PubLevel"         ,  Number::New(env,pmqpmo->PubLevel));
 
   return;

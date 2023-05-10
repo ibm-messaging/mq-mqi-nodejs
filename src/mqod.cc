@@ -21,7 +21,7 @@
 
 void copyODtoC(Env env, Object jsod, PMQOD pmqod) {
   pmqod->Version = 4; // We will always use this version.
-  pmqod->ObjectType = jsod.Get("ObjectType").As<Number>();
+  pmqod->ObjectType = getMQLong(jsod,"ObjectType");
   setMQIString(env, pmqod->ObjectName,jsod,"ObjectName", MQ_Q_NAME_LENGTH); 
   setMQIString(env, pmqod->ObjectQMgrName,jsod,"ObjectQMgrName",MQ_Q_MGR_NAME_LENGTH);
 
@@ -33,7 +33,7 @@ void copyODtoC(Env env, Object jsod, PMQOD pmqod) {
   setMQICharV(env,&pmqod->SelectionString, jsod,"SelectionString", true);
   setMQICharV(env,&pmqod->ResObjectString, jsod, "ResObjectString", true);
 
-  pmqod->ResolvedType = jsod.Get("ResolvedType").As<Number>();
+  pmqod->ResolvedType = getMQLong(jsod,"ResolvedType");
 }
 
 void copyODfromC(Env env, Object jsod, PMQOD pmqod) {

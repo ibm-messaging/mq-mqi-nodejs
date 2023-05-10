@@ -94,11 +94,13 @@ Object PUT(const CallbackInfo &info) {
 
   PutWorker *w = new PutWorker(cb, info);
 
-  w->hConn = info[IDX_PUT_HCONN].As<Number>();
-  w->hObj = info[IDX_PUT_HOBJ].As<Number>();
+  w->hConn = info[IDX_PUT_HCONN].As<Number>().Int32Value();
+  w->hObj = info[IDX_PUT_HOBJ].As<Number>().Int32Value();
 
   w->jsmd = info[IDX_PUT_MD].As<Object>();
   w->jspmo = info[IDX_PUT_PMO].As<Object>();
+
+  debugf(LOG_DEBUG,"MQPUT. Size of PMO = %d",sizeof(w->mqpmo));
 
   w->pmqmd = &w->mqmd;
   w->pmqpmo = &w->mqpmo;
