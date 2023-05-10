@@ -2,6 +2,25 @@
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
 
+
+## N-API REWRITE (May 2023)
+This version of the package has been heavily rewritten, to remove some of the
+outdated/unmaintained dependencies. There are other potential benefits to the
+rewrite that I want to explore later too. But it needs a good shakedown first.
+
+For this initial release, the package is not being released to npm. That will 
+happen assuming the package proves to be reliable and useful.
+
+For now, you can access the package from its github branch. In your _package.json_ files,
+set the dependency to pull direct from github instead of npm:
+```
+  "dependencies": {
+    "ibmmq": "github:ibmmqmet/mq-mqi-nodejs#napi"
+  }
+```
+The rewrite should not have changed any application behaviour. The API is unchanged; 
+all the sample programs in this repo continue without modifications.
+
 ## MQI Description
 The package exposes the IBM MQ programming interface via
 a wrapper layer implemented in JavaScript. This should make it
@@ -33,11 +52,8 @@ objects and data. If the callback is not provided by the application,
 then either an exception is thrown, or the verb returns.
 
 ###  Synchrony
-**Note**: This has changed significantly from the 0.9.2 version of the module onwards.
-
 The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
-and `Get` - have
-true synchronous and asynchronous variations. The default is that the verbs
+and `Get` - have true synchronous and asynchronous variations. The default is that the verbs
 are asynchronous, to be more natural in a Node.js environment. When given a `...Sync`
 suffix (eg `OpenSync`) then the verb is synchronous. Callback functions are now required
 for the OpenSync and SubSync verbs to obtain the object handles; these are not returned
@@ -56,10 +72,7 @@ function to determine the success of the Put calls, but it is not related to
 asynchronous notification of the operation completion in JavaScript terms.
 
 #### Synchronous compatibility option
-If you wish to continue to use the original pseudo-async calls made by this module
-without changing the verbs to use the Sync variants, then you can set the SyncMQICompat
-variable to `true`. This variable should be considered a temporary migration path; it
-will likely be removed at some point in the future.
+The SyncMQICompat tuning parameter has been removed.
 
 ### Promises
 Most of the core MQI verbs (excluding the GET variants) have Promise-based alternatives
@@ -166,17 +179,10 @@ The package includes a couple of verbs that are not standard in the MQI.
 *MQConstants.lookup()* method in Java.
 
 ## Requirements
-* node version 10.20 or greater. Older versions will no longer work because
-of requirements from the ffi-napi package
+* node version 16 or greater. 
 * On platforms other than Windows and Linux x64, you must also install
 the MQ client package
-* The package makes use of the `libffi` capabilities for direct access to the
-MQ API. For some platforms the libffi and ffi-napi components may need
-additional configuration before they can be build. That package is not available at all 
-on z/OS - there is no way that this
-package can run on that platform even with handcrafting build steps.
-
-I have run it on Windows, where the NPM 'windows-build-tools' package
+* I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first. See [this document](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#environment-setup-and-configuration) for more information on Windows.
 
 ## Installation:
