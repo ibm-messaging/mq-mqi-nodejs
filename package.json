@@ -31,7 +31,6 @@
   "gypfile": true,
   "dependencies": {
     "node-addon-api": "^5.0.0",
-    "unzipper": "^0.10.11"
   },
   "engines": {
     "node": ">=16.0"
