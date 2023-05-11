@@ -106,6 +106,7 @@ Object LoadLib(const CallbackInfo &info) {
   char suffixDll[] = ".dll";
   char suffixA[] = ".a";
   char suffixSo[] = ".so";
+  char suffixDylib[] = ".dylib";
   char slashF[] = "/";
   char slashB[] = "\\";
 
@@ -122,6 +123,8 @@ Object LoadLib(const CallbackInfo &info) {
 
   if (config.platform == "aix") {
     suffix = suffixA;
+  } else if (config.platform == "darwin") {
+    suffix = suffixDylib;
   } else if (config.platform == "win32") {
     suffix = suffixDll;
     sep = slashB;
@@ -234,7 +237,15 @@ String getMQIString(Env env, PMQCHAR in, size_t len) {
 }
 
 int32_t getMQLong(Object o, const char *f) {
-  return o.Get(f).As<Number>().Int32Value();
+  Value v = o.Get(f);
+  if (v.IsNumber())  {
+    return v.As<Number>().Int32Value();
+  } else {
+    // We should never get here, but if we do, it's likely because one of the copyTo/FromC functions
+    // has mis-spelled an object attribute. So we need to know about that.
+    fprintf(stderr,"Attempting to read non-number of type %s [%d] from field %s\n",napiType(o.Type()),o.Type(),f);
+    return 0;
+  }
 }
 
 void getMQIBytes(Env env, unsigned char *in, Object out, const char *field, size_t len) {

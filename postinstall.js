@@ -201,7 +201,11 @@ if (doit != null) {
 if (currentPlatform === 'win32') {
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
-  unwantedDirs=[ "exits","exits64", "bin", "Tools","java", "bin64/VS2015" ];
+  unwantedDirs=[ "exits","exits64", "bin", 
+                 "tools/cobol", "tools/cplus", "tools/dotnet",
+                 "tools/c/Samples", "tools/c/include",
+                 "tools/Lib", "tools/Lib64",
+                 "java", "bin64/VS2015" ];
 } else if (currentPlatform === 'linux' && process.arch === 'x64'){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
