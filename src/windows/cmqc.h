@@ -13,13 +13,13 @@
  /*  <copyright                                                  */
  /*  notice="lm-source-program"                                  */
  /*  pids="5724-H72"                                             */
- /*  years="1993,2022"                                           */
+ /*  years="1993,2023"                                           */
  /*  crc="2042140514" >                                          */
  /*  Licensed Materials - Property of IBM                        */
  /*                                                              */
  /*  5724-H72                                                    */
  /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2022 All Rights Reserved.     */
+ /*  (C) Copyright IBM Corp. 1993, 2023 All Rights Reserved.     */
  /*                                                              */
  /*  US Government Users Restricted Rights - Use, duplication or */
  /*  disclosure restricted by GSA ADP Schedule Contract with     */
@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  06/06/22 18:18                                */
- /* Build Level:   p930-L220606                                  */
+ /* Generated on:  2/7/23 5:39 PM                                */
+ /* Build Level:   p932-L230207                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -2725,6 +2725,10 @@
  /* Max queue file size values */
  #define MQQFS_DEFAULT                  (-1)
 
+ /* Queue cap expiry values */
+ #define MQCEX_NOLIMIT                  (-1)
+ #define MQCEX_AS_PARENT                (-2)
+
  /* Read Ahead Values */
  #define MQREADA_NO                     0
  #define MQREADA_YES                    1
@@ -2862,7 +2866,9 @@
  #define MQCMDL_LEVEL_924               924
  #define MQCMDL_LEVEL_925               925
  #define MQCMDL_LEVEL_930               930
- #define MQCMDL_CURRENT_LEVEL           930
+ #define MQCMDL_LEVEL_931               931
+ #define MQCMDL_LEVEL_932               932
+ #define MQCMDL_CURRENT_LEVEL           932
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0
@@ -3377,6 +3383,7 @@
  #define MQIA_BASE_TYPE                 193
  #define MQIA_BATCH_INTERFACE_AUTO      86
  #define MQIA_BRIDGE_EVENT              74
+ #define MQIA_CAP_EXPIRY                276
  #define MQIA_CERT_VAL_POLICY           252
  #define MQIA_CF_CFCONLOS               246
  #define MQIA_CF_LEVEL                  70
@@ -3448,7 +3455,7 @@
  #define MQIA_IP_ADDRESS_VERSION        93
  #define MQIA_KEY_REUSE_COUNT           267
  #define MQIA_LAST                      2000
- #define MQIA_LAST_USED                 275
+ #define MQIA_LAST_USED                 276
  #define MQIA_LDAP_AUTHORMD             263
  #define MQIA_LDAP_NESTGRP              264
  #define MQIA_LDAP_SECURE_COMM          261
@@ -3855,6 +3862,7 @@
  typedef MQPID MQPOINTER PMQPID;
  typedef MQLONG MQTID;
  typedef MQTID MQPOINTER PMQTID;
+
 
  /****************************************************************/
  /* MQAIR Structure -- Authentication Information Record         */

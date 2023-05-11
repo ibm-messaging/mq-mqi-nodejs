@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  4/5/23 5:31 PM                                */
- /* Build Level:   p933-dfct-USER-L230405.6                      */
+ /* Generated on:  2/7/23 5:39 PM                                */
+ /* Build Level:   p932-L230207                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -2864,8 +2864,7 @@
  #define MQCMDL_LEVEL_930               930
  #define MQCMDL_LEVEL_931               931
  #define MQCMDL_LEVEL_932               932
- #define MQCMDL_LEVEL_933               933
- #define MQCMDL_CURRENT_LEVEL           933
+ #define MQCMDL_CURRENT_LEVEL           932
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0
