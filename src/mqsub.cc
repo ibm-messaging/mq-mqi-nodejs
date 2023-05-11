@@ -29,7 +29,7 @@ public:
 
   ~SubWorker() { debugf(LOG_OBJECT, "In SUB destructor\n"); }
 
-  void Execute() { CALLMQI("MQSUB")(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC); }
+  void Execute() { CALLMQI("MQSUB",MQHCONN,PMQSD,PMQHOBJ,PMQHOBJ,PMQLONG,PMQLONG)(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In SUB OnOK method.\n");
@@ -99,7 +99,7 @@ Object SUB(const CallbackInfo &info) {
     w->jssdRef = Persistent(w->jssd);
     w->Queue();
   } else {
-    CALLMQI("MQSUB")(w->hConn, w->pmqsd, w->hObjQ, &w->hObjSub, &w->CC, &w->RC);
+    CALLMQI("MQSUB",MQHCONN,PMQSD,PMQHOBJ,PMQHOBJ,PMQLONG,PMQLONG)(w->hConn, w->pmqsd, &w->hObjQ, &w->hObjSub, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -141,7 +141,7 @@ Object SUBRQ(const CallbackInfo &info) {
 
   copySROtoC(env, jssro, &mqsro);
 
-  CALLMQI("MQSUBRQ")(hConn, hSub, action, &mqsro, &CC, &RC);
+  CALLMQI("MQSUBRQ",MQHCONN,MQHOBJ,MQLONG,PMQSRO,PMQLONG,PMQLONG)(hConn, hSub, action, &mqsro, &CC, &RC);
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));

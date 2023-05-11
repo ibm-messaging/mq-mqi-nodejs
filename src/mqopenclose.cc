@@ -29,7 +29,7 @@ public:
 
   ~OpenWorker() { debugf(LOG_OBJECT, "In OPEN destructor\n"); }
 
-  void Execute() { CALLMQI("MQOPEN")(hConn, pmqod, Options, &hObj, &CC, &RC); }
+  void Execute() { CALLMQI("MQOPEN",MQHCONN,PMQOD,MQLONG,PMQHOBJ,PMQLONG,PMQLONG)(hConn, pmqod, Options, &hObj, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In OPEN OnOK method.\n");
@@ -98,7 +98,7 @@ Object OPEN(const CallbackInfo &info) {
     w->jsodRef = Persistent(w->jsod);
     w->Queue();
   } else {
-    CALLMQI("MQOPEN")(w->hConn, w->pmqod, w->Options, &w->hConn, &w->CC, &w->RC);
+    CALLMQI("MQOPEN",MQHCONN,PMQOD,MQLONG,PMQHOBJ,PMQLONG,PMQLONG)(w->hConn, w->pmqod, w->Options, &w->hConn, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -123,7 +123,7 @@ public:
 
   ~CloseWorker() { debugf(LOG_OBJECT, "In CLOSE destructor\n"); }
 
-  void Execute() { CALLMQI("MQCLOSE")(hConn, &hObj, Options, &CC, &RC); }
+  void Execute() { CALLMQI("MQCLOSE",MQHCONN,PMQHOBJ,MQLONG,PMQLONG,PMQLONG)(hConn, &hObj, Options, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In CLOSE OnOK method.\n");
@@ -179,7 +179,7 @@ Object CLOSE(const CallbackInfo &info) {
   if (async) {
     w->Queue();
   } else {
-    CALLMQI("MQCLOSE")(w->hConn, &w->hObj, w->Options, &w->CC, &w->RC);
+    CALLMQI("MQCLOSE",MQHCONN,PMQHOBJ,MQLONG,PMQLONG,PMQLONG)(w->hConn, &w->hObj, w->Options, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

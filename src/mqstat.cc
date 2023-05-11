@@ -44,7 +44,7 @@ Object STAT(const CallbackInfo &info) {
 
   copySTStoC(env, jssts, &mqsts);
 
-  CALLMQI("MQSTAT")(hConn, statusType, &mqsts, &CC, &RC);
+  CALLMQI("MQSTAT",MQHCONN,MQLONG,PMQSTS,PMQLONG,PMQLONG)(hConn, statusType, &mqsts, &CC, &RC);
 
   copySTSfromC(env, jssts, &mqsts);
 

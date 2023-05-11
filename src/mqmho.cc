@@ -40,7 +40,7 @@ Object CRTMH(const CallbackInfo &info) {
   jsCmho = info[IDX_CRTMH_CMHO].As<Object>();
   cmho.Options = getMQLong(jsCmho,"Options"); // Only item to copy over
 
-  CALLMQI("MQCRTMH")(hConn, &cmho, &hMsg, &CC, &RC);
+  CALLMQI("MQCRTMH",MQHCONN,PMQCMHO,PMQHMSG,PMQLONG,PMQLONG)(hConn, &cmho, &hMsg, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -74,7 +74,7 @@ Object DLTMH(const CallbackInfo &info) {
   dmho.Options = getMQLong(jsDmho,"Options"); // Only item to copy over
   hMsg = info[IDX_DLTMH_HMSG].As<BigInt>().Int64Value(&b);
 
-  CALLMQI("MQDLTMH")(hConn, &hMsg, &dmho, &CC, &RC);
+  CALLMQI("MQDLTMH",MQHCONN,PMQHMSG,PMQDMHO,PMQLONG,PMQLONG)(hConn, &hMsg, &dmho, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));

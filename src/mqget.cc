@@ -34,7 +34,7 @@ public:
     debugf(LOG_OBJECT,"In GET destructor\n");
   }
 
-  void Execute() { CALLMQI("MQGET")(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC); }
+  void Execute() { CALLMQI("MQGET",MQHCONN,MQHOBJ,PMQMD,PMQGMO,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE,"In GET OnOK method.\n");
@@ -131,7 +131,7 @@ Object GET(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQGET")(w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
+    CALLMQI("MQGET",MQHCONN,MQHOBJ,PMQMD,PMQGMO,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)(w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

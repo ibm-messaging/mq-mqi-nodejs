@@ -95,7 +95,8 @@ Object SETMP(const CallbackInfo &info) {
   }
 
   if (CC == MQCC_OK) {
-    CALLMQI("MQSETMP")(hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
+    CALLMQI("MQSETMP",MQHCONN,MQHMSG,PMQSMPO,PMQCHARV,PMQPD,MQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG)
+                      (hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
   }
 
   Object result = Object::New(env);
@@ -117,7 +118,7 @@ Object DLTMP(const CallbackInfo &info) {
   enum { IDX_DLTMP_HCONN = 0, IDX_DLTMP_HMSG, IDX_DLTMP_DMPO, IDX_DLTMP_NAME };
 
   MQHCONN hConn;
-  MQDMHO dmpo = {MQDMPO_DEFAULT};
+  MQDMPO dmpo = {MQDMPO_DEFAULT};
   MQHMSG hMsg;
   Object jsDmpo;
   MQLONG CC;
@@ -134,7 +135,7 @@ Object DLTMP(const CallbackInfo &info) {
   dmpo.Options = jsDmpo.Get("Options").As<Number>().Int32Value(); // Only item to copy over
   hMsg = info[IDX_DLTMP_HMSG].As<BigInt>().Int64Value(&b);
 
-  CALLMQI("MQDLTMP")(hConn, &hMsg, &dmpo, &CC, &RC);
+  CALLMQI("MQDLTMP",MQHCONN,PMQHMSG,PMQDMPO,PMQLONG,PMQLONG)(hConn, &hMsg, &dmpo, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -197,7 +198,8 @@ Object INQMP(const CallbackInfo &info) {
   buf = info[IDX_INQMP_BUFFER].As<Buffer<unsigned char>>().Data();
   buflen = info[IDX_INQMP_BUFFER].As<Buffer<unsigned char>>().Length();
 
-  CALLMQI("MQINQMP")(hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
+  CALLMQI("MQINQMP",MQHCONN,MQHMSG,PMQIMPO,PMQCHARV,PMQPD,PMQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)
+    (hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));

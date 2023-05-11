@@ -83,7 +83,8 @@ Object INQ(const CallbackInfo &info) {
     if (charAttrLen > 0)
       charAttrs = (char *)malloc(charAttrLen);
 
-    CALLMQI("MQINQ")(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    CALLMQI("MQINQ",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
+        (hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;
@@ -188,7 +189,8 @@ Object SET(const CallbackInfo &info) {
 
   if (!badSelector) {
     debugf(LOG_DEBUG, "BadSelector=%d CharAttrLen=%d", badSelector ? 1 : 0, charAttrLen);
-    CALLMQI("MQSET")(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    CALLMQI("MQSET",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
+       (hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;

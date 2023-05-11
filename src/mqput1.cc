@@ -29,7 +29,7 @@ public:
 
   ~Put1Worker() { debugf(LOG_OBJECT, "In PUT1 destructor\n"); }
 
-  void Execute() { CALLMQI("MQPUT1")(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
+  void Execute() { CALLMQI("MQPUT1",MQHCONN,PMQOD,PMQMD,PMQPMO,MQLONG,PMQVOID,PMQLONG,PMQLONG)(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In PUT1 OnOK method.\n");
@@ -132,7 +132,7 @@ Object PUT1(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQPUT1")(w->hConn, w->pmqod, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
+    CALLMQI("MQPUT1",MQHCONN,PMQOD,PMQMD,PMQPMO,MQLONG,PMQVOID,PMQLONG,PMQLONG)(w->hConn, w->pmqod, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

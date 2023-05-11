@@ -44,7 +44,7 @@ public:
 
   void Execute() {
     debugf(LOG_TRACE, "About to call MQCONNX\n");
-    CALLMQI("MQCONNX")(qmName, pCno, &hConn, &CC, &RC);
+    CALLMQI("MQCONNX",PMQCHAR,PMQCNO,PMQHCONN,PMQLONG,PMQLONG)(qmName, pCno, &hConn, &CC, &RC);
   }
 
   void OnOK() {
@@ -209,7 +209,7 @@ Object CONNX(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQCONNX")(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
+    CALLMQI("MQCONNX",PMQCHAR,PMQCNO,PMQHCONN,PMQLONG,PMQLONG)(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -244,7 +244,7 @@ public:
 
   ~DiscWorker() { debugf(LOG_OBJECT, "In DISC destructor\n"); }
 
-  void Execute() { CALLMQI("MQDISC")(&hConn, &CC, &RC); }
+  void Execute() { CALLMQI("MQDISC",PMQHCONN,PMQLONG,PMQLONG)(&hConn, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In DISC OnOK method\n");
@@ -288,7 +288,7 @@ Object DISC(const CallbackInfo &info) {
   if (async) {
     w->Queue();
   } else {
-    CALLMQI("MQDISC")(&w->hConn, &w->CC, &w->RC);
+    CALLMQI("MQDISC",PMQHCONN,PMQLONG,PMQLONG)(&w->hConn, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
