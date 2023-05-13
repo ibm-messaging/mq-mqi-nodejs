@@ -34,7 +34,7 @@ void copyMDtoC(Env env, Object jsmd, PMQMD pmqmd) {
   pmqmd->Persistence = getMQLong(jsmd,"Persistence");
 
   setMQIBytes(env,pmqmd->MsgId,jsmd,"MsgId",MQ_MSG_ID_LENGTH);
-  setMQIBytes(env,pmqmd->CorrelId,jsmd,"Correld",MQ_CORREL_ID_LENGTH);
+  setMQIBytes(env,pmqmd->CorrelId,jsmd,"CorrelId",MQ_CORREL_ID_LENGTH);
   
   pmqmd->BackoutCount = getMQLong(jsmd,"BackoutCount");
 
