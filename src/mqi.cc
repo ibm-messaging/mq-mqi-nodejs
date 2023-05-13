@@ -197,10 +197,12 @@ void setMQIString(Env env, char *out, Object in, const char *field, size_t len) 
     Value v = in.Get(field);
     if (v.IsString()) {
     String s = v.As<String>();
-    if (s.Utf8Value().length() > len) {
-      throwRE(env, "Input string too long for MQI field", field);
+    size_t l = strlen(s.Utf8Value().c_str());
+    if (l > len) {
+      throwRE(env, "Input string too long for MQI field.", field);
     } else {
-      strncpy(out, s.Utf8Value().c_str(), len);
+      memset(out,' ',len);
+      memcpy(out, s.Utf8Value().c_str(), l);
     }
     } else {
       // Leave the original MQI field untouched
@@ -287,7 +289,8 @@ void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output)
       }
     } else {
       String s = in.Get(field).As<String>();
-      if (s.Utf8Value().length() > MAXCHARV_LENGTH) {
+      size_t l = strlen(s.Utf8Value().c_str());
+      if (l > MAXCHARV_LENGTH) {
         throwRE(env, "Input string too long for MQI field", field);
       } else {
         p = strdup(s.Utf8Value().c_str());
@@ -461,6 +464,7 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "InqMp"), Function::New(env, INQMP));
   exports.Set(String::New(env, "DltMp"), Function::New(env, DLTMP));
 
+//  exports.Set(String::New(env, "TestSP"), Function::New(env, TESTSP));
   return exports;
 }
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init);

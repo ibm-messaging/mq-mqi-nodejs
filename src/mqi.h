@@ -47,6 +47,8 @@ Object SETMP(const CallbackInfo &info);
 Object DLTMP(const CallbackInfo &info);
 Object INQMP(const CallbackInfo &info);
 
+//void TESTSP(const CallbackInfo &info);
+
 /* How to get from the dlsym pointers to the real functions */
 #define CALLMQI(fn,...)  reinterpret_cast< void(*)(__VA_ARGS__) >(mqiFnMap[ fn ])
 extern std::map<std::string,void *>mqiFnMap;
