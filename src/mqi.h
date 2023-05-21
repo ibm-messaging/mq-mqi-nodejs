@@ -1,13 +1,13 @@
 
 #if !defined(IBMMQ_NAPI_H)
 #define IBMMQ_NAPI_H
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 
 #include <assert.h>
-#include <napi.h>
 #include <map>
+#include <napi.h>
 
 #if defined(WIN32)
 #include "windows/cmqc.h"
@@ -39,6 +39,8 @@ Object SET(const CallbackInfo &info);
 Object PUT(const CallbackInfo &info);
 Object PUT1(const CallbackInfo &info);
 Object GET(const CallbackInfo &info);
+Object GETASYNC(const CallbackInfo &info);
+Object GETDONE(const CallbackInfo &info);
 
 Object CRTMH(const CallbackInfo &info);
 Object DLTMH(const CallbackInfo &info);
@@ -47,11 +49,13 @@ Object SETMP(const CallbackInfo &info);
 Object DLTMP(const CallbackInfo &info);
 Object INQMP(const CallbackInfo &info);
 
-//void TESTSP(const CallbackInfo &info);
+/* To permit test code */
+void TESTSP(const CallbackInfo &info);
 
 /* How to get from the dlsym pointers to the real functions */
-#define CALLMQI(fn,...)  reinterpret_cast< void(*)(__VA_ARGS__) >(mqiFnMap[ fn ])
-extern std::map<std::string,void *>mqiFnMap;
+/* The varargs elements are the types of the parameters to each call - MQLONG, PMQMD etc */
+#define CALLMQI(fn, ...) reinterpret_cast<void (*)(__VA_ARGS__)>(mqiFnMap[fn])
+extern std::map<std::string, void *> mqiFnMap;
 
 /* Structure transformations into/out of JS format */
 void copyODtoC(Env, Object, PMQOD);
@@ -61,68 +65,76 @@ void copyMDtoC(Env, Object, PMQMD);
 void copyMDfromC(Env, Object, PMQMD);
 
 void copyGMOtoC(Env, Object, PMQGMO);
-void copyGMOfromC(Env, Object , PMQGMO);
+void copyGMOfromC(Env, Object, PMQGMO);
 
 void copyPMOtoC(Env, Object, PMQPMO);
-void copyPMOfromC(Env, Object , PMQPMO);
+void copyPMOfromC(Env, Object, PMQPMO);
 
 void copySDtoC(Env, Object, PMQSD);
-void copySDfromC(Env, Object , PMQSD);
+void copySDfromC(Env, Object, PMQSD);
 
 void copySROtoC(Env, Object, PMQSRO);
-void copySROfromC(Env, Object , PMQSRO);
+void copySROfromC(Env, Object, PMQSRO);
 
 void copySTStoC(Env env, Object jssts, PMQSTS pmqsts);
 void copySTSfromC(Env env, Object jssts, PMQSTS pmqsts);
 
 void copyCSPtoC(Env, Object, PMQCSP);
-void copyCSPfromC(Env, Object , PMQCSP);
+void copyCSPfromC(Env, Object, PMQCSP);
 void copyCDtoC(Env, Object, PMQCD);
-void copyCDfromC(Env, Object , PMQCD);
+void copyCDfromC(Env, Object, PMQCD);
 void copySCOtoC(Env, Object, PMQSCO);
-void copySCOfromC(Env, Object , PMQSCO);
+void copySCOfromC(Env, Object, PMQSCO);
 void copyBNOtoC(Env, Object, PMQBNO);
-void copyBNOfromC(Env, Object , PMQBNO);
+void copyBNOfromC(Env, Object, PMQBNO);
 
 void cleanupCSP(PMQCSP);
 void cleanupCD(PMQCD);
 void cleanupSCO(PMQSCO);
 void cleanupBNO(PMQBNO);
 
+void cleanupObjectContext(MQHCONN, MQHOBJ, PMQLONG, PMQLONG); // For async consumers
+void cleanupConnectionContext(MQHCONN);
 
 /* Field manipulation functions */
-void setMQIString(Env env, char *out,Object in, const char *field,size_t len);
-void setMQIBytes(Env env, unsigned char *out,Object in, const char *field,size_t len);
-String getMQIString(Env env,PMQCHAR in,size_t len);
-void getMQIBytes(Env env, unsigned char *in,Object out, const char *field,size_t len);
+void setMQIString(Env env, char *out, Object in, const char *field, size_t len);
+void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size_t len);
+String getMQIString(Env env, PMQCHAR in, size_t len);
+void getMQIBytes(Env env, unsigned char *in, Object out, const char *field, size_t len);
 void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output);
 String getMQICharV(Env env, PMQCHARV v, bool free);
 int32_t getMQLong(Object, const char *);
 
+/* Memory allocation functions */
+void mqnFree(void *);
+void mqnFreeString(void *);
+char *mqnStrdup(Env, const char *);
+void *mqnAlloc(Env, size_t l);
 
 /* Debug functions */
-void mqFree(void *);
-void mqFreeString(void *);
-void debugf(int,const char *fmt, ...);
+void debugf(int, const char *fmt, ...);
 void debugDest(Env env, void *s);
-void dumpObject(Env env,const char *,Object o);
+void dumpObject(Env env, const char *, Object o);
+void dumpHex(const char *title, void *buf, int length);
+
 const char *napiType(napi_valuetype t);
 
 void throwTE(Env env, std::string s1, std::string s2);
 void throwRE(Env env, std::string s1, std::string s2);
+void throwError(Env env, std::string s1);
 
-#define LOG_NONE    (0)
-#define LOG_DEBUG   (1)
-#define LOG_TRACE   (2)
-#define LOG_OBJECT  (3) /* Track constructors/destructors */
+#define LOG_NONE (0)
+#define LOG_DEBUG (1)
+#define LOG_TRACE (2)
+#define LOG_OBJECT (3) /* Track some constructors/destructors */
+
+extern int logLevel; /* This may be referred to even after Configuration removed */
+
 class Configuration {
-  public:
-    int logLevel;
-    string platform;
-    string arch;
-    bool littleEndian;
-    FunctionReference noopFnRef;
+public:
+  string platform;
+  string arch;
+  FunctionReference noopFnRef;
 };
 extern Configuration config;
-
 #endif

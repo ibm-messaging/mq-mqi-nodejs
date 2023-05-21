@@ -40,7 +40,7 @@ public:
     result.Set("jsHObj", Number::New(Env(), hObj));
 
     debugf(LOG_DEBUG, "HConn was %d", hConn);
-    dumpObject(Env(), "Open Result", result);
+    // dumpObject(Env(), "Open Result", result);
 
     copyODfromC(Env(), jsodRef.Value().As<Object>(), pmqod);
     Callback().Call({result});
@@ -68,8 +68,8 @@ Object OPEN(const CallbackInfo &info) {
   Function cb;
   bool async = false;
   Object result = Object::New(env);
-  if (config.logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, strdup(VERB));
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
   }
 
   if (info.Length() < 1 || info.Length() > IDX_OPEN_CALLBACK + 1) {
@@ -92,7 +92,7 @@ Object OPEN(const CallbackInfo &info) {
 
   copyODtoC(env, w->jsod, w->pmqod);
 
-  dumpObject(env, "MQOD before calling MQOPEN", w->jsod);
+  // dumpObject(env, "MQOD before calling MQOPEN", w->jsod);
 
   if (async) {
     w->jsodRef = Persistent(w->jsod);
@@ -133,8 +133,10 @@ public:
     result.Set("jsRc", Number::New(Env(), RC));
     result.Set("jsHObj", Number::New(Env(), hObj));
 
-    dumpObject(Env(), "Close Result", result);
+    // Remove any async consumers
+    cleanupObjectContext(hConn,hObj,&CC,&RC);
 
+    // dumpObject(Env(), "Close Result", result);
     Callback().Call({result});
   }
 
@@ -155,8 +157,8 @@ Object CLOSE(const CallbackInfo &info) {
   Function cb;
   bool async = false;
   Object result = Object::New(env);
-  if (config.logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, strdup(VERB));
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
   }
 
   if (info.Length() < 1 || info.Length() > IDX_CLOSE_CALLBACK + 1) {
@@ -184,6 +186,9 @@ Object CLOSE(const CallbackInfo &info) {
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
     result.Set("jsHObj", Number::New(env, w->hObj));
+
+    // Remove any async consumers
+    cleanupObjectContext(w->hConn,w->hObj,&w->CC,&w->RC);
 
     delete (w);
   }

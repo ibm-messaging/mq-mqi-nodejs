@@ -31,7 +31,7 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
   // only for the InitialKey setting.
   String UserId = jscsp.Get("UserId").As<String>();
   if (!UserId.IsNull() && !UserId.IsUndefined()) {
-    cUserId = strdup(UserId.Utf8Value().c_str());
+    cUserId = mqnStrdup(env,UserId.Utf8Value().c_str());
     pmqcsp->CSPUserIdPtr = cUserId;
     pmqcsp->CSPUserIdOffset = 0;
     pmqcsp->CSPUserIdLength = strlen(cUserId);
@@ -41,7 +41,7 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
 
   Object Password = jscsp.Get("Password").As<Object>();
   if (!Password.IsNull() && !Password.IsUndefined()) {
-    cPassword = strdup(Password.As<String>().Utf8Value().c_str());
+    cPassword = mqnStrdup(env,Password.As<String>().Utf8Value().c_str());
     pmqcsp->CSPPasswordPtr = cPassword;
     pmqcsp->CSPPasswordOffset = 0;
     pmqcsp->CSPPasswordLength = strlen(cPassword);
@@ -49,7 +49,7 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
 
   Object InitialKey = jscsp.Get("InitialKey").As<Object>();
   if (!InitialKey.IsNull() && !InitialKey.IsUndefined()) {
-    cInitialKey = strdup(InitialKey.As<String>().Utf8Value().c_str());
+    cInitialKey = mqnStrdup(env,InitialKey.As<String>().Utf8Value().c_str());
     pmqcsp->InitialKeyPtr = cInitialKey;
     pmqcsp->InitialKeyOffset = 0;
     pmqcsp->InitialKeyLength = strlen(cInitialKey);
@@ -58,8 +58,8 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
 
 void cleanupCSP(PMQCSP pCsp) {
     if (pCsp) {
-      mqFreeString(pCsp->CSPUserIdPtr);
-      mqFreeString(pCsp->CSPPasswordPtr);
-      mqFreeString(pCsp->InitialKeyPtr);
+      mqnFreeString(pCsp->CSPUserIdPtr);
+      mqnFreeString(pCsp->CSPPasswordPtr);
+      mqnFreeString(pCsp->InitialKeyPtr);
     }
 }

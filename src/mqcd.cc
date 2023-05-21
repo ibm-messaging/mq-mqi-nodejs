@@ -33,7 +33,7 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
 
   Value v = jscd.Get("SSLPeerName");
   if (v.IsString()) {
-    pmqcd->SSLPeerNamePtr = strdup(v.As<String>().Utf8Value().c_str());
+    pmqcd->SSLPeerNamePtr = mqnStrdup(env,v.As<String>().Utf8Value().c_str());
     pmqcd->SSLPeerNameLength = strlen((char *)pmqcd->SSLPeerNamePtr);
   }
   pmqcd->SSLClientAuth = getMQLong(jscd,"SSLClientAuth");
@@ -68,5 +68,5 @@ void copyCDfromC(Env env, Object jscd, PMQCD pmqcd) { return; };
 
 void cleanupCD(PMQCD pmqcd) {
   if (pmqcd)
-    mqFree(pmqcd->SSLPeerNamePtr);
+    mqnFree(pmqcd->SSLPeerNamePtr);
 }

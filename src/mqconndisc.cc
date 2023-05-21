@@ -29,7 +29,7 @@ static void cleanupCNO(PMQCNO pCno) {
     cleanupCD((PMQCD)pCno->ClientConnPtr);
 
     if (pCno->CCDTUrlPtr) {
-      mqFreeString(pCno->CCDTUrlPtr);
+      mqnFreeString(pCno->CCDTUrlPtr);
     }
   }
 }
@@ -44,7 +44,7 @@ public:
 
   void Execute() {
     debugf(LOG_TRACE, "About to call MQCONNX\n");
-    CALLMQI("MQCONNX",PMQCHAR,PMQCNO,PMQHCONN,PMQLONG,PMQLONG)(qmName, pCno, &hConn, &CC, &RC);
+    CALLMQI("MQCONNX", PMQCHAR, PMQCNO, PMQHCONN, PMQLONG, PMQLONG)(qmName, pCno, &hConn, &CC, &RC);
   }
 
   void OnOK() {
@@ -102,6 +102,9 @@ Object CONNX(const CallbackInfo &info) {
   Function cb;
   Env env = info.Env();
   Object result = Object::New(env);
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
+  }
 
   if (info.Length() < 1 || info.Length() > IDX_CONNX_CALLBACK + 1) {
     throwTE(env, VERB, "Wrong number of arguments");
@@ -128,22 +131,22 @@ Object CONNX(const CallbackInfo &info) {
 
   Value v = info[IDX_CONNX_CNO];
   if (v.IsObject()) {
-    //dumpObject(env, "MQCNO", v.As<Object>());
+    // dumpObject(env, "MQCNO", v.As<Object>());
   } else {
-    //debugf(LOG_OBJECT,"CNO is not an object");
-  }  
+    // debugf(LOG_OBJECT,"CNO is not an object");
+  }
   if (v.IsObject()) {
     w->jscno = v.As<Object>();
     if (!w->jscno.IsNull()) {
       w->pCno = &w->cno;
-      w->cno.Options = getMQLong(w->jscno,"Options");
+      w->cno.Options = getMQLong(w->jscno, "Options");
 
       v = w->jscno.Get("ClientConn");
       if (v.IsObject()) {
-        //dumpObject(env, "MQCD", v.As<Object>());
+        // dumpObject(env, "MQCD", v.As<Object>());
       } else {
-        //debugf(LOG_OBJECT,"CD is not an object - isempty? %s. Type:%d [%s]", v.IsEmpty()?"true":"false", v.Type(), napiType(v.Type()));
-      }  
+        // debugf(LOG_OBJECT,"CD is not an object - isempty? %s. Type:%d [%s]", v.IsEmpty()?"true":"false", v.Type(), napiType(v.Type()));
+      }
       if (v.IsObject()) {
         w->jscd = v.As<Object>();
         w->cno.ClientConnPtr = &w->cd;
@@ -163,7 +166,7 @@ Object CONNX(const CallbackInfo &info) {
         }
       }
 
-      v = w->jscno.Get("SecurityParms"); 
+      v = w->jscno.Get("SecurityParms");
       if (v.IsObject()) {
         w->jscsp = v.As<Object>();
         w->cno.SecurityParmsPtr = &w->csp;
@@ -175,7 +178,7 @@ Object CONNX(const CallbackInfo &info) {
 
       v = w->jscno.Get("CCDTUrl");
       if (v.IsString()) {
-        w->cno.CCDTUrlPtr = strdup(w->jscno.Get("CCDTUrl").As<String>().Utf8Value().c_str());
+        w->cno.CCDTUrlPtr = mqnStrdup(env, w->jscno.Get("CCDTUrl").As<String>().Utf8Value().c_str());
         w->cno.CCDTUrlOffset = 0;
         w->cno.CCDTUrlLength = strlen(w->cno.CCDTUrlPtr);
         if (w->cno.Version < 6) {
@@ -190,7 +193,6 @@ Object CONNX(const CallbackInfo &info) {
           w->cno.Version = 7;
         }
       }
-
 
       v = w->jscno.Get("BalanceParms");
       if (v.IsObject()) {
@@ -209,7 +211,7 @@ Object CONNX(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQCONNX",PMQCHAR,PMQCNO,PMQHCONN,PMQLONG,PMQLONG)(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
+    CALLMQI("MQCONNX", PMQCHAR, PMQCNO, PMQHCONN, PMQLONG, PMQLONG)(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -244,7 +246,13 @@ public:
 
   ~DiscWorker() { debugf(LOG_OBJECT, "In DISC destructor\n"); }
 
-  void Execute() { CALLMQI("MQDISC",PMQHCONN,PMQLONG,PMQLONG)(&hConn, &CC, &RC); }
+  void Execute() {
+    MQHCONN savedHConn = hConn;
+    CALLMQI("MQDISC", PMQHCONN, PMQLONG, PMQLONG)(&hConn, &CC, &RC);
+    if (CC == MQCC_OK) {
+      cleanupConnectionContext(savedHConn);
+    }
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In DISC OnOK method\n");
@@ -271,6 +279,9 @@ Object DISC(const CallbackInfo &info) {
   Function cb;
   Env env = info.Env();
   Object result = Object::New(env);
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
+  }
 
   if (info.Length() < 1 || info.Length() > IDX_DISC_CALLBACK + 1) {
     throwTE(env, VERB, "Wrong number of arguments");
@@ -288,8 +299,12 @@ Object DISC(const CallbackInfo &info) {
   if (async) {
     w->Queue();
   } else {
-    CALLMQI("MQDISC",PMQHCONN,PMQLONG,PMQLONG)(&w->hConn, &w->CC, &w->RC);
+    MQHCONN savedHConn = w->hConn;
+    CALLMQI("MQDISC", PMQHCONN, PMQLONG, PMQLONG)(&w->hConn, &w->CC, &w->RC);
 
+    if (w->CC == MQCC_OK) {
+      cleanupConnectionContext(savedHConn);
+    }
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
     result.Set("jsHConn", Number::New(env, w->hConn));

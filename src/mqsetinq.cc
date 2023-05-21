@@ -55,8 +55,8 @@ Object INQ(const CallbackInfo &info) {
   // Allocate an array of the same length as the selectors in case all
   // are requesting MQIA values. Not all of
   // this array may need to be used, but that's OK.
-  mqSelectors = (MQLONG *)malloc(jsSelectors.Length() * sizeof(MQLONG));
-  intAttrValues = (MQLONG *)malloc(jsSelectors.Length() * sizeof(MQLONG));
+  mqSelectors = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
+  intAttrValues = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
 
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {
     Value jsSelectorV = jsSelectors[i];
@@ -81,7 +81,7 @@ Object INQ(const CallbackInfo &info) {
   debugf(LOG_DEBUG, "BadSelector=%d CharAttrLen=%d", badSelector ? 1 : 0, charAttrLen);
   if (!badSelector) {
     if (charAttrLen > 0)
-      charAttrs = (char *)malloc(charAttrLen);
+      charAttrs = (char *)mqnAlloc(env,charAttrLen);
 
     CALLMQI("MQINQ",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
         (hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
@@ -163,9 +163,9 @@ Object SET(const CallbackInfo &info) {
   // Allocate an array of the same length as the selectors in case all
   // are requesting MQIA values. Not all of
   // this array may need to be used, but that's OK.
-  mqSelectors = (MQLONG *)malloc(jsSelectors.Length() * sizeof(MQLONG));
-  intAttrValues = (MQLONG *)malloc(jsSelectors.Length() * sizeof(MQLONG));
-  charAttrs = (char *)malloc(charAttrLen);
+  mqSelectors = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
+  intAttrValues = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
+  charAttrs = (char *)mqnAlloc(env,charAttrLen);
   memset(charAttrs, ' ', charAttrLen);
 
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {

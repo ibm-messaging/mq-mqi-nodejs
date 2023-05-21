@@ -27,28 +27,37 @@ using namespace Napi;
 class GetWorker : public Napi::AsyncWorker {
 public:
   GetWorker(Function &callback, const CallbackInfo &info) : AsyncWorker(callback) {
-    debugf(LOG_OBJECT,"In GET constructor. Number of parameters = %d \n", (int)info.Length());
+    debugf(LOG_OBJECT, "In GET constructor. Number of parameters = %d \n", (int)info.Length());
   }
 
-  ~GetWorker() {
-    debugf(LOG_OBJECT,"In GET destructor\n");
-  }
+  ~GetWorker() { debugf(LOG_OBJECT, "In GET destructor\n"); }
 
-  void Execute() { CALLMQI("MQGET",MQHCONN,MQHOBJ,PMQMD,PMQGMO,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC); }
+  void Execute() {
+    CALLMQI("MQGET", MQHCONN, MQHOBJ, PMQMD, PMQGMO, MQLONG, PMQVOID, PMQLONG, PMQLONG, PMQLONG)(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC);
+  }
 
   void OnOK() {
-    debugf(LOG_TRACE,"In GET OnOK method.\n");
+    debugf(LOG_TRACE, "In GET OnOK method.\n");
 
     Object result = Object::New(Env());
     result.Set("jsCc", Number::New(Env(), CC));
     result.Set("jsRc", Number::New(Env(), RC));
     result.Set("jsDatalen", Number::New(Env(), datalen));
 
-    copyMDfromC(Env(),jsmdRef.Value().As<Object>(),pmqmd);
-    copyGMOfromC(Env(),jsgmoRef.Value().As<Object>(),pmqgmo);
+    if (jsmdIsBuf) {
+      dumpHex("MQMD",pmqmd,MQMD_LENGTH_2);
+    } else {  
+      copyMDfromC(Env(), jsmdRef.Value().As<Object>(), pmqmd);
+    }
 
-    //dumpObject(Env(),"MQMD in OnOK",this->jsmdRef.Value().As<Object>());
-    Callback().Call({result}); 
+    if (jsgmoIsBuf) {
+      dumpHex("MQGMO",pmqgmo,MQGMO_LENGTH_4);
+    } else {  
+      copyGMOfromC(Env(), jsgmoRef.Value().As<Object>(), pmqgmo);
+    }
+
+    // dumpObject(Env(),"MQMD in OnOK",this->jsmdRef.Value().As<Object>());
+    Callback().Call({result});
   }
 
 public:
@@ -60,17 +69,19 @@ public:
 
   MQLONG datalen;
   MQLONG buflen;
-  MQPTR  buf;
+  MQPTR buf;
 
   Object jsmd;
   ObjectReference jsmdRef;
   MQMD mqmd = {MQMD_DEFAULT};
   PMQMD pmqmd = NULL;
+  bool jsmdIsBuf = false;
 
   Object jsgmo;
   ObjectReference jsgmoRef;
   MQGMO mqgmo = {MQGMO_DEFAULT};
   PMQGMO pmqgmo = NULL;
+  bool jsgmoIsBuf = false;
 
 };
 
@@ -83,15 +94,15 @@ Object GET(const CallbackInfo &info) {
   Function cb;
   bool async = false;
   Object result = Object::New(env);
-  if (config.logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, strdup(VERB));
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
   if (info.Length() < 1 || info.Length() > IDX_GET_CALLBACK + 1) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
-  if (info.Length() > IDX_GET_CALLBACK ) {
+  if (info.Length() > IDX_GET_CALLBACK) {
     cb = info[IDX_GET_CALLBACK].As<Function>();
     async = true;
   } else {
@@ -101,45 +112,71 @@ Object GET(const CallbackInfo &info) {
   GetWorker *w = new GetWorker(cb, info);
 
   w->hConn = info[IDX_GET_HCONN].As<Number>().Int32Value();
-  w->hObj  = info[IDX_GET_HOBJ].As<Number>().Int32Value();
+  w->hObj = info[IDX_GET_HOBJ].As<Number>().Int32Value();
 
-  w->jsmd = info[IDX_GET_MD].As<Object>();
-  w->jsgmo = info[IDX_GET_GMO].As<Object>();
+  Value v = info[IDX_GET_MD];
+  if (v.IsBuffer()) {
+    w->pmqmd = (PMQMD)v.As<Buffer<unsigned char>>().Data();
+    w->jsmdIsBuf = true;
+    dumpHex("Input MQMD",w->pmqmd,MQMD_LENGTH_2);
 
-  w->pmqmd = &w->mqmd;
-  w->pmqgmo = &w->mqgmo;
+  } else {
+    w->jsmd = info[IDX_GET_MD].As<Object>();
+    w->pmqmd = &w->mqmd;
+    copyMDtoC(env, w->jsmd, w->pmqmd);
+  }
 
-  Value v = info[IDX_GET_BUFFER];
+  v = info[IDX_GET_GMO];
+  if (v.IsBuffer()) {
+    w->pmqgmo = (PMQGMO)v.As<Buffer<unsigned char>>().Data();
+    w->jsgmoIsBuf = true;
+    dumpHex("Input MQGMO",w->pmqgmo,MQGMO_LENGTH_4);
 
+  } else {
+    w->jsgmo = info[IDX_GET_GMO].As<Object>();
+    w->pmqgmo = &w->mqgmo;
+    copyGMOtoC(env, w->jsgmo, w->pmqgmo);
+  }
+
+  v = info[IDX_GET_BUFFER];
   if (v.IsNull()) {
     w->buf = NULL;
     w->buflen = 0;
   } else {
     Buffer<unsigned char> b = v.As<Buffer<unsigned char>>();
-    if (config.logLevel >= LOG_OBJECT)
-      b.AddFinalizer(debugDest,strdup("BufferB"));
-    w->buf   = b.Data();
-    w->buflen= b.Length();
+    if (logLevel >= LOG_OBJECT)
+      b.AddFinalizer(debugDest, mqnStrdup(env, "BufferB"));
+    w->buf = b.Data();
+    w->buflen = b.Length();
   }
 
-  copyMDtoC(env,w->jsmd,w->pmqmd);
-  copyGMOtoC(env,w->jsgmo,w->pmqgmo);
-  
   if (async) {
-    w->jsmdRef = Persistent(w->jsmd);
+    if (!w->jsmdIsBuf) {
+      w->jsmdRef = Persistent(w->jsmd);
+    }
     w->jsgmoRef = Persistent(w->jsgmo);
 
     w->Queue();
   } else {
-    CALLMQI("MQGET",MQHCONN,MQHOBJ,PMQMD,PMQGMO,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)(w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
+    CALLMQI("MQGET", MQHCONN, MQHOBJ, PMQMD, PMQGMO, MQLONG, PMQVOID, PMQLONG, PMQLONG, PMQLONG)
+    (w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
     result.Set("jsDatalen", Number::New(env, w->datalen));
 
-    copyGMOfromC(env,w->jsgmo,w->pmqgmo);
-    copyMDfromC(env,w->jsmd,w->pmqmd);
-        
+    if (w->jsgmoIsBuf) {
+      dumpHex("MQGMO",w->pmqgmo,MQGMO_LENGTH_4);
+    } else {
+      copyGMOfromC(env, w->jsgmo, w->pmqgmo);
+    }
+
+    if (w->jsmdIsBuf) {
+      dumpHex("MQMD",w->pmqmd,MQMD_LENGTH_2);
+    } else {  
+      copyMDfromC(env, w->jsmd, w->pmqmd);
+    }
+
     delete (w);
   }
 

@@ -58,7 +58,7 @@ Object SETMP(const CallbackInfo &info) {
   pd.Support = getMQLong(jspd,"Support");
   pd.Context = getMQLong(jspd,"Context");
 
-  name.VSPtr = strdup(info[IDX_SETMP_NAME].As<String>().Utf8Value().c_str());
+  name.VSPtr = mqnStrdup(env,info[IDX_SETMP_NAME].As<String>().Utf8Value().c_str());
   name.VSLength = strlen((char *)name.VSPtr);
 
 
@@ -67,7 +67,7 @@ Object SETMP(const CallbackInfo &info) {
   //       different sized ints
  
   if (info[IDX_SETMP_VALUE].IsString()) {
-    valuePtr = strdup(info[IDX_SETMP_VALUE].As<String>().Utf8Value().c_str());
+    valuePtr = mqnStrdup(env,info[IDX_SETMP_VALUE].As<String>().Utf8Value().c_str());
     len = strlen((char *)valuePtr);
     type = MQTYPE_STRING;
   } else if (info[IDX_SETMP_VALUE].IsNumber()) {
@@ -104,9 +104,9 @@ Object SETMP(const CallbackInfo &info) {
   result.Set("jsRc", Number::New(env, RC));
 
   if (type == MQTYPE_STRING) {
-    mqFree(valuePtr);
+    mqnFree(valuePtr);
   }
-  mqFree(name.VSPtr);
+  mqnFree(name.VSPtr);
 
   return result;
 }
@@ -181,7 +181,7 @@ Object INQMP(const CallbackInfo &info) {
 
   // Make sure there's space for the name of the property when it's
   // returned. 1024 ought to be big enough for anyone for now.
-  impo.ReturnedName.VSPtr = (char *) malloc(1024);
+  impo.ReturnedName.VSPtr = (char *) mqnAlloc(env,1024);
   impo.ReturnedName.VSBufSize = 1024;
   impo.ReturnedName.VSCCSID = MQCCSI_APPL;
   
@@ -191,7 +191,7 @@ Object INQMP(const CallbackInfo &info) {
   pd.Support = getMQLong(jspd,"Support");
   pd.Context = getMQLong(jspd,"Context");
 
-  name.VSPtr = strdup(info[IDX_INQMP_NAME].As<String>().Utf8Value().c_str());
+  name.VSPtr = mqnStrdup(env,info[IDX_INQMP_NAME].As<String>().Utf8Value().c_str());
   name.VSLength = strlen((char *)name.VSPtr);
   name.VSCCSID = MQCCSI_APPL;
 
@@ -214,7 +214,7 @@ Object INQMP(const CallbackInfo &info) {
   }
 
   /* Free any spaces that we malloced during this call */
-  mqFree(name.VSPtr);
+  mqnFree(name.VSPtr);
   return result;
 }
 #undef VERB

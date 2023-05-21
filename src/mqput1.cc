@@ -29,7 +29,7 @@ public:
 
   ~Put1Worker() { debugf(LOG_OBJECT, "In PUT1 destructor\n"); }
 
-  void Execute() { CALLMQI("MQPUT1",MQHCONN,PMQOD,PMQMD,PMQPMO,MQLONG,PMQVOID,PMQLONG,PMQLONG)(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
+  void Execute() { CALLMQI("MQPUT1", MQHCONN, PMQOD, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In PUT1 OnOK method.\n");
@@ -38,13 +38,24 @@ public:
     result.Set("jsCc", Number::New(Env(), CC));
     result.Set("jsRc", Number::New(Env(), RC));
 
-    //dumpObject(Env(), "Put1 Result", result);
+    // dumpObject(Env(), "Put1 Result", result);
 
-    copyMDfromC(Env(), jsmdRef.Value().As<Object>(), pmqmd);
-    copyPMOfromC(Env(), jspmoRef.Value().As<Object>(), pmqpmo);
+    // dumpObject(Env(), "Put Result", result);
+    if (jsmdIsBuf) {
+      dumpHex("MQMD", pmqmd, MQMD_LENGTH_2);
+    } else {
+      copyMDfromC(Env(), jsmdRef.Value().As<Object>(), pmqmd);
+    }
+
+    if (jspmoIsBuf) {
+      dumpHex("MQPMO", pmqpmo, MQPMO_LENGTH_3);
+    } else {
+      copyPMOfromC(Env(), jspmoRef.Value().As<Object>(), pmqpmo);
+    }
+
     copyODfromC(Env(), jsodRef.Value().As<Object>(), pmqod);
 
-    //dumpObject(Env(), "MQMD in OnOK", this->jsmdRef.Value().As<Object>());
+    // dumpObject(Env(), "MQMD in OnOK", this->jsmdRef.Value().As<Object>());
     Callback().Call({result});
   }
 
@@ -61,6 +72,7 @@ public:
   ObjectReference jsmdRef;
   MQMD mqmd = {MQMD_DEFAULT};
   PMQMD pmqmd = NULL;
+  bool jsmdIsBuf = false;
 
   Object jsod;
   ObjectReference jsodRef;
@@ -71,6 +83,7 @@ public:
   ObjectReference jspmoRef;
   MQPMO mqpmo = {MQPMO_DEFAULT};
   PMQPMO pmqpmo = NULL;
+  bool jspmoIsBuf = false;
 };
 
 #define VERB "PUT1"
@@ -82,8 +95,8 @@ Object PUT1(const CallbackInfo &info) {
   Function cb;
   bool async = false;
   Object result = Object::New(env);
-  if (config.logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, strdup(VERB));
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
   if (info.Length() < 1 || info.Length() > IDX_PUT1_CALLBACK + 1) {
@@ -102,15 +115,30 @@ Object PUT1(const CallbackInfo &info) {
   w->hConn = info[IDX_PUT1_HCONN].As<Number>().Int32Value();
 
   w->jsod = info[IDX_PUT1_OD].As<Object>();
-  w->jsmd = info[IDX_PUT1_MD].As<Object>();
-  w->jspmo = info[IDX_PUT1_PMO].As<Object>();
-
-  w->pmqmd = &w->mqmd;
-  w->pmqpmo = &w->mqpmo;
   w->pmqod = &w->mqod;
 
+  Value v = info[IDX_PUT1_MD];
+  if (v.IsBuffer()) {
+    w->pmqmd = (PMQMD)v.As<Buffer<unsigned char>>().Data();
+    w->jsmdIsBuf = true;
+  } else {
+    w->jsmd = v.As<Object>();
+    w->pmqmd = &w->mqmd;
+    copyMDtoC(env, w->jsmd, w->pmqmd);
+  }
+
+  v = info[IDX_PUT1_PMO];
+  if (v.IsBuffer()) {
+    w->pmqpmo = (PMQPMO)v.As<Buffer<unsigned char>>().Data();
+    w->jspmoIsBuf = true;
+  } else {
+    w->jspmo = v.As<Object>();
+    w->pmqpmo = &w->mqpmo;
+    copyPMOtoC(env, w->jspmo, w->pmqpmo);
+  }
+
   // The calling layer has already converted String input1 to a Buffer
-  Value v = info[IDX_PUT1_BUFFER];
+  v = info[IDX_PUT1_BUFFER];
 
   if (v.IsNull()) {
     w->buf = NULL;
@@ -122,8 +150,7 @@ Object PUT1(const CallbackInfo &info) {
   }
 
   copyODtoC(env, w->jsod, w->pmqod);
-  copyMDtoC(env, w->jsmd, w->pmqmd);
-  copyPMOtoC(env, w->jspmo, w->pmqpmo);
+  
 
   if (async) {
     w->jsmdRef = Persistent(w->jsmd);
@@ -132,13 +159,24 @@ Object PUT1(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQPUT1",MQHCONN,PMQOD,PMQMD,PMQPMO,MQLONG,PMQVOID,PMQLONG,PMQLONG)(w->hConn, w->pmqod, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
+    CALLMQI("MQPUT1", MQHCONN, PMQOD, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)
+    (w->hConn, w->pmqod, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
 
-    copyPMOfromC(env, w->jspmo, w->pmqpmo);
-    copyMDfromC(env, w->jsmd, w->pmqmd);
+    if (w->jspmoIsBuf) {
+      dumpHex("MQPMO", w->pmqpmo, MQPMO_LENGTH_3);
+    } else {
+      copyPMOfromC(env, w->jspmo, w->pmqpmo);
+    }
+
+    if (w->jsmdIsBuf) {
+      dumpHex("MQMD", w->pmqmd, MQMD_LENGTH_2);
+    } else {
+      copyMDfromC(env, w->jsmd, w->pmqmd);
+    }
+
     copyODfromC(env, w->jsod, w->pmqod);
 
     delete (w);

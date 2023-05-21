@@ -28,28 +28,55 @@
 
 #if defined(WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <time.h>
 #include <win_dlfcn.h>
+#include <windows.h>
 #else
 #include <dlfcn.h>
 #include <sys/time.h>
 #endif
 #include <errno.h>
 
+#if 0
+#include <mutex>
+#endif
+
 Configuration config = Configuration();
+int logLevel = 0;
 
 static const char *mqiFunctions[] = {"MQCONNX", "MQDISC",  "MQOPEN",  "MQCLOSE", "MQPUT1",  "MQPUT",   "MQGET",  "MQINQ",
                                      "MQSET",   "MQBEGIN", "MQCMIT",  "MQBACK",  "MQSTAT",  "MQCB",    "MQCTL",  "MQCALLBACK",
                                      "MQSUB",   "MQSUBRQ", "MQCRTMH", "MQDLTMH", "MQSETMP", "MQDLTMP", "MQINQMP"};
 std::map<std::string, void *> mqiFnMap = {};
 
-void mqFree(void *p) {
+static const char *hex = "0123456789ABCDEF";
+
+// Memory allocation/free routines that do basic checks on out-of-memory and throw
+// errors back to the JS environment if necessary.
+void *mqnAlloc(Env env, size_t l) {
+  void *p = malloc(l);
+  if (!p) {
+    throwError(env, "Out of memory");
+  }
+  return p;
+}
+
+char *mqnStrdup(Env env, const char *s) {
+  char *p = strdup(s);
+  if (!p) {
+    throwError(env, "Out of memory");
+  }
+  return p;
+}
+
+void mqnFree(void *p) {
   if (p)
     free(p);
 }
 
-void mqFreeString(void *p) {
+// A string might be "sensitive" so we do a basic overwrite of the memory
+// before freeing the buffer
+void mqnFreeString(void *p) {
   if (p) {
     memset(p, 0, strlen((char *)p));
     free(p);
@@ -59,23 +86,26 @@ void mqFreeString(void *p) {
 // Create and throw the only inbuilt exception types in the N-API library
 void throwTE(Env env, std::string s1, std::string s2) { TypeError::New(env, s1 + ": " + s2).ThrowAsJavaScriptException(); }
 void throwRE(Env env, std::string s1, std::string s2) { RangeError::New(env, s1 + ": " + s2).ThrowAsJavaScriptException(); }
-/* And a generic NAPI error */
+// And a generic NAPI error
 void throwError(Env env, std::string s1) { Napi::Error::New(env, s1).ThrowAsJavaScriptException(); }
 
 // Collect some global configuration for this process
 void Configure(const CallbackInfo &info) {
+  // Env env = info.Env();
   Object cf = info[0].As<Object>();
-  config.logLevel = cf.Get("logLevel").As<Number>();
+  logLevel = cf.Get("logLevel").As<Number>();
   config.platform = cf.Get("platform").As<String>();
   config.arch = cf.Get("arch").As<String>();
-  config.littleEndian = cf.Get("littleEndian").As<Boolean>();
-   
-  Function noopFn = info[0].As<Object>().Get("noopFn").As<Function>();
+
+  Function noopFn = cf.Get("noopFn").As<Function>();
   config.noopFnRef = Persistent(noopFn);
   config.noopFnRef.SuppressDestruct();
 
-  debugf(LOG_TRACE, "Configure has loglevel %d", config.logLevel);
-  //printf("LogLevel=%d\n", config.logLevel);
+  // Make sure any debug statements get flushed immediately
+  if (logLevel > 0) {
+    setbuf(stderr, 0);
+  }
+  debugf(LOG_TRACE, "Configure has loglevel %d", logLevel);
 
   return;
 }
@@ -119,7 +149,7 @@ Object LoadLib(const CallbackInfo &info) {
 
   // Base library name is 2nd parameter (eg "libmqm_r").
   // Directory to try is 1st parameter and might be NULL.
-  lib = strdup(info[1].As<String>().Utf8Value().c_str());
+  lib = mqnStrdup(env, info[1].As<String>().Utf8Value().c_str());
 
   if (config.platform == "aix") {
     suffix = suffixA;
@@ -134,7 +164,7 @@ Object LoadLib(const CallbackInfo &info) {
 
   if (!info[0].IsNull() && !info[0].IsUndefined()) {
     strncpy(fullName, info[0].As<String>().Utf8Value().c_str(), sizeof(fullName) - 1);
-    dir = strdup(fullName); // For debug
+    dir = mqnStrdup(env, fullName); // For debug
     strncat(fullName, sep, sizeof(fullName) - 1);
   } else {
     strncpy(fullName, "", sizeof(fullName) - 1);
@@ -157,16 +187,18 @@ Object LoadLib(const CallbackInfo &info) {
 
   if (!handle) {
     err = Object::New(env);
-    err.Set("msg", String::New(env, dlerror()));
+    err.Set("message", String::New(env, dlerror()));
     debugf(LOG_DEBUG, "MQ library '%s' failed to be loaded from %s. Error: %s", lib, (dir == NULL) ? "<<default path>>" : dir,
-           err.Get("msg").As<String>().Utf8Value().c_str());
+           err.Get("message").As<String>().Utf8Value().c_str());
   } else {
     for (const char *verb : mqiFunctions) {
       void *p = dlsym(handle, verb);
-      if (p)
+      if (p) {
         mqiFnMap[verb] = p;
-      else
+      } else {
+        // Fall back to a default function if we can't find the symbol
         mqiFnMap[verb] = (void *)UNSUPPORTED_FUNCTION;
+      }
     }
 
     if (config.platform == "darwin") {
@@ -181,14 +213,14 @@ Object LoadLib(const CallbackInfo &info) {
     }
   }
 
-  mqFree(lib);
-  mqFree(dir);
+  mqnFree(lib);
+  mqnFree(dir);
 
   return err;
 }
 
 void setMQIString(Env env, char *out, Object in, const char *field, size_t len) {
-  //dumpObject(env, field, in);
+  // dumpObject(env, field, in);
   if (in.IsNull() || in.IsUndefined()) {
     memset(out, ' ', len);
   } else if (in.Get(field).IsNull() || in.Get(field).IsUndefined()) {
@@ -196,14 +228,14 @@ void setMQIString(Env env, char *out, Object in, const char *field, size_t len) 
   } else {
     Value v = in.Get(field);
     if (v.IsString()) {
-    String s = v.As<String>();
-    size_t l = strlen(s.Utf8Value().c_str());
-    if (l > len) {
-      throwRE(env, "Input string too long for MQI field.", field);
-    } else {
-      memset(out,' ',len);
-      memcpy(out, s.Utf8Value().c_str(), l);
-    }
+      String s = v.As<String>();
+      size_t l = strlen(s.Utf8Value().c_str());
+      if (l > len) {
+        throwRE(env, "Input string too long for MQI field.", field);
+      } else {
+        memset(out, ' ', len);
+        memcpy(out, s.Utf8Value().c_str(), l);
+      }
     } else {
       // Leave the original MQI field untouched
       /*  memset(out, ' ', len);*/
@@ -212,6 +244,8 @@ void setMQIString(Env env, char *out, Object in, const char *field, size_t len) 
 }
 
 void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size_t len) {
+  // printf("Type of byte field %s is %s\n",field, napiType(in.Get(field).Type()));
+
   if (in.IsNull() || in.IsUndefined()) {
     memset(out, 0, len);
   } else if (in.Get(field).IsNull() || in.Get(field).IsUndefined()) {
@@ -219,6 +253,7 @@ void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size
   } else {
     // printf("Type of field is %s\n",in.Get(field));
     Buffer<unsigned char> b = in.Get(field).As<Buffer<unsigned char>>();
+    // printf("  .. converted to buffer of length %d\n",(int)b.Length());
     if (b.Length() != len) {
       throwRE(env, "Input buffer wrong length for MQI field", field);
     } else {
@@ -240,12 +275,12 @@ String getMQIString(Env env, PMQCHAR in, size_t len) {
 
 int32_t getMQLong(Object o, const char *f) {
   Value v = o.Get(f);
-  if (v.IsNumber())  {
+  if (v.IsNumber()) {
     return v.As<Number>().Int32Value();
   } else {
     // We should never get here, but if we do, it's likely because one of the copyTo/FromC functions
     // has mis-spelled an object attribute. So we need to know about that.
-    fprintf(stderr,"Attempting to read non-number of type %s [%d] from field %s\n",napiType(o.Type()),o.Type(),f);
+    fprintf(stderr, "Attempting to read non-number of type %s [%d] from field %s\n", napiType(o.Type()), o.Type(), f);
     return 0;
   }
 }
@@ -281,7 +316,7 @@ void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output)
       /* The field might start off null, but we need to allocate space for */
       /* returned data                                                     */
       if (output) {
-        p = (char *)malloc(MAXCHARV_LENGTH);
+        p = (char *)mqnAlloc(env, MAXCHARV_LENGTH);
         memset(p, 0, MAXCHARV_LENGTH);
         v->VSPtr = p;
         v->VSBufSize = MAXCHARV_LENGTH;
@@ -293,7 +328,7 @@ void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output)
       if (l > MAXCHARV_LENGTH) {
         throwRE(env, "Input string too long for MQI field", field);
       } else {
-        p = strdup(s.Utf8Value().c_str());
+        p = mqnStrdup(env, s.Utf8Value().c_str());
         if (p) {
           v->VSPtr = p;
           v->VSBufSize = strlen(p); /* Don't include NULL terminator */
@@ -317,17 +352,27 @@ String getMQICharV(Env env, PMQCHARV v, bool free) {
 
   /* Get rid of the string that would have been strdup'ed earlier */
   if (free && v->VSPtr) {
-    mqFree(v->VSPtr);
+    mqnFree(v->VSPtr);
   }
   return str;
 }
+
+#if 0 
+// We may end up needing locking around the debug printing. So we can turn on this block
+std::mutex mtx;
+void lock() { mtx.lock();}
+void unlock() { mtx.unlock();}
+#else
+void lock() {}
+void unlock() {}
+#endif
 
 // Print a formatted string to stderr.
 // Timestamp format should be like "2023-05-01T15:28:24.875Z" to match the logger.debug
 // statements in the JS layer.
 // Use gmtime rather than localtime for reporting (the Z is the clue)
 void debugf(int level, const char *fmt, ...) {
-  if (config.logLevel >= level) {
+  if (logLevel >= level) {
     char buf[1024] = {0};
     char timebuf[32];
     va_list va;
@@ -336,13 +381,12 @@ void debugf(int level, const char *fmt, ...) {
     vsnprintf(buf, sizeof(buf) - 1, fmt, va);
     va_end(va);
 
+    lock();
+
 #if defined(WIN32)
     SYSTEMTIME now;
     GetSystemTime(&now);
-    sprintf(timebuf,"%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ",
-        now.wYear,now.wMonth,now.wDay,
-        now.wHour,now.wMinute,now.wSecond,
-        now.wMilliseconds);
+    sprintf(timebuf, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ", now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond, now.wMilliseconds);
     fprintf(stderr, "[%s] %s : %s", "mqnpi", timebuf, buf);
 #else
     struct timeval tv;
@@ -351,22 +395,27 @@ void debugf(int level, const char *fmt, ...) {
     fprintf(stderr, "[%s] %s.%3.3dZ : %s", "mqnpi", timebuf, (int)(tv.tv_usec / 1000), buf);
 #endif
 
-    if (buf[strlen(buf) - 1] != '\n')
+    if (buf[strlen(buf) - 1] != '\n') {
       fprintf(stderr, "\n");
+    }
+
+    unlock();
   }
   return;
 }
 
+/* Attach this function to object finalisers so we can see when they are cleaned up */
 void debugDest(Env env, void *s) {
   debugf(LOG_OBJECT, "In destructor for type %s at %p\n", (const char *)s, s);
+  /* The string was created via strdup so it's got a unique address for each object instance */
   if (s)
     free(s);
   return;
 }
 
+/* Show a JS object - fields and values. Is recursive to show nested objects */
 static const char *spaces = "                                                                                                      ";
 static void dumpObject(Env env, const char *objectType, Object o, int offset) {
-
   Array names = o.GetPropertyNames();
   for (unsigned int i = 0; i < names.Length(); i++) {
     Value n = names[i];
@@ -374,57 +423,119 @@ static void dumpObject(Env env, const char *objectType, Object o, int offset) {
     if (v.IsBuffer()) {
       unsigned char *b = v.As<Buffer<unsigned char>>().Data();
       int l = v.As<Buffer<unsigned char>>().Length();
-      printf("%*.*s  %-32.32s : [ ",offset,offset,spaces,n.As<String>().Utf8Value().c_str());
-      for (int j=0;j<8 && j<l;j++) {
-        printf("%02X ",b[j]);
+      fprintf(stderr, "%*.*s  %-32.32s : [ ", offset, offset, spaces, n.As<String>().Utf8Value().c_str());
+      for (int j = 0; j < 8 && j < l; j++) {
+        fprintf(stderr, "%02X ", b[j]);
       }
       if (l > 8) {
-        printf(" .... ");
+        fprintf(stderr, " ... ");
       }
-      printf("] (%d bytes)\n",l);
+      fprintf(stderr, "] (%d bytes)\n", l);
     } else if (v.IsObject()) {
       dumpObject(env, n.As<String>().Utf8Value().c_str(), v.As<Object>(), offset + 2);
     } else {
-      printf("%*.*s  %-32.32s : ", offset, offset, spaces, n.As<String>().Utf8Value().c_str());
+      fprintf(stderr, "%*.*s  %-32.32s : ", offset, offset, spaces, n.As<String>().Utf8Value().c_str());
       if (v.IsNumber()) {
-        printf("%d\n", v.As<Number>().Int32Value());
+        fprintf(stderr, "%d\n", v.As<Number>().Int32Value());
       } else if (v.IsString()) {
-        printf("'%s'\n", v.As<String>().Utf8Value().c_str());
+        fprintf(stderr, "'%s'\n", v.As<String>().Utf8Value().c_str());
       } else if (v.IsBoolean()) {
         bool b = v.As<Boolean>();
-        printf("%s\n", b ? "true" : "false");
+        fprintf(stderr, "%s\n", b ? "true" : "false");
       } else if (v.IsNull()) {
-        printf("null\n");
+        fprintf(stderr, "null\n");
       } else {
-        printf("Unknown type\n");
+        fprintf(stderr, "Unknown type\n");
       }
     }
   }
 }
 
 void dumpObject(Env env, const char *objectType, Object o) {
-  if (config.logLevel >= LOG_OBJECT) {
+  if (logLevel >= LOG_OBJECT) {
+    lock();
     if (o.IsNull()) {
       printf("Object Dump. Type: %s is NULL\n", objectType);
       return;
     }
     printf("Object Dump. Type: %s\n", objectType);
     dumpObject(env, objectType, o, 0);
+    unlock();
   }
 }
 
+void dumpHex(const char *title, void *buf, int length) {
+  int i, j;
+  unsigned char *p = (unsigned char *)buf;
+  int rows;
+  int o;
+  char line[80];
+  FILE *fp = stderr;
+
+  if (logLevel < LOG_OBJECT) {
+    return;
+  }
+
+  lock();
+
+  fprintf(fp, "-- %s -- (%d bytes) --------------------\n", title, length);
+
+  rows = (length + 15) / 16;
+
+  for (i = 0; i < rows; i++) {
+
+    memset(line, ' ', sizeof(line));
+    o = sprintf(line, "%8.8X : ", i * 16);
+
+    for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
+      line[o++] = hex[p[j] >> 4];
+      line[o++] = hex[p[j] & 0x0F];
+      if (j % 4 == 3)
+        line[o++] = ' ';
+    }
+
+    o = 48;
+    line[o++] = '|';
+    for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
+      char c = p[j];
+      if (!isalnum((int)c) && !ispunct((int)c) && (c != ' '))
+        c = '.';
+      line[o++] = c;
+    }
+
+    o = 65;
+    line[o++] = '|';
+    line[o++] = 0;
+
+    fprintf(fp, "%s\n", line);
+    p += 16;
+  }
+  unlock();
+  return;
+}
+
 const char *napiType(napi_valuetype t) {
-  switch(t) {
-  case napi_undefined: return "undefined";
-  case napi_null:      return "null";
-  case napi_boolean:   return "boolean";
-  case napi_number:    return "number";
-  case napi_string:    return "string";
-  case napi_symbol:    return "symbol";
-  case napi_object:    return "object";
-  case napi_function:  return "function";
-  case napi_external:  return "external";
-  default:             return "unknown";
+  switch (t) {
+  case napi_undefined:
+    return "undefined";
+  case napi_null:
+    return "null";
+  case napi_boolean:
+    return "boolean";
+  case napi_number:
+    return "number";
+  case napi_string:
+    return "string";
+  case napi_symbol:
+    return "symbol";
+  case napi_object:
+    return "object";
+  case napi_function:
+    return "function";
+  case napi_external:
+    return "external";
+  default:
+    return "unknown";
   }
 }
 
@@ -437,6 +548,7 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "Configure"), Function::New(env, Configure));
   exports.Set(String::New(env, "LoadLib"), Function::New(env, LoadLib));
 
+  // The MQI functions exported from the add-on through the JS layer
   exports.Set(String::New(env, "Connx"), Function::New(env, CONNX));
   exports.Set(String::New(env, "Disc"), Function::New(env, DISC));
   exports.Set(String::New(env, "Open"), Function::New(env, OPEN));
@@ -456,6 +568,8 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "Put"), Function::New(env, PUT));
   exports.Set(String::New(env, "Put1"), Function::New(env, PUT1));
   exports.Set(String::New(env, "Get"), Function::New(env, GET));
+  exports.Set(String::New(env, "GetAsync"), Function::New(env, GETASYNC));
+  exports.Set(String::New(env, "GetDone"), Function::New(env, GETDONE));
 
   exports.Set(String::New(env, "CrtMh"), Function::New(env, CRTMH));
   exports.Set(String::New(env, "DltMh"), Function::New(env, DLTMH));
@@ -464,7 +578,10 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "InqMp"), Function::New(env, INQMP));
   exports.Set(String::New(env, "DltMp"), Function::New(env, DLTMP));
 
-//  exports.Set(String::New(env, "TestSP"), Function::New(env, TESTSP));
+  // This entrypoint is for "internal" use only, allowing test functions
+  // to be compiled into the add-on without disruption
+  exports.Set(String::New(env, "_TestSP"), Function::New(env, TESTSP));
+
   return exports;
 }
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init);

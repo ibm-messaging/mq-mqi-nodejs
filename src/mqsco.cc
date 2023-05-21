@@ -36,7 +36,7 @@ void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
 
   Value v = jssco.Get("KeyRepoPassword");
   if (v.IsString()) {
-    pmqsco->KeyRepoPasswordPtr = strdup(jssco.Get("KeyRepoPassword").As<String>().Utf8Value().c_str());
+    pmqsco->KeyRepoPasswordPtr = mqnStrdup(env,jssco.Get("KeyRepoPassword").As<String>().Utf8Value().c_str());
     pmqsco->KeyRepoPasswordOffset = 0;
     pmqsco->KeyRepoPasswordLength = strlen((char *)pmqsco->KeyRepoPasswordPtr);
     if (pmqsco->Version < 6) {
@@ -53,7 +53,7 @@ void copySCOfromC(Env env, Object jssco, PMQSCO pmqsco) {
 
 void cleanupSCO(PMQSCO pmqsco) {
   if (pmqsco) {
-    mqFreeString(pmqsco->KeyRepoPasswordPtr);
+    mqnFreeString(pmqsco->KeyRepoPasswordPtr);
   }
   return;
 }

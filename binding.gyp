@@ -7,6 +7,7 @@
     {
       'target_name': 'ibmmq_native',
       'sources': [ 'src/mqi.cc' , 
+                   'src/mqgeta.cc',
                    'src/mqconndisc.cc',
                    'src/mqcsp.cc',
                    'src/mqcd.cc',
@@ -29,12 +30,13 @@
                    'src/mqsd.cc',
                    'src/mqsro.cc',
                    'src/mqsts.cc',
+		   'src/mqtest.cc',
                  ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")" , '.', './src' ],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
     
-      'cflags!': [ '-fno-exceptions' ],
-      'cflags_cc!': [ '-fno-exceptions','-Wno-unused-but-set-variable' ],
+      'cflags!': [ '-fno-exceptions','-g' ],
+      'cflags_cc!': [ '-fno-exceptions','-g','-Wno-unused-but-set-variable' ],
       'xcode_settings': {
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
         'CLANG_CXX_LIBRARY': 'libc++',

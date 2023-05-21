@@ -70,8 +70,8 @@ Object SUB(const CallbackInfo &info) {
   Function cb;
   bool async = false;
   Object result = Object::New(env);
-  if (config.logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, strdup(VERB));
+  if (logLevel >= LOG_OBJECT) {
+    result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
   }
 
   if (info.Length() < 1 || info.Length() > IDX_SUB_CALLBACK + 1) {

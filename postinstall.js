@@ -39,25 +39,23 @@ var vrmf=vrm + "." + defaultFp;
 
 // Allow overriding the fixpack for both LTS and CD versions to permit
 // picking up a CSU.
-var fixpack=process.env['MQIJS_FIXPACK'];
-if (fixpack != null /*&& vrm.endsWith('.0')*/) {
+const fixpack=process.env['MQIJS_FIXPACK'];
+if (fixpack != null ) {
   vrmf=vrm+"."+fixpack;
 }
 
-var file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
-var redistTitle="IBM MQ Redistributable C Client";
+let file=vrmf + "-IBM-MQC-Redist-"; // will be completed by platform filetype
+const redistTitle="IBM MQ Redistributable C Client";
 
-var dir=redistDir; // Default
-var title=redistTitle;
+const dir=redistDir; // Default
+const title=redistTitle;
 
 // Other local variables
-var rc = 0;
-var unpackCommand;
-var unwantedDirs;
+let unpackCommand;
+let unwantedDirs;
 const newBaseDir="redist";
-var currentPlatform=process.platform;
-var preferredVersion=14;
-//currentPlatform='darwin'; // for forcing a platform test
+let currentPlatform=process.platform;
+// currentPlatform='darwin'; // for forcing a platform test
 if (process.env.MQIJS_PLATFORM != null) {
   currentPlatform=process.env.MQIJS_PLATFORM; // Another way to override
 }
@@ -67,7 +65,7 @@ function cleanup(rc) {
   // Always run to try to delete the downloaded zip/tar file
   try {
     // Allow it to be overridden for debug purposes
-    var doNotRemove = process.env['MQIJS_NOREMOVE_DOWNLOAD'];
+    const doNotRemove = process.env['MQIJS_NOREMOVE_DOWNLOAD'];
     if (doNotRemove == null) {
       console.log("Removing " + file);
       fs.unlinkSync(file);
@@ -75,6 +73,7 @@ function cleanup(rc) {
       console.log("Preserving " + file);
     }
   } catch(err) {
+    // Ignore error
   }
   // This script originally deliberately ignored errors in downloading
   // the redist client package. But when npm changed policy to not 
@@ -94,7 +93,7 @@ function printError(err) {
 function removeDirRecursive(d) {
   if (fs.existsSync(d)) {
     fs.readdirSync(d).forEach(function(e) {
-      var ePath = path.join(d, e);
+      const ePath = path.join(d, e);
       if (fs.lstatSync(ePath).isDirectory()) {
         removeDirRecursive(ePath);
       } else {
@@ -104,7 +103,7 @@ function removeDirRecursive(d) {
         // a container.
         if (!e.match(/runmqsc/) && !e.match(/runmqakm/) && !e.match(/run.*cred/)) {
           fs.unlinkSync(ePath);
-        }  
+        }
       }
     });
     fs.rmdirSync(d); // This fails on the directory containing runmqsc but that's fine
@@ -115,10 +114,11 @@ function removePattern(d,type) {
   if (fs.lstatSync(d).isDirectory()) {
     fs.readdirSync(d).forEach(function(e) {
     if (e.match(type)) {
-        var ePath = path.join(d, e);
+        const ePath = path.join(d, e);
         try {
           fs.unlinkSync(ePath);
         } catch (err) {
+          // ignore the error
         }
       }
     });
@@ -129,13 +129,14 @@ function removeUnthreaded(d) {
   if (fs.lstatSync(d).isDirectory()) {
     fs.readdirSync(d).forEach(function(e) {
       if (e.match(/.*.so/) && !(e.match(/.*_r.so/))) {
-        var t = e.replace('.so','_r.so');
-        var tpath = path.join(d,t);
+        const t = e.replace(".so","_r.so");
+        const tpath = path.join(d,t);
         if (fs.existsSync(tpath)) {
-          var ePath = path.join(d, e);
+          const ePath = path.join(d, e);
           try {
             fs.unlinkSync(ePath);
           } catch (err) {
+            // ignore the error
           }
         }
       }
@@ -146,13 +147,13 @@ function removeUnthreaded(d) {
 // Remove directories from the client that are not needed for Node execution. This
 // should help shrink any runtime container a bit
 function removeUnneeded() {
-  var d;
-  var doNotRemove = process.env['MQIJS_NOREMOVE'];
+  let d;
+  const doNotRemove = process.env['MQIJS_NOREMOVE'];
   if (doNotRemove != null) {
-    console.log('Environment variable set to keep all files in client package');
+    console.log("Environment variable set to keep all files in client package");
   } else {
 
-    for (var i=0;i<unwantedDirs.length;i++) {
+    for (let i=0;i<unwantedDirs.length;i++) {
       try {
         removeDirRecursive(path.join(newBaseDir,unwantedDirs[i]));
       } catch (err) {
@@ -160,7 +161,7 @@ function removeUnneeded() {
       }
     }
 
-    if (currentPlatform === 'win32') {
+    if (currentPlatform === "win32") {
       d = path.join(newBaseDir,"bin64");
       removePattern(d,/.exe$/);
       removePattern(d,/^imq.*.dll$/);
@@ -187,33 +188,33 @@ function removeUnneeded() {
   cleanup(0);
 }
 
-
 // Start main processing here.
 
 // If a particular environment variable is set, do not try to install
 // the Redist client package. I did consider doing this automatically by
 // trying to locate the libraries in the "usual" places, but decided it was
 // better to be explicit about the choice.
-var doit = process.env['MQIJS_NOREDIST'];
+const doit = process.env["MQIJS_NOREDIST"];
 if (doit != null) {
   console.log("Environment variable set to not install " + title);
   process.exit(0);
 }
 
 // Check if the install is for an environment where there is a Redistributable Client.
-if (currentPlatform === 'win32') {
+if (currentPlatform === "win32") {
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
   unwantedDirs=[ "exits","exits64", "bin", 
                  "tools/cobol", "tools/cplus", "tools/dotnet",
                  "tools/c/Samples", "tools/c/include",
                  "tools/Lib", "tools/Lib64",
+                 "zips",
                  "java", "bin64/VS2015" ];
-} else if (currentPlatform === 'linux' && process.arch === 'x64'){
+} else if (currentPlatform === "linux" && process.arch === "x64"){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
   unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
-//} else if (currentPlatform === 'darwin'){
+// } else if (currentPlatform === 'darwin'){
 //  The MacOS client for MQ is released under a different license - 'Developers' not
 //  'Redistributable' - so we should not try to automatically download it.
 //
@@ -231,8 +232,8 @@ if (currentPlatform === 'win32') {
 }
 
 // Don't download if it looks to already be there - though Node will usually be running this in a clean directory
-var idTagFile = path.join(newBaseDir,"swidtag","ibm.com_IBM_MQ_Client-" + vrm + ".swidtag");
-//console.log("Checking for existence of " + idTagFile);
+const idTagFile = path.join(newBaseDir,"swidtag","ibm.com_IBM_MQ_Client-" + vrm + ".swidtag");
+// console.log("Checking for existence of " + idTagFile);
 if (fs.existsSync(idTagFile)) {
     console.log("The " + title + " appears to already be installed");
     process.exit(0);
@@ -241,9 +242,15 @@ if (fs.existsSync(idTagFile)) {
 console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
-var url = protocol + host + "/" + dir + "/" + file;
-if (process.env['MQIJS_LOCALURL'] != null) {
-  url = "http://localhost:8000/"+file; // My local version for testing this script
+let url = protocol + host + "/" + dir + "/" + file;
+const useLocal = process.env["MQIJS_LOCALURL"];
+if (useLocal != null) {
+  const useLocalServer = process.env["MQIJS_LOCAL_SERVER"];
+  if (useLocalServer != null) {
+    url = useLocalServer + "/" + file;
+  } else {
+    url = "http://localhost:8000/"+file; // My local version for testing this script
+  }
 }
 console.log("Getting " + url);
 
@@ -256,12 +263,12 @@ if (url.startsWith("https"))
 // prereqs for just an installation step.
 try {
   // The downloaded file goes into the current directory (node_modules/ibmmq)
-  var fd = fs.openSync(file, "w");
+  const fd = fs.openSync(file, "w");
   client.get(url, (res) => {
-    var error;
+    let error;
 
     if (res.statusCode < 200 || res.statusCode > 299) {
-      error = new Error("'Request Failed.\nStatus Code: " + res.statusCode);
+      error = new Error("Request Failed.\nStatus Code: " + res.statusCode);
     }
 
     if (error) {
@@ -281,12 +288,11 @@ try {
         // file. We can be "reasonably" certain that this will work. The Node.js
         // unzip packages seemed to sometimes create corrupt files silently.
         if (currentPlatform === 'win32') {
-          var psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
-          var psCmd2 = "powershell -command \"" + psCmd + "\"";
-          execSync(psCmd2, {"windowsHide":true});
-        } else {
-          removeUnneeded();
+          const psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
+          const psCmd2 = "powershell -command \"" + psCmd + "\"";
+          execSync(psCmd2, { windowsHide:true });
         }
+        removeUnneeded();
       } catch (error) {
         printError(error);
       }
