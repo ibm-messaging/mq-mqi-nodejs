@@ -19,6 +19,8 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQSCO structure */
+
 void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
 
   setMQIString(env,pmqsco->KeyRepository, jssco, "KeyRepository",MQ_SSL_KEY_REPOSITORY_LENGTH);

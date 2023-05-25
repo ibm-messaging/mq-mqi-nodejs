@@ -19,6 +19,12 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQCSP structure. There's no need to copy anything back from 
+ * the C structure post-call.
+ *
+ * Strings need to be copied in case they get GC'd out of existence before the structure
+ * is used in the MQI. So we also have a cleanup operation.
+ */
 void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
   
   char *cUserId = NULL;

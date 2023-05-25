@@ -19,7 +19,9 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the MQOPEN/MQCLOSE verbs in the MQI. They can be called either synchronously or asynch.
+ */
 
 class OpenWorker : public Napi::AsyncWorker {
 public:
@@ -29,7 +31,7 @@ public:
 
   ~OpenWorker() { debugf(LOG_OBJECT, "In OPEN destructor\n"); }
 
-  void Execute() { CALLMQI("MQOPEN",MQHCONN,PMQOD,MQLONG,PMQHOBJ,PMQLONG,PMQLONG)(hConn, pmqod, Options, &hObj, &CC, &RC); }
+  void Execute() { _MQOPEN(hConn, pmqod, Options, &hObj, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In OPEN OnOK method.\n");
@@ -63,16 +65,16 @@ public:
 Object OPEN(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_OPEN_HCONN = 0, IDX_OPEN_OD, IDX_OPEN_OPTIONS, IDX_OPEN_CALLBACK };
+  enum { IDX_OPEN_HCONN = 0, IDX_OPEN_OD, IDX_OPEN_OPTIONS, IDX_OPEN_CALLBACK, IDX_LAST };
 
   Function cb;
   bool async = false;
   Object result = Object::New(env);
   if (logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_OPEN_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -98,12 +100,13 @@ Object OPEN(const CallbackInfo &info) {
     w->jsodRef = Persistent(w->jsod);
     w->Queue();
   } else {
-    CALLMQI("MQOPEN",MQHCONN,PMQOD,MQLONG,PMQHOBJ,PMQLONG,PMQLONG)(w->hConn, w->pmqod, w->Options, &w->hConn, &w->CC, &w->RC);
+_MQOPEN(w->hConn, w->pmqod, w->Options, &w->hObj, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
     result.Set("jsHObj", Number::New(env, w->hObj));
 
+    // dumpObject(env, "MQOPEN result: ",result);
     copyODfromC(env, w->jsod, w->pmqod);
 
     delete (w);
@@ -123,7 +126,14 @@ public:
 
   ~CloseWorker() { debugf(LOG_OBJECT, "In CLOSE destructor\n"); }
 
-  void Execute() { CALLMQI("MQCLOSE",MQHCONN,PMQHOBJ,MQLONG,PMQLONG,PMQLONG)(hConn, &hObj, Options, &CC, &RC); }
+  void Execute() {
+
+    // Remove any async consumers
+    MQLONG cuCC, cuRC;
+    cleanupObjectContext(hConn, hObj, &cuCC, &cuRC, false);
+_MQCLOSE(hConn, &hObj, Options, &CC, &RC);
+    resumeConnectionContext(hConn);
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In CLOSE OnOK method.\n");
@@ -132,9 +142,6 @@ public:
     result.Set("jsCc", Number::New(Env(), CC));
     result.Set("jsRc", Number::New(Env(), RC));
     result.Set("jsHObj", Number::New(Env(), hObj));
-
-    // Remove any async consumers
-    cleanupObjectContext(hConn,hObj,&CC,&RC);
 
     // dumpObject(Env(), "Close Result", result);
     Callback().Call({result});
@@ -152,16 +159,16 @@ public:
 Object CLOSE(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_CLOSE_HCONN = 0, IDX_CLOSE_HOBJ, IDX_CLOSE_OPTIONS, IDX_CLOSE_CALLBACK };
+  enum { IDX_CLOSE_HCONN = 0, IDX_CLOSE_HOBJ, IDX_CLOSE_OPTIONS, IDX_CLOSE_CALLBACK, IDX_LAST };
 
   Function cb;
   bool async = false;
   Object result = Object::New(env);
   if (logLevel >= LOG_OBJECT) {
-    result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
+    result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_CLOSE_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -181,14 +188,15 @@ Object CLOSE(const CallbackInfo &info) {
   if (async) {
     w->Queue();
   } else {
-    CALLMQI("MQCLOSE",MQHCONN,PMQHOBJ,MQLONG,PMQLONG,PMQLONG)(w->hConn, &w->hObj, w->Options, &w->CC, &w->RC);
+    MQLONG cuRC, cuCC;
+    // Remove any async consumers first
+    cleanupObjectContext(w->hConn, w->hObj, &cuCC, &cuRC, false);
+    _MQCLOSE(w->hConn, &w->hObj, w->Options, &w->CC, &w->RC);
+    resumeConnectionContext(w->hConn);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
     result.Set("jsHObj", Number::New(env, w->hObj));
-
-    // Remove any async consumers
-    cleanupObjectContext(w->hConn,w->hObj,&w->CC,&w->RC);
 
     delete (w);
   }

@@ -19,7 +19,10 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the subscription management verbs in the MQI. MQSUB can be called either synchronously or asynch.
+ * MQSUBRQ is always synchronous.
+ */
 
 class SubWorker : public Napi::AsyncWorker {
 public:
@@ -29,7 +32,7 @@ public:
 
   ~SubWorker() { debugf(LOG_OBJECT, "In SUB destructor\n"); }
 
-  void Execute() { CALLMQI("MQSUB",MQHCONN,PMQSD,PMQHOBJ,PMQHOBJ,PMQLONG,PMQLONG)(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC); }
+  void Execute() { _MQSUB(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In SUB OnOK method.\n");
@@ -65,7 +68,7 @@ public:
 Object SUB(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_SUB_HCONN = 0, IDX_SUB_SD, IDX_SUB_HOBJQ, IDX_SUB_CALLBACK };
+  enum { IDX_SUB_HCONN = 0, IDX_SUB_SD, IDX_SUB_HOBJQ, IDX_SUB_CALLBACK, IDX_LAST };
 
   Function cb;
   bool async = false;
@@ -74,7 +77,7 @@ Object SUB(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env,VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_SUB_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -99,7 +102,7 @@ Object SUB(const CallbackInfo &info) {
     w->jssdRef = Persistent(w->jssd);
     w->Queue();
   } else {
-    CALLMQI("MQSUB",MQHCONN,PMQSD,PMQHOBJ,PMQHOBJ,PMQLONG,PMQLONG)(w->hConn, w->pmqsd, &w->hObjQ, &w->hObjSub, &w->CC, &w->RC);
+    _MQSUB(w->hConn, w->pmqsd, &w->hObjQ, &w->hObjSub, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -119,7 +122,7 @@ Object SUB(const CallbackInfo &info) {
 Object SUBRQ(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_SUBRQ_HCONN = 0, IDX_SUBRQ_HSUB, IDX_SUBRQ_ACTION, IDX_SUBRQ_SRO };
+  enum { IDX_SUBRQ_HCONN = 0, IDX_SUBRQ_HSUB, IDX_SUBRQ_ACTION, IDX_SUBRQ_SRO, IDX_LAST };
 
   MQHCONN hConn;
   MQHOBJ hSub;
@@ -129,7 +132,7 @@ Object SUBRQ(const CallbackInfo &info) {
   MQLONG CC;
   MQLONG RC;
 
-  if (info.Length() < 1 || info.Length() > IDX_SUBRQ_SRO + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -141,7 +144,7 @@ Object SUBRQ(const CallbackInfo &info) {
 
   copySROtoC(env, jssro, &mqsro);
 
-  CALLMQI("MQSUBRQ",MQHCONN,MQHOBJ,MQLONG,PMQSRO,PMQLONG,PMQLONG)(hConn, hSub, action, &mqsro, &CC, &RC);
+  _MQSUBRQ(hConn, hSub, action, &mqsro, &CC, &RC);
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));

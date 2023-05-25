@@ -19,13 +19,15 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the object property verbs in the MQI. They are always synchronous.
+ */
 
 #define VERB "INQ"
 Object INQ(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_INQ_HCONN = 0, IDX_INQ_HOBJ, IDX_INQ_ATTRS };
+  enum { IDX_INQ_HCONN = 0, IDX_INQ_HOBJ, IDX_INQ_ATTRS, IDX_LAST };
 
   MQHCONN hConn;
   MQHOBJ hObj;
@@ -44,7 +46,7 @@ Object INQ(const CallbackInfo &info) {
 
   Array jsSelectors;
 
-  if (info.Length() < 1 || info.Length() > IDX_INQ_ATTRS + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -55,13 +57,13 @@ Object INQ(const CallbackInfo &info) {
   // Allocate an array of the same length as the selectors in case all
   // are requesting MQIA values. Not all of
   // this array may need to be used, but that's OK.
-  mqSelectors = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
-  intAttrValues = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
+  mqSelectors = (MQLONG *)mqnAlloc(env, jsSelectors.Length() * sizeof(MQLONG));
+  intAttrValues = (MQLONG *)mqnAlloc(env, jsSelectors.Length() * sizeof(MQLONG));
 
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {
     Value jsSelectorV = jsSelectors[i];
     Object jsSelector = jsSelectorV.As<Object>();
-    selector = getMQLong(jsSelector,"selector");
+    selector = getMQLong(jsSelector, "selector");
     mqSelectors[i] = selector;
     if (selector >= MQIA_FIRST && selector <= MQIA_LAST) {
       intAttrCount++;
@@ -80,11 +82,10 @@ Object INQ(const CallbackInfo &info) {
 
   debugf(LOG_DEBUG, "BadSelector=%d CharAttrLen=%d", badSelector ? 1 : 0, charAttrLen);
   if (!badSelector) {
-    if (charAttrLen > 0)
-      charAttrs = (char *)mqnAlloc(env,charAttrLen);
-
-    CALLMQI("MQINQ",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
-        (hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    if (charAttrLen > 0) {
+      charAttrs = (char *)mqnAlloc(env, charAttrLen);
+    }
+    _MQINQ(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;
@@ -111,7 +112,7 @@ Object INQ(const CallbackInfo &info) {
           nameCount = 1;
         }
       } else if (selector >= MQCA_FIRST && selector <= MQCA_LAST) {
-        charLen = getMQLong(jsSelector,"_length");
+        charLen = getMQLong(jsSelector, "_length");
         if (charLen > 0) {
           jsSelector.Set("value", getMQIString(env, &charAttrs[charIndex], charLen * nameCount));
           charIndex += charLen;
@@ -124,6 +125,11 @@ Object INQ(const CallbackInfo &info) {
       }
     }
   }
+
+  if (charAttrs) {
+    mqnFree(charAttrs);
+  }
+
   return result;
 }
 #undef VERB
@@ -132,7 +138,7 @@ Object INQ(const CallbackInfo &info) {
 Object SET(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_SET_HCONN = 0, IDX_SET_HOBJ, IDX_SET_ATTRS, IDX_SET_CHARATTR_LEN };
+  enum { IDX_SET_HCONN = 0, IDX_SET_HOBJ, IDX_SET_ATTRS, IDX_SET_CHARATTR_LEN, IDX_LAST };
 
   MQHCONN hConn;
   MQHOBJ hObj;
@@ -151,7 +157,7 @@ Object SET(const CallbackInfo &info) {
 
   Array jsSelectors;
 
-  if (info.Length() < 1 || info.Length() > IDX_SET_CHARATTR_LEN + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -163,22 +169,22 @@ Object SET(const CallbackInfo &info) {
   // Allocate an array of the same length as the selectors in case all
   // are requesting MQIA values. Not all of
   // this array may need to be used, but that's OK.
-  mqSelectors = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
-  intAttrValues = (MQLONG *)mqnAlloc(env,jsSelectors.Length() * sizeof(MQLONG));
-  charAttrs = (char *)mqnAlloc(env,charAttrLen);
+  mqSelectors = (MQLONG *)mqnAlloc(env, jsSelectors.Length() * sizeof(MQLONG));
+  intAttrValues = (MQLONG *)mqnAlloc(env, jsSelectors.Length() * sizeof(MQLONG));
+  charAttrs = (char *)mqnAlloc(env, charAttrLen);
   memset(charAttrs, ' ', charAttrLen);
 
   for (unsigned int i = 0; i < jsSelectors.Length(); i++) {
     Value jsSelectorV = jsSelectors[i];
     Object jsSelector = jsSelectorV.As<Object>();
-    selector = getMQLong(jsSelector,"selector");
+    selector = getMQLong(jsSelector, "selector");
     debugf(LOG_DEBUG, "Selector %d - %d", i, selector);
     dumpObject(env, "MQAttr", jsSelector);
     mqSelectors[i] = selector;
     if (selector >= MQIA_FIRST && selector <= MQIA_LAST) {
-      intAttrValues[intAttrCount++] = getMQLong(jsSelector,"value");
+      intAttrValues[intAttrCount++] = getMQLong(jsSelector, "value");
     } else if (selector >= MQCA_FIRST && selector <= MQCA_LAST) {
-      charLen = getMQLong(jsSelector,"_length");
+      charLen = getMQLong(jsSelector, "_length");
       debugf(LOG_DEBUG, "    Len: %d", charLen);
       memcpy(&charAttrs[offset], jsSelector.Get("value").As<String>().Utf8Value().c_str(), charLen);
       offset += charLen;
@@ -189,11 +195,14 @@ Object SET(const CallbackInfo &info) {
 
   if (!badSelector) {
     debugf(LOG_DEBUG, "BadSelector=%d CharAttrLen=%d", badSelector ? 1 : 0, charAttrLen);
-    CALLMQI("MQSET",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
-       (hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    _MQSET(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;
+  }
+
+  if (charAttrs) {
+    mqnFree(charAttrs);
   }
 
   Object result = Object::New(env);

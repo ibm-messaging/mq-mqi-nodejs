@@ -19,10 +19,17 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the MQGET verb in the MQI. MQGET can be called either synchronously or asynch. However, this
+ * is still fundamentally a synchronous call to the MQI. See mqgeta.cc for the true asynchronous processing using
+ * callbacks from the MQ client library. Applications using the GetSync verb from the JS API will end up here. 
+ */
 
-// Note that using GetSync in a loop without ever returning to and yielding the main thread can
-// result in an apparent buffer leak. See https://github.com/nodejs/node/issues/38300
+
+/*
+ * Note that using GetSync in a loop without ever returning to, and yielding, the main thread can
+ * result in an apparent buffer leak. See https://github.com/nodejs/node/issues/38300
+ */
 
 class GetWorker : public Napi::AsyncWorker {
 public:
@@ -33,7 +40,7 @@ public:
   ~GetWorker() { debugf(LOG_OBJECT, "In GET destructor\n"); }
 
   void Execute() {
-    CALLMQI("MQGET", MQHCONN, MQHOBJ, PMQMD, PMQGMO, MQLONG, PMQVOID, PMQLONG, PMQLONG, PMQLONG)(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC);
+    _MQGET(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC);
   }
 
   void OnOK() {
@@ -89,7 +96,7 @@ public:
 Object GET(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_GET_HCONN = 0, IDX_GET_HOBJ, IDX_GET_MD, IDX_GET_GMO, IDX_GET_BUFFER, IDX_GET_CALLBACK };
+  enum { IDX_GET_HCONN = 0, IDX_GET_HOBJ, IDX_GET_MD, IDX_GET_GMO, IDX_GET_BUFFER, IDX_GET_CALLBACK, IDX_LAST };
 
   Function cb;
   bool async = false;
@@ -98,7 +105,7 @@ Object GET(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_GET_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -116,7 +123,7 @@ Object GET(const CallbackInfo &info) {
 
   Value v = info[IDX_GET_MD];
   if (v.IsBuffer()) {
-    w->pmqmd = (PMQMD)v.As<Buffer<unsigned char>>().Data();
+    w->pmqmd = (PMQMD)v.As<BUC>().Data();
     w->jsmdIsBuf = true;
     dumpHex("Input MQMD",w->pmqmd,MQMD_LENGTH_2);
 
@@ -128,7 +135,7 @@ Object GET(const CallbackInfo &info) {
 
   v = info[IDX_GET_GMO];
   if (v.IsBuffer()) {
-    w->pmqgmo = (PMQGMO)v.As<Buffer<unsigned char>>().Data();
+    w->pmqgmo = (PMQGMO)v.As<BUC>().Data();
     w->jsgmoIsBuf = true;
     dumpHex("Input MQGMO",w->pmqgmo,MQGMO_LENGTH_4);
 
@@ -143,7 +150,7 @@ Object GET(const CallbackInfo &info) {
     w->buf = NULL;
     w->buflen = 0;
   } else {
-    Buffer<unsigned char> b = v.As<Buffer<unsigned char>>();
+    BUC b = v.As<BUC>();
     if (logLevel >= LOG_OBJECT)
       b.AddFinalizer(debugDest, mqnStrdup(env, "BufferB"));
     w->buf = b.Data();
@@ -158,8 +165,7 @@ Object GET(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQGET", MQHCONN, MQHOBJ, PMQMD, PMQGMO, MQLONG, PMQVOID, PMQLONG, PMQLONG, PMQLONG)
-    (w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
+    _MQGET(w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

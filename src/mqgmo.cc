@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQGMO if passed from the upper layer as a JS object */
+/* More likely to be sent as a Buffer, so these routines may not be needed         */
+
 void copyGMOtoC(Env env, Object jsgmo, PMQGMO pmqgmo) {
   bool b;
 

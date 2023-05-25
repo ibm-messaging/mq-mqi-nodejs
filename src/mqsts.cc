@@ -20,6 +20,8 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQSTS structure. */
+
 void copySTStoC(Env env, Object jssts, PMQSTS pmqsts) {
   setMQICharV(env, &pmqsts->ObjectString, jssts, NULL, true);
   setMQICharV(env, &pmqsts->SubName, jssts, NULL, true);

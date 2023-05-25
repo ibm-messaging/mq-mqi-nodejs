@@ -19,13 +19,14 @@
 
 #include "mqi.h"
 
-using namespace Napi;
-
+/*
+ * Invocations of the MQSTAT verb in the MQI. It is always synchronous.
+ */
 #define VERB "STAT"
 Object STAT(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_STAT_HCONN = 0, IDX_STAT_STATUSTYPE, IDX_STAT_STS };
+  enum { IDX_STAT_HCONN = 0, IDX_STAT_STATUSTYPE, IDX_STAT_STS, IDX_LAST };
 
   MQHCONN hConn;
   MQLONG statusType;
@@ -34,7 +35,7 @@ Object STAT(const CallbackInfo &info) {
   MQLONG CC;
   MQLONG RC;
 
-  if (info.Length() < 1 || info.Length() > IDX_STAT_STS + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -44,7 +45,7 @@ Object STAT(const CallbackInfo &info) {
 
   copySTStoC(env, jssts, &mqsts);
 
-  CALLMQI("MQSTAT",MQHCONN,MQLONG,PMQSTS,PMQLONG,PMQLONG)(hConn, statusType, &mqsts, &CC, &RC);
+  _MQSTAT(hConn, statusType, &mqsts, &CC, &RC);
 
   copySTSfromC(env, jssts, &mqsts);
 

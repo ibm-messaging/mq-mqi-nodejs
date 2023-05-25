@@ -1,3 +1,21 @@
+/*
+  Copyright (c) IBM Corporation 2023
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Contributors:
+    Mark Taylor   - Initial Contribution
+*/
 
 #if !defined(IBMMQ_NAPI_H)
 #define IBMMQ_NAPI_H
@@ -18,6 +36,8 @@
 
 using namespace Napi;
 using namespace std;
+
+using BUC = Buffer<unsigned char>;
 
 /* The MQI wrapper functions */
 Object CONNX(const CallbackInfo &info);
@@ -49,6 +69,8 @@ Object SETMP(const CallbackInfo &info);
 Object DLTMP(const CallbackInfo &info);
 Object INQMP(const CallbackInfo &info);
 
+void SetTuningParameters(const CallbackInfo &Info);
+
 /* To permit test code */
 void TESTSP(const CallbackInfo &info);
 
@@ -56,6 +78,36 @@ void TESTSP(const CallbackInfo &info);
 /* The varargs elements are the types of the parameters to each call - MQLONG, PMQMD etc */
 #define CALLMQI(fn, ...) reinterpret_cast<void (*)(__VA_ARGS__)>(mqiFnMap[fn])
 extern std::map<std::string, void *> mqiFnMap;
+
+#define _MQCONNX CALLMQI("MQCONNX", PMQCHAR, PMQCNO, PMQHCONN, PMQLONG, PMQLONG)
+#define _MQDISC  CALLMQI("MQDISC", PMQHCONN, PMQLONG, PMQLONG)
+#define _MQOPEN  CALLMQI("MQOPEN", MQHCONN, PMQOD, MQLONG, PMQHOBJ, PMQLONG, PMQLONG)
+#define _MQCLOSE CALLMQI("MQCLOSE", MQHCONN, PMQHOBJ, MQLONG, PMQLONG, PMQLONG)
+#define _MQSUB   CALLMQI("MQSUB",MQHCONN,PMQSD,PMQHOBJ,PMQHOBJ,PMQLONG,PMQLONG)
+#define _MQSUBRQ CALLMQI("MQSUBRQ",MQHCONN,MQHOBJ,MQLONG,PMQSRO,PMQLONG,PMQLONG)
+
+#define _MQSTAT  CALLMQI("MQSTAT",MQHCONN,MQLONG,PMQSTS,PMQLONG,PMQLONG)
+
+#define _MQGET   CALLMQI("MQGET", MQHCONN, MQHOBJ, PMQMD, PMQGMO, MQLONG, PMQVOID, PMQLONG, PMQLONG, PMQLONG)
+#define _MQPUT   CALLMQI("MQPUT", MQHCONN, MQHOBJ, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)
+#define _MQPUT1  CALLMQI("MQPUT1", MQHCONN, PMQOD, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)
+
+#define _MQBEGIN CALLMQI("MQBEGIN", MQHCONN, PMQLONG, PMQLONG)
+#define _MQCMIT  CALLMQI("MQCMIT",MQHCONN,PMQLONG,PMQLONG)
+#define _MQBACK  CALLMQI("MQBACK",MQHCONN,PMQLONG,PMQLONG)
+
+#define _MQSET   CALLMQI("MQSET",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
+#define _MQINQ   CALLMQI("MQINQ",MQHCONN,MQHOBJ,MQLONG,PMQLONG,MQLONG,PMQLONG,MQLONG,PMQCHAR,PMQLONG,PMQLONG)
+
+#define _MQCRTMH CALLMQI("MQCRTMH",MQHCONN,PMQCMHO,PMQHMSG,PMQLONG,PMQLONG)
+#define _MQDLTMH CALLMQI("MQDLTMH",MQHCONN,PMQHMSG,PMQDMHO,PMQLONG,PMQLONG)
+#define _MQINQMP CALLMQI("MQINQMP",MQHCONN,MQHMSG,PMQIMPO,PMQCHARV,PMQPD,PMQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)
+#define _MQSETMP CALLMQI("MQSETMP",MQHCONN,MQHMSG,PMQSMPO,PMQCHARV,PMQPD,MQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG)
+#define _MQDLTMP CALLMQI("MQDLTMP",MQHCONN,PMQHMSG,PMQDMPO,PMQLONG,PMQLONG)
+
+
+#define _MQCTL   CALLMQI("MQCTL", MQHCONN, MQLONG, PMQCTLO, PMQLONG, PMQLONG)
+#define _MQCB    CALLMQI("MQCB", MQHCONN, MQLONG, PMQCBD, MQHOBJ, PMQMD, PMQGMO, PMQLONG, PMQLONG)
 
 /* Structure transformations into/out of JS format */
 void copyODtoC(Env, Object, PMQOD);
@@ -93,8 +145,9 @@ void cleanupCD(PMQCD);
 void cleanupSCO(PMQSCO);
 void cleanupBNO(PMQBNO);
 
-void cleanupObjectContext(MQHCONN, MQHOBJ, PMQLONG, PMQLONG); // For async consumers
+void cleanupObjectContext(MQHCONN, MQHOBJ, PMQLONG, PMQLONG,bool); // For async consumers
 void cleanupConnectionContext(MQHCONN);
+void resumeConnectionContext(MQHCONN);
 
 /* Field manipulation functions */
 void setMQIString(Env env, char *out, Object in, const char *field, size_t len);
@@ -130,11 +183,18 @@ void throwError(Env env, std::string s1);
 
 extern int logLevel; /* This may be referred to even after Configuration removed */
 
+extern int maxConsecutiveGetsDefault;
+extern int getLoopDelayTimeMsDefault;
+
 class Configuration {
 public:
   string platform;
   string arch;
   FunctionReference noopFnRef;
+
+  // For tuning the async get routines
+  int maxConsecutiveGets = maxConsecutiveGetsDefault;
+  int getLoopDelayTimeMs = getLoopDelayTimeMsDefault;
 };
 extern Configuration config;
 #endif

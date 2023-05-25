@@ -19,8 +19,11 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the MQCONNX/MQDISC verbs. Both can be called either syncronously or asynch.
+ */
 
+/* Free any memory associated with the CONNX parameters that we had to temporarily copy to malloced space */
 static void cleanupCNO(PMQCNO pCno) {
   if (pCno) {
     cleanupCSP(pCno->SecurityParmsPtr);
@@ -44,7 +47,7 @@ public:
 
   void Execute() {
     debugf(LOG_TRACE, "About to call MQCONNX\n");
-    CALLMQI("MQCONNX", PMQCHAR, PMQCNO, PMQHCONN, PMQLONG, PMQLONG)(qmName, pCno, &hConn, &CC, &RC);
+    _MQCONNX(qmName, pCno, &hConn, &CC, &RC);
   }
 
   void OnOK() {
@@ -96,7 +99,7 @@ public:
 
 Object CONNX(const CallbackInfo &info) {
 
-  enum { IDX_CONNX_QMNAME = 0, IDX_CONNX_CNO, IDX_CONNX_CALLBACK };
+  enum { IDX_CONNX_QMNAME = 0, IDX_CONNX_CNO, IDX_CONNX_CALLBACK, IDX_LAST };
 
   bool async = false;
   Function cb;
@@ -106,7 +109,7 @@ Object CONNX(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_CONNX_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -211,7 +214,7 @@ Object CONNX(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQCONNX", PMQCHAR, PMQCNO, PMQHCONN, PMQLONG, PMQLONG)(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
+    _MQCONNX(w->qmName, w->pCno, &w->hConn, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -248,7 +251,7 @@ public:
 
   void Execute() {
     MQHCONN savedHConn = hConn;
-    CALLMQI("MQDISC", PMQHCONN, PMQLONG, PMQLONG)(&hConn, &CC, &RC);
+    _MQDISC(&hConn, &CC, &RC);
     if (CC == MQCC_OK) {
       cleanupConnectionContext(savedHConn);
     }
@@ -273,7 +276,7 @@ public:
 
 #define VERB "DISC"
 Object DISC(const CallbackInfo &info) {
-  enum { IDX_DISC_HCONN = 0, IDX_DISC_CALLBACK };
+  enum { IDX_DISC_HCONN = 0, IDX_DISC_CALLBACK, IDX_LAST };
 
   bool async = false;
   Function cb;
@@ -283,7 +286,7 @@ Object DISC(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_DISC_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -300,7 +303,7 @@ Object DISC(const CallbackInfo &info) {
     w->Queue();
   } else {
     MQHCONN savedHConn = w->hConn;
-    CALLMQI("MQDISC", PMQHCONN, PMQLONG, PMQLONG)(&w->hConn, &w->CC, &w->RC);
+    _MQDISC(&w->hConn, &w->CC, &w->RC);
 
     if (w->CC == MQCC_OK) {
       cleanupConnectionContext(savedHConn);

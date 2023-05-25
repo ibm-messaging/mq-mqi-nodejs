@@ -19,11 +19,13 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the transaction management verbs in the MQI. These are all executed synchronously.
+ */
 
 #define VERB "BEGIN"
 Object BEGIN(const CallbackInfo &info) {
-  enum { IDX_BEGIN_HCONN = 0 };
+  enum { IDX_BEGIN_HCONN = 0, IDX_LAST };
 
   Env env = info.Env();
 
@@ -31,13 +33,14 @@ Object BEGIN(const CallbackInfo &info) {
   MQLONG CC;
   MQLONG RC;
 
-  if (info.Length() < 1 || info.Length() > IDX_BEGIN_HCONN + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
   hConn = info[IDX_BEGIN_HCONN].As<Number>().Int32Value();
 
-  CALLMQI("MQBEGIN",MQHCONN,PMQLONG,PMQLONG)(hConn, &CC, &RC);
+  _MQBEGIN(hConn, &CC, &RC);
+  
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
@@ -50,19 +53,20 @@ Object BEGIN(const CallbackInfo &info) {
 Object CMIT(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_CMIT_HCONN = 0 };
+  enum { IDX_CMIT_HCONN = 0, IDX_LAST };
 
   MQHCONN hConn;
   MQLONG CC;
   MQLONG RC;
 
-  if (info.Length() < 1 || info.Length() > IDX_CMIT_HCONN + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
   hConn = info[IDX_CMIT_HCONN].As<Number>().Int32Value();
 
-  CALLMQI("MQCMIT",MQHCONN,PMQLONG,PMQLONG)(hConn, &CC, &RC);
+  _MQCMIT(hConn, &CC, &RC);
+  
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
@@ -75,19 +79,18 @@ Object CMIT(const CallbackInfo &info) {
 Object BACK(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_BACK_HCONN = 0 };
+  enum { IDX_BACK_HCONN = 0, IDX_LAST };
 
   MQHCONN hConn;
   MQLONG CC;
   MQLONG RC;
 
-  if (info.Length() < 1 || info.Length() > IDX_BACK_HCONN + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
   hConn = info[IDX_BACK_HCONN].As<Number>().Int32Value();
-
-  CALLMQI("MQBACK",MQHCONN,PMQLONG,PMQLONG)(hConn, &CC, &RC);
+  _MQBACK(hConn, &CC, &RC);
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));

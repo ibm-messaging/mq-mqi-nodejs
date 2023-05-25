@@ -19,7 +19,9 @@
 
 #include "mqi.h"
 
-using namespace Napi;
+/*
+ * Invocations of the MQPUT verb in the MQI. MQPUT can be called either synchronously or asynch.
+ */
 
 class PutWorker : public Napi::AsyncWorker {
 public:
@@ -29,7 +31,7 @@ public:
 
   ~PutWorker() { debugf(LOG_OBJECT, "In PUT destructor\n"); }
 
-  void Execute() { CALLMQI("MQPUT", MQHCONN, MQHOBJ, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)(hConn, hObj, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
+  void Execute() { _MQPUT(hConn, hObj, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
 
   void OnOK() {
     debugf(LOG_TRACE, "In PUT OnOK method.\n");
@@ -82,7 +84,7 @@ public:
 Object PUT(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_PUT_HCONN = 0, IDX_PUT_HOBJ, IDX_PUT_MD, IDX_PUT_PMO, IDX_PUT_BUFFER, IDX_PUT_CALLBACK };
+  enum { IDX_PUT_HCONN = 0, IDX_PUT_HOBJ, IDX_PUT_MD, IDX_PUT_PMO, IDX_PUT_BUFFER, IDX_PUT_CALLBACK, IDX_LAST };
 
   Function cb;
   bool async = false;
@@ -91,7 +93,7 @@ Object PUT(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() < 1 || info.Length() > IDX_PUT_CALLBACK + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -109,7 +111,7 @@ Object PUT(const CallbackInfo &info) {
 
   Value v = info[IDX_PUT_MD];
   if (v.IsBuffer()) {
-    w->pmqmd = (PMQMD)v.As<Buffer<unsigned char>>().Data();
+    w->pmqmd = (PMQMD)v.As<BUC>().Data();
     w->jsmdIsBuf = true;
   } else {
     w->jsmd = v.As<Object>();
@@ -119,7 +121,7 @@ Object PUT(const CallbackInfo &info) {
 
   v = info[IDX_PUT_PMO];
   if (v.IsBuffer()) {
-    w->pmqpmo = (PMQPMO)v.As<Buffer<unsigned char>>().Data();
+    w->pmqpmo = (PMQPMO)v.As<BUC>().Data();
     w->jspmoIsBuf = true;
   } else {
     w->jspmo = v.As<Object>();
@@ -136,7 +138,7 @@ Object PUT(const CallbackInfo &info) {
     w->buf = NULL;
     w->buflen = 0;
   } else {
-    Buffer<unsigned char> b = v.As<Buffer<unsigned char>>();
+    BUC b = v.As<BUC>();
     w->buf = b.Data();
     w->buflen = b.Length();
   }
@@ -147,8 +149,7 @@ Object PUT(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    CALLMQI("MQPUT", MQHCONN, MQHOBJ, PMQMD, PMQPMO, MQLONG, PMQVOID, PMQLONG, PMQLONG)
-    (w->hConn, w->hObj, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
+    _MQPUT(w->hConn, w->hObj, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

@@ -15,7 +15,7 @@ For now, you can access the package from its github branch. In your _package.jso
 set the dependency to pull direct from github instead of npm:
 ```
   "dependencies": {
-    "ibmmq": "github:ibmmqmet/mq-mqi-nodejs#napi"
+    "ibmmq": "github:ibmmqmet/mq-mqi-nodejs"
   }
 ```
 The rewrite should not have changed any application behaviour. The API is unchanged; 

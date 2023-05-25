@@ -19,6 +19,8 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQOD (object descriptor) structure. */
+
 void copyODtoC(Env env, Object jsod, PMQOD pmqod) {
   pmqod->Version = 4; // We will always use this version.
   pmqod->ObjectType = getMQLong(jsod,"ObjectType");

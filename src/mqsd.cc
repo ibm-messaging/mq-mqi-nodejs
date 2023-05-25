@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQSD (subscription descriptor) structure. */
+
+
 void copySDtoC(Env env, Object jssd, PMQSD pmqsd) {
 
   pmqsd->Version = 1; // Only version for now

@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQPMO if passed from the upper layer as a JS object */
+/* More likely to be sent as a Buffer, so these routines may not be needed         */
+
 void copyPMOtoC(Env env, Object jspmo, PMQPMO pmqpmo) {
   bool b;
   pmqpmo->Version  = MQPMO_VERSION_3;

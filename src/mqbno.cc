@@ -19,6 +19,8 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQBNO structure */
+
 void copyBNOtoC(Env env, Object jsbno, PMQBNO pmqbno) {
   pmqbno->ApplType = getMQLong(jsbno,"ApplType");
   pmqbno->Timeout = getMQLong(jsbno,"Timeout");

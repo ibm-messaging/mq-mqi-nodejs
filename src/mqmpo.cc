@@ -19,10 +19,14 @@
 
 #include "mqi.h"
 
+/*
+ * Invocations of the message property verbs in the MQI. They can only be called synchronously.
+ */
+
 #define VERB "SETMP"
 Object SETMP(const CallbackInfo &info) {
   Env env = info.Env();
-  enum { IDX_SETMP_HCONN = 0, IDX_SETMP_HMSG, IDX_SETMP_SMPO, IDX_SETMP_NAME, IDX_SETMP_PD, IDX_SETMP_VALUE };
+  enum { IDX_SETMP_HCONN = 0, IDX_SETMP_HMSG, IDX_SETMP_SMPO, IDX_SETMP_NAME, IDX_SETMP_PD, IDX_SETMP_VALUE, IDX_LAST };
 
   MQHCONN hConn;
   MQSMPO smpo = {MQSMPO_DEFAULT};
@@ -42,7 +46,7 @@ Object SETMP(const CallbackInfo &info) {
   int32_t valueInt;
   int len;
 
-  if (info.Length() < 1 || info.Length() > IDX_SETMP_VALUE + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -81,8 +85,8 @@ Object SETMP(const CallbackInfo &info) {
     len = sizeof(valueInt);
     type = MQTYPE_BOOLEAN;
   } else if (info[IDX_SETMP_VALUE].IsBuffer()) {
-    valuePtr = info[IDX_SETMP_VALUE].As<Buffer<unsigned char>>().Data();
-    len = info[IDX_SETMP_VALUE].As<Buffer<unsigned char>>().Length();
+    valuePtr = info[IDX_SETMP_VALUE].As<BUC>().Data();
+    len = info[IDX_SETMP_VALUE].As<BUC>().Length();
     type = MQTYPE_BYTE_STRING;
  } else if (info[IDX_SETMP_VALUE].IsNull() || info[IDX_SETMP_VALUE].IsUndefined()) {
     valuePtr = NULL;
@@ -95,8 +99,7 @@ Object SETMP(const CallbackInfo &info) {
   }
 
   if (CC == MQCC_OK) {
-    CALLMQI("MQSETMP",MQHCONN,MQHMSG,PMQSMPO,PMQCHARV,PMQPD,MQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG)
-                      (hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
+                 _MQSETMP(hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
   }
 
   Object result = Object::New(env);
@@ -115,7 +118,7 @@ Object SETMP(const CallbackInfo &info) {
 #define VERB "DLTMP"
 Object DLTMP(const CallbackInfo &info) {
   Env env = info.Env();
-  enum { IDX_DLTMP_HCONN = 0, IDX_DLTMP_HMSG, IDX_DLTMP_DMPO, IDX_DLTMP_NAME };
+  enum { IDX_DLTMP_HCONN = 0, IDX_DLTMP_HMSG, IDX_DLTMP_DMPO, IDX_DLTMP_NAME, IDX_LAST };
 
   MQHCONN hConn;
   MQDMPO dmpo = {MQDMPO_DEFAULT};
@@ -126,7 +129,7 @@ Object DLTMP(const CallbackInfo &info) {
   String propertyName;
   bool b;
 
-  if (info.Length() < 1 || info.Length() > IDX_DLTMP_NAME + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -135,7 +138,7 @@ Object DLTMP(const CallbackInfo &info) {
   dmpo.Options = jsDmpo.Get("Options").As<Number>().Int32Value(); // Only item to copy over
   hMsg = info[IDX_DLTMP_HMSG].As<BigInt>().Int64Value(&b);
 
-  CALLMQI("MQDLTMP",MQHCONN,PMQHMSG,PMQDMPO,PMQLONG,PMQLONG)(hConn, &hMsg, &dmpo, &CC, &RC);
+_MQDLTMP(hConn, &hMsg, &dmpo, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -148,7 +151,7 @@ Object DLTMP(const CallbackInfo &info) {
 #define VERB "INQMP"
 Object INQMP(const CallbackInfo &info) {
   Env env = info.Env();
-  enum { IDX_INQMP_HCONN = 0, IDX_INQMP_HMSG, IDX_INQMP_IMPO, IDX_INQMP_NAME, IDX_INQMP_PD, IDX_INQMP_BUFFER };
+  enum { IDX_INQMP_HCONN = 0, IDX_INQMP_HMSG, IDX_INQMP_IMPO, IDX_INQMP_NAME, IDX_INQMP_PD, IDX_INQMP_BUFFER, IDX_LAST };
 
   MQHCONN hConn;
   MQIMPO impo = {MQIMPO_DEFAULT};
@@ -169,7 +172,7 @@ Object INQMP(const CallbackInfo &info) {
 
   bool b;
 
-  if (info.Length() < 1 || info.Length() > IDX_INQMP_BUFFER + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -195,11 +198,10 @@ Object INQMP(const CallbackInfo &info) {
   name.VSLength = strlen((char *)name.VSPtr);
   name.VSCCSID = MQCCSI_APPL;
 
-  buf = info[IDX_INQMP_BUFFER].As<Buffer<unsigned char>>().Data();
-  buflen = info[IDX_INQMP_BUFFER].As<Buffer<unsigned char>>().Length();
+  buf = info[IDX_INQMP_BUFFER].As<BUC>().Data();
+  buflen = info[IDX_INQMP_BUFFER].As<BUC>().Length();
 
-  CALLMQI("MQINQMP",MQHCONN,MQHMSG,PMQIMPO,PMQCHARV,PMQPD,PMQLONG,MQLONG,PMQVOID,PMQLONG,PMQLONG,PMQLONG)
-    (hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
+_MQINQMP(hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));

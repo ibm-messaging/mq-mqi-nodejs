@@ -19,11 +19,15 @@
 
 #include "mqi.h"
 
+/*
+ * Invocations of the message handle verbs in the MQI. They can only be called synchronously.
+ */
+
 #define VERB "CRTMH"
 Object CRTMH(const CallbackInfo &info) {
-  
+
   Env env = info.Env();
-  enum { IDX_CRTMH_HCONN = 0, IDX_CRTMH_CMHO };
+  enum { IDX_CRTMH_HCONN = 0, IDX_CRTMH_CMHO, IDX_LAST };
 
   MQHCONN hConn;
   MQCMHO cmho = {MQCMHO_DEFAULT};
@@ -32,15 +36,15 @@ Object CRTMH(const CallbackInfo &info) {
   MQLONG RC;
   MQHMSG hMsg;
 
-  if (info.Length() < 1 || info.Length() > IDX_CRTMH_CMHO + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
   hConn = info[IDX_CRTMH_HCONN].As<Number>().Int32Value();
   jsCmho = info[IDX_CRTMH_CMHO].As<Object>();
-  cmho.Options = getMQLong(jsCmho,"Options"); // Only item to copy over
+  cmho.Options = getMQLong(jsCmho, "Options"); // Only item to copy over
 
-  CALLMQI("MQCRTMH",MQHCONN,PMQCMHO,PMQHMSG,PMQLONG,PMQLONG)(hConn, &cmho, &hMsg, &CC, &RC);
+  _MQCRTMH(hConn, &cmho, &hMsg, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -55,7 +59,7 @@ Object CRTMH(const CallbackInfo &info) {
 Object DLTMH(const CallbackInfo &info) {
 
   Env env = info.Env();
-  enum { IDX_DLTMH_HCONN = 0, IDX_DLTMH_HMSG, IDX_DLTMH_DMHO };
+  enum { IDX_DLTMH_HCONN = 0, IDX_DLTMH_HMSG, IDX_DLTMH_DMHO, IDX_LAST };
 
   MQHCONN hConn;
   MQDMHO dmho = {MQDMHO_DEFAULT};
@@ -65,16 +69,16 @@ Object DLTMH(const CallbackInfo &info) {
   MQLONG RC;
   bool b;
 
-  if (info.Length() < 1 || info.Length() > IDX_DLTMH_DMHO + 1) {
+  if (info.Length() < 1 || info.Length() > IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
   hConn = info[IDX_DLTMH_HCONN].As<Number>().Int32Value();
   jsDmho = info[IDX_DLTMH_DMHO].As<Object>();
-  dmho.Options = getMQLong(jsDmho,"Options"); // Only item to copy over
+  dmho.Options = getMQLong(jsDmho, "Options"); // Only item to copy over
   hMsg = info[IDX_DLTMH_HMSG].As<BigInt>().Int64Value(&b);
 
-  CALLMQI("MQDLTMH",MQHCONN,PMQHMSG,PMQDMHO,PMQLONG,PMQLONG)(hConn, &hMsg, &dmho, &CC, &RC);
+  _MQDLTMH(hConn, &hMsg, &dmho, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));

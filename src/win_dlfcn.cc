@@ -1,5 +1,5 @@
 /**
- * Basic version of POSIX dlopen/dlsym/dlclose on Windows. Does
+ * Basic version of Linux dlopen/dlsym/dlclose on Windows. Does
  * just enough for this library.
  */
 
@@ -20,7 +20,6 @@ static DWORD lastError = 0;
  * Convert UTF-8 string to Windows UNICODE (UCS-2 LE).
  * Caller must free() the returned string.
  */
-
 static WCHAR *UTF8toWCHAR(const char *in) {
   WCHAR *out;
   int outLen;
@@ -68,7 +67,7 @@ void *dlopen(const char *file, int mode) {
   if (handle == NULL)
     lastError = GetLastError();
 
-  SetErrorMode(errorMode); 
+  SetErrorMode(errorMode);
   free(uniFile);
 
   return handle;
@@ -95,15 +94,12 @@ void *dlsym(void *handle, const char *name) {
   return address;
 }
 
-/**
- * Return message describing last error.
- */
-
+/* Return message describing last error. */
 char *dlerror(void) {
   static char msg[128] = {0};
 
   if (lastError != 0) {
-    snprintf(msg, sizeof(msg)-1, "Win32 error %lu", lastError);
+    snprintf(msg, sizeof(msg) - 1, "Win32 error %lu", lastError);
     lastError = 0;
     return msg;
   } else {

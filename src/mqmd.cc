@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQMD if passed from the upper layer as a JS object */
+/* More likely to be sent as a Buffer, so these routines may not be needed        */
+
 void copyMDtoC(Env env, Object jsmd, PMQMD pmqmd) {
 
   pmqmd->Version  = MQMD_VERSION_2;

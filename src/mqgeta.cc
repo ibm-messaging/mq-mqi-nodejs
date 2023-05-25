@@ -17,21 +17,66 @@
     Mark Taylor   - Initial Contribution
 */
 
+/*
+  This module implements the asynchronous consume model using MQ's
+  callback feature. MQ will deliver messages or events through a thread
+  it creates when the MQCB/MQCTL verbs run. The callback function that
+  we tell MQ about will be executing on that thread. Which cannot directly call
+  JS callback functions. Those can only be invoked from the main thread. So we use
+  a N-API TypedThreadSafeFunction to schedule the callback. We cannot use the
+  BlockingCall method that would pause returning from the C callback - that leads
+  to potential deadlock if other MQ verbs are being called at the same time. Instead
+  we use NonBlockingCall to queue the work of invoking the JS callback.
+
+  The C callback returns immediately to the qmgr after setting up the TSFN work. In order
+  for the next callback to not overwrite the data before we've had a chance to pass it to
+  the application, we take copies (malloc/memcpy). Which is a bit inefficient but seems
+  to be necessary. A structure is allocated pointing to those copies and other required fields.
+
+  When the TSFN runs, it is given that structure and can then combine that with information in the ObjContext
+  map to work out which JS function to call. Which it will do synchronously. The flow then goes
+      TSFN->JS proxy in mqigeta.js -> Application callback
+  After that chain unwinds, we can free malloced memory. The associated Buffer objects will be garbage collected
+  at some future point. The application cannot rely on the buffer contents (MQMD, MQGMO, message body) after it
+  returns from its own callback.
+
+  There are a number of possible strategies to ensure some degree of "fairness" between queueing work from the MQ callback
+  and having the application JS code run. We would rather not have the queued work be too far ahead of the application
+  seeing the message data, but there's no single solution I've found to having it run in a timely way. There are some
+  mutexed areas active/commented out as ways of blocking the MQ callback thread temporarily; these might turn some of that
+  into a tuningparameters option. But for regular message arrival/consumption patterns, this seems to work as long as the
+  application callback does not spend too much time processing the message. I've chosen to have the async worker queue for the TSFN 
+  be unlimited length by default.
+
+  The MQ thread management has a separate calllback thread for each hConn, hence the need to possible handle both an hConn and a process-wide
+  mutex model.
+
+ */
+
 #include "mqi.h"
 
-using namespace Napi;
+#include <chrono>
+#include <mutex>
+#include <thread>
 
-class AppContext {
+class ObjContext {
 public:
   FunctionReference appCBRef;
   ObjectReference jsHObjRef;
   ObjectReference result;
+  int queuedCount = 0;
 };
-std::map<std::string, AppContext *> appContextMap;
 
-using Context = Reference<Value>;
-using FinalizerDataType = void;
+class ConnContext {
+public:
+  mutex mtx;
+  int queuedCount = 0;
+};
 
+static map<string, ObjContext *> objContextMap;
+static map<MQLONG, ConnContext *> connContextMap;
+
+/* This is what gets passed from the callback registered with MQ to the PreJsCB function. */
 class ReturnedData {
 public:
   MQHCONN hConn;
@@ -44,36 +89,42 @@ public:
   int len;
 };
 
-std::string makeKey(MQHCONN hConn, MQHOBJ hObj);
 
-void PreJsCB(Napi::Env env, Function callback, Context *context, ReturnedData *data);
-void PostJsCB(const CallbackInfo &info);
+using Context = void; // Not going to use any
+void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data);
+
+/* Make it simpler to type the types */
 using TSFN = TypedThreadSafeFunction<Context, ReturnedData, PreJsCB>;
+void FinalizerCallback(Env env, void *finalizeData, Context *context) { debugf(LOG_TRACE, "TSFN Finalizer Callback"); };
 
-void FinalizerCallback(Napi::Env env, void *finalizeData, void *context) { debugf(LOG_TRACE, "TSFN Finalizer Callback"); };
-using BUC = Buffer<unsigned char>;
+string makeKey(MQHCONN hConn, MQHOBJ hObj);
 
 static TSFN tsfn;
 static bool initialised = false;
-enum { IDX_GETA_HCONN = 0, IDX_GETA_HOBJ, IDX_GETA_JSHOBJ, IDX_GETA_MD, IDX_GETA_GMO, IDX_GETA_JS_CALLBACK, IDX_GETA_APP_CALLBACK };
-int32_t msgCount = 0;
+static mutex processMtx;
 
-// This is only called on the main thread so don't need locking
-static void init(const CallbackInfo &info) {
+enum { IDX_GETA_HCONN = 0, IDX_GETA_HOBJ, IDX_GETA_JSHOBJ, IDX_GETA_MD, IDX_GETA_GMO, IDX_GETA_JS_CALLBACK, IDX_GETA_APP_CALLBACK, IDX_LAST };
+
+// This is only called on the main thread so doesn't need locking
+static void initTsfn(const CallbackInfo &info) {
   Env env = info.Env();
 
   if (!initialised) {
-    Context *context = new Reference<Value>(Persistent(info.This()));
     tsfn = TSFN::New(env,                                       // Environment
-                     info[IDX_GETA_JS_CALLBACK].As<Function>(), // JS function from caller
-                     "AsyncCB",                                 // Resource name
+                     info[IDX_GETA_JS_CALLBACK].As<Function>(), // JS function from caller - the amqsgeta.js callback proxy, not the application's
+                     "PreJsCB",                                 // Resource name
                      0,                                         // Max queue size (0 = unlimited).
                      1,                                         // Initial thread count
-                     context,                                   // Context,
-                     FinalizerCallback                          // Finalizer
-    );
-
+                     nullptr,                                   // Context,
+                     FinalizerCallback);
     initialised = true;
+  }
+}
+
+void BUCFinalize(Env env, unsigned char *p) {
+  debugf(LOG_OBJECT, "In BUCFinalize for %p", p);
+  if (p) {
+    mqnFree(p);
   }
 }
 
@@ -81,33 +132,29 @@ static void init(const CallbackInfo &info) {
 This function is scheduled for being called on the main thread. It builds the various objects/values to be
 passed back
 */
-void BUCFinalize(Env env, unsigned char *p) {
-  debugf(LOG_DEBUG, "In BUCFinalize for %p", p);
-  if (p) {
-    mqnFree(p);
-  }
-}
-
 void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
-
-  debugf(LOG_DEBUG, "PreJSCB - ReturnedData is passed at %p", data);
+  
+  debugf(LOG_TRACE, "In PreJsCB");
+  debugf(LOG_OBJECT, "PreJSCB - ReturnedData is passed at %p", data);
+  
   Object o;
   if (env != nullptr) {
 
     if (callback != nullptr) {
-      Buffer<unsigned char> b1;
-      Buffer<unsigned char> b2;
-      Buffer<unsigned char> b3;
+      BUC b1;
+      BUC b2;
+      BUC b3;
 
       string key = makeKey(data->hConn, data->hObj);
 
-      int mapCount = appContextMap.count(key);
+      int mapCount = objContextMap.count(key);
       if (mapCount == 1) {
-        AppContext *appContext = appContextMap[key];
-        Function f = appContext->appCBRef.Value().As<Function>();
-        o = appContext->result.Value();
+        ObjContext *objContext = objContextMap[key];
+        Function f = objContext->appCBRef.Value().As<Function>();
+
+        o = objContext->result.Value();
         o.Set("appCB", f);
-        o.Set("jsHObj", appContext->jsHObjRef.Value());
+        o.Set("jsHObj", objContext->jsHObjRef.Value());
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
       } else {
@@ -119,24 +166,25 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
       if (data->mqmd) {
         b1 = BUC::New(env, data->mqmd, MQMD_LENGTH_2, BUCFinalize);
-        b1.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQMD"));
+        // b1.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQMD"));
       }
       if (data->mqgmo) {
         b2 = BUC::New(env, data->mqgmo, MQGMO_LENGTH_4, BUCFinalize);
-        b2.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQGMO"));
+        // b2.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQGMO"));
       }
 
       if (data->body) {
         b3 = BUC::New(env, data->body, data->len, BUCFinalize);
-        b3.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB BODY"));
+        // b3.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB BODY"));
       }
 
-      // And now we can call a JS function - this is actually a "proxy" in 
+      // And now we can call a JS function - this is actually a "proxy" in
       // the ibmmq layer that in turn calls the real application callback
       if (data->mqcc == MQCC_OK) {
         callback.Call({o, b1, b2, b3});
         debugf(LOG_DEBUG, "Called the callback with buffers.");
-        // Any cleanup can be done here - can we free the Buffer contents here?
+        // Any cleanup can be done here - should we free the Buffer contents here? Doesn't
+        // seem to be necessary as BUCFinalize does get called
       } else {
         callback.Call({o});
         debugf(LOG_DEBUG, "Called the callback with no data.");
@@ -144,19 +192,25 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
       }
 
     } else {
-      debugf(LOG_DEBUG, "Cannot find appContext for key %d/%d", data->hConn, data->hObj);
+      debugf(LOG_DEBUG, "Cannot find objContext for key %d/%d", data->hConn, data->hObj);
     }
+  } else {
+    debugf(LOG_DEBUG, "PreJsCB - called with no env");
   }
 }
 
-// may have several of these invoked before preJsCB gets executed
+// May have many of these invoked before preJsCB gets executed
+// There may also be invocations on various different threads. Each hConn has
+// to have its own callback thread, and they might be invoked simultaneously.
+// In any case, there is no critical use of global data here (either read or write)
+// so shouldn't need any locking.
 void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pContext) {
 
   MQLONG len;
-  debugf(LOG_DEBUG, "In mqnCB");
+  debugf(LOG_TRACE, "In mqnCB");
 
   auto retData = new ReturnedData;
-  debugf(LOG_DEBUG, "mqnCB  - ReturnedData is stored at %p", retData);
+  debugf(LOG_OBJECT, "mqnCB  - ReturnedData is stored for %d/%d at %p", hConn, pContext->Hobj, retData);
 
   retData->hConn = hConn;
   retData->hObj = pContext->Hobj;
@@ -183,80 +237,76 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       memcpy(retData->body, buf, len);
       retData->len = len;
     }
+
+    if (pContext->Reason != MQRC_NONE) {
+      debugf(LOG_DEBUG, "mqnCB - Message delivery returned error %d for calltype %d ", pContext->Reason, pContext->CallType);
+    }
     break;
   case MQCBCT_EVENT_CALL:
     if ((pContext->Reason == MQRC_OBJECT_CHANGED) || (pContext->Reason == MQRC_CONNECTION_BROKEN) || (pContext->Reason == MQRC_Q_MGR_STOPPING) ||
         (pContext->Reason == MQRC_Q_MGR_QUIESCING) || (pContext->Reason == MQRC_CONNECTION_QUIESCING) || (pContext->Reason == MQRC_CONNECTION_STOPPING) ||
         (pContext->Reason == MQRC_NO_MSG_AVAILABLE)) {
-      // construct error object to pass to appCB
-      debugf(LOG_DEBUG, "Need to send error %d for calltype %d to app ****", pContext->Reason, pContext->CallType);
+      debugf(LOG_DEBUG, "mqnCB - Error %d for hConn/hObj %d/%d", pContext->Reason, hConn, pContext->Hobj);
     }
     break;
+
   default:
-    debugf(LOG_DEBUG, "**** Unexpected CallType = %d ****", pContext->CallType);
+    debugf(LOG_DEBUG, "mqnCB - Unexpected CallType: %d", pContext->CallType);
     break;
   }
 
-  napi_status status = tsfn.NonBlockingCall(retData);
+  // C++ automatically creates an object if you simply use x=myMap[unknown_key].So check the key exists
+  // in the map first.
+  //
+  // This is one strategy for delaying the callbacks a little while to allow the
+  // PreJsCB functions a chance to catch up.
+  if (connContextMap.count(hConn) == 1) {
+    ConnContext *connContext = connContextMap[hConn];
+    if (connContext != NULL && connContext->queuedCount++ > config.maxConsecutiveGets) {
+      connContext->mtx.lock();
+      // Test again under the lock
+      if (connContext->queuedCount++ > config.maxConsecutiveGets) {
+        connContext->queuedCount = 0;
+        debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d after %d messages: %dms", hConn, config.maxConsecutiveGets, config.getLoopDelayTimeMs);
+        MQLONG CC, RC;
+        MQCTLO mqctlo = {MQCTLO_DEFAULT};
 
-  if (status != napi_ok) {
-    Napi::Error::Fatal("ThreadEntry", "Napi::ThreadSafeNapi::Function.NonBlockingCall() failed");
+        _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+        debugf(LOG_DEBUG, "mqnCB - MQCTL(1)    CC:%d RC %d", CC, RC);
+        this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
+        _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+        debugf(LOG_DEBUG, "mqnCB - MQCTL(2)    CC:%d RC %d", CC, RC);
+      }
+      connContext->mtx.unlock();
+    }
   }
+
+  bool queued = false;
+  int retries = 0;
+
+  //  processMtx.lock(); // Block all callbacks temporarily while we give the worker queue a chance to drain.
+  while (!queued && retries < 10) {
+    napi_status status = tsfn.NonBlockingCall(retData);
+    if (status == napi_ok) {
+      queued = true;
+    } else if (status == napi_queue_full && retries < 10) {
+      /* Should never see this if queue to TSFN is unlimited */
+      debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d as worker queue full", hConn);
+      this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
+      retries++;
+    } else {
+      Error::Fatal("ThreadEntry", "TypedThreadSafeNapi::Function.NonBlockingCall() failed");
+    }
+  }
+  // processMtx.unlock();
 
   return;
 }
-
-std::string makeKey(MQHCONN hConn, MQHOBJ hObj) {
-  string s = std::to_string(hConn) + "/" + std::to_string(hObj);
-  debugf(LOG_DEBUG, "MakeKey: %s mapCount: %d", s.c_str(), appContextMap.count(s));
-  return s;
-}
-
-// Get rid of the listener for this object, and remove it from any local context
-void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC) {
-
-  MQCTLO mqctlo = {MQCTLO_DEFAULT};
-
-  debugf(LOG_DEBUG, "CleanupContext for key %d/%d", hConn, hObj);
-
-  CALLMQI("MQCTL", MQHCONN, MQLONG, PMQCTLO, PMQLONG, PMQLONG)
-  (hConn, MQOP_SUSPEND, &mqctlo, pCC, pRC);
-
-  if (*pCC == MQCC_OK) {
-
-    CALLMQI("MQCB", MQHCONN, MQLONG, PMQCBD, MQHOBJ, PMQMD, PMQGMO, PMQLONG, PMQLONG)
-    (hConn, MQOP_DEREGISTER, NULL, hObj, NULL, NULL, pCC, pRC);
-
-    if (*pCC == MQCC_OK) {
-      CALLMQI("MQCTL", MQHCONN, MQLONG, PMQCTLO, PMQLONG, PMQLONG)
-      (hConn, MQOP_RESUME, &mqctlo, pCC, pRC);
-    }
-  }
-  // Always clean up the maps, even if the MQCB failed - it is most likely
-  // because the hObj has already been removed.
-  string key = makeKey(hConn, hObj);
-  if (appContextMap.count(key) == 1) {
-    AppContext *appContext = appContextMap[key];
-    delete (appContext);
-    appContextMap.erase(key);
-  }
-
-  // any more needed to remove s and appContext?
-}
-
-// Get rid of the listener for this object, and remove it from any local context
-void cleanupConnectionContext(MQHCONN hConn) {
-
-  debugf(LOG_DEBUG, "CleanupContext for key %d/-", hConn);
-
-  // Don't need to call MQCB, just remove all object contexts for this hConn
-  string key = makeKey(hConn, -999);
-  // TODO:
-  // iterate through appContextMap
-  //   if key matches, do the deletes
-  // any more needed to remove s and appContext?
-}
-
+/***************************************************************************************************************
+ *
+ * This is the main entrypoint for the application to set up an async message consumer. This verb itself always
+ * runs synchronously on the JS main thread, but sets up the callbacks for the given hObj.
+ */
 #define VERB "GETASYNC"
 Object GETASYNC(const CallbackInfo &info) {
 
@@ -279,7 +329,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   Env env = info.Env();
 
-  init(info);
+  initTsfn(info);
 
   Function appCB; /* This is the callback as specified in the application */
 
@@ -288,7 +338,7 @@ Object GETASYNC(const CallbackInfo &info) {
     result.AddFinalizer(debugDest, mqnStrdup(env, VERB));
   }
 
-  if (info.Length() != IDX_GETA_APP_CALLBACK + 1) {
+  if (info.Length() != IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -297,7 +347,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   Value v = info[IDX_GETA_MD];
   if (v.IsBuffer()) {
-    pmqmd = (PMQMD)v.As<Buffer<unsigned char>>().Data();
+    pmqmd = (PMQMD)v.As<BUC>().Data();
   } else {
     jsmd = info[IDX_GETA_MD].As<Object>();
     pmqmd = &mqmd;
@@ -306,7 +356,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   v = info[IDX_GETA_GMO];
   if (v.IsBuffer()) {
-    pmqgmo = (PMQGMO)v.As<Buffer<unsigned char>>().Data();
+    pmqgmo = (PMQGMO)v.As<BUC>().Data();
   } else {
     jsgmo = info[IDX_GETA_GMO].As<Object>();
     pmqgmo = &mqgmo;
@@ -314,24 +364,46 @@ Object GETASYNC(const CallbackInfo &info) {
   }
 
   v = info[IDX_GETA_APP_CALLBACK];
-  AppContext *appContext = new AppContext;
-  appContext->appCBRef = Persistent(v.As<Function>());
-  Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
-  appContext->jsHObjRef = Persistent(jsHObj);
-  appContext->result = Persistent(Object::New(env));
 
-  appContextMap[makeKey(hConn, hObj)] = appContext;
+  // Add a map entry that holds any necessary control information that we need to know later.
+  // JS objects need to be marked persistent so they don't get GC'd until we free the objContext during
+  // MQCLOSE().
+  ObjContext *objContext = new ObjContext;
+  objContext->appCBRef = Persistent(v.As<Function>());
+
+  Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
+  objContext->jsHObjRef = Persistent(jsHObj);
+  objContext->result = Persistent(Object::New(env));
+
+  objContextMap[makeKey(hConn, hObj)] = objContext;
 
   mqcbd.CallbackFunction = (MQPTR)mqnCB;
   mqcbd.Options |= MQCBDO_FAIL_IF_QUIESCING;
-  mqcbd.CallbackArea = appContext;
+  mqcbd.CallbackArea = objContext;
 
-  CALLMQI("MQCB", MQHCONN, MQLONG, PMQCBD, MQHOBJ, PMQMD, PMQGMO, PMQLONG, PMQLONG)
-  (hConn, MQOP_REGISTER, &mqcbd, hObj, pmqmd, pmqgmo, &CC, &RC);
+  bool alreadyActive = true;
+
+  // Registering a message/event callback requires that there be no active async operations.
+  // So we temporarily suspend any that might be going on.
+  // The first MQCTL may fail if there is no active async thread. It's fine ... we
+  // just note the fact so that we can decide whether to do a start or resume in a moment
+  _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+  if (RC == MQRC_OPERATION_NOT_ALLOWED) {
+    alreadyActive = false;
+  }
+  debugf(LOG_DEBUG, "GETASYNC - MQCTL(1)    CC:%d RC %d", CC, RC);
+
+  _MQCB(hConn, MQOP_REGISTER, &mqcbd, hObj, pmqmd, pmqgmo, &CC, &RC);
+  debugf(LOG_DEBUG, "GETASYNC - MQCB    CC:%d RC %d", CC, RC);
 
   if (CC == MQCC_OK) {
-    CALLMQI("MQCTL", MQHCONN, MQLONG, PMQCTLO, PMQLONG, PMQLONG)
-    (hConn, MQOP_START, &mqctlo, &CC, &RC);
+    _MQCTL(hConn, alreadyActive ? MQOP_RESUME : MQOP_START, &mqctlo, &CC, &RC);
+    debugf(LOG_DEBUG, "GETASYNC - MQCTL(2)    CC:%d RC %d", CC, RC);
+  }
+
+  // Add an hConn context map entry if there's not already one
+  if (connContextMap.count(hConn) == 0) {
+    connContextMap[hConn] = new ConnContext;
   }
 
   result.Set("jsCc", Number::New(env, CC));
@@ -340,14 +412,16 @@ Object GETASYNC(const CallbackInfo &info) {
   return result;
 }
 #undef VERB
-
+/***************************************************************************************************************
+ * The application calls this to remove any listeners for the hObj.
+ */
 #define VERB "GETDONE"
 Object GETDONE(const CallbackInfo &info) {
-  enum { IDX_GETDONE_HCONN = 0, IDX_GETDONE_HOBJ };
+  enum { IDX_GETDONE_HCONN = 0, IDX_GETDONE_HOBJ, IDX_LAST };
 
   Env env = info.Env();
 
-  if (info.Length() != IDX_GETDONE_HOBJ + 1) {
+  if (info.Length() != IDX_LAST) {
     throwTE(env, VERB, "Wrong number of arguments");
   }
 
@@ -358,10 +432,129 @@ Object GETDONE(const CallbackInfo &info) {
   MQLONG RC = -1;
 
   Object result = Object::New(env);
-  cleanupObjectContext(hConn, hObj, &CC, &RC);
+  cleanupObjectContext(hConn, hObj, &CC, &RC, true);
 
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
 
   return result;
+}
+#undef VERB
+
+/***************************************************************************************************************
+ * Tuning parameters can be set in the application and passed to here (where they affect async consume).
+ */
+int maxConsecutiveGetsDefault = 1000;
+int getLoopDelayTimeMsDefault = 250;
+#define VERB "SetTuningParameters"
+void SetTuningParameters(const CallbackInfo &info) {
+  Env env = info.Env();
+
+  if (info.Length() != 1) {
+    throwTE(env, VERB, "Wrong number of arguments");
+  }
+  Object tuningParameters = info[0].As<Object>();
+  dumpObject(env, "TuningParameters", tuningParameters);
+  config.maxConsecutiveGets = tuningParameters.Get("maxConsecutiveGets").As<Number>().Int32Value();
+  config.getLoopDelayTimeMs = tuningParameters.Get("getLoopDelayTimeMs").As<Number>().Int32Value();
+}
+#undef VERB
+
+/***************************************************************************************************************
+ * A set of functions to manage application contexts that may need to be passed around. Some information needs
+ * to be held against the hConn/hObj as it is not available in the MQI or easy to pass through the callback context structures.
+ *
+ * Closing a queue requires that any async consumer is deregistered; deregistration requires that the connection async environment
+ * is halted. So the cleanup operation for a queue does an MQCTL(suspend), MQCB(dereg), MQCTL(resume). Similarly, disconnecting from the
+ * queue manager requires that the whole async environmetn is not active.
+ */
+
+#define HOBJ_WILDCARD (-2)
+std::string makeKey(MQHCONN hConn, MQHOBJ hObj) {
+  string s;
+  if (hObj == HOBJ_WILDCARD) { // special case for
+    s = std::to_string(hConn) + "/";
+  } else {
+    s = std::to_string(hConn) + "/" + std::to_string(hObj);
+    // debugf(LOG_DEBUG, "MakeKey: %s mapCount: %d", s.c_str(), objContextMap.count(s));
+  }
+  return s;
+}
+
+// Get rid of the listener for this object, and remove it from any local context
+// Sometimes we don't need to
+void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, bool resume) {
+
+  MQCTLO mqctlo = {MQCTLO_DEFAULT};
+
+  debugf(LOG_DEBUG, "cleanupObjectContext for key %d/%d resume=%b", hConn, hObj, resume);
+
+  // Always clean up the maps, even if the MQCB failed - it is most likely
+  // because the hObj has already been removed.
+  string key = makeKey(hConn, hObj);
+  processMtx.lock(); // Locking is probably unnecessary, but just in case ...
+  if (objContextMap.count(key) == 1) {
+    ObjContext *objContext = objContextMap[key];
+    delete (objContext);
+    objContextMap.erase(key);
+  }
+
+  _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, pCC, pRC);
+  debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(1) CC:%d RC %d", *pCC, *pRC);
+
+  _MQCB(hConn, MQOP_DEREGISTER, NULL, hObj, NULL, NULL, pCC, pRC);
+  debugf(LOG_DEBUG, "cleanupObjectContext - MQCB    CC:%d RC %d", *pCC, *pRC);
+
+  if (resume) {
+    _MQCTL(hConn, MQOP_RESUME, &mqctlo, pCC, pRC);
+    debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(2) CC:%d RC %d", *pCC, *pRC);
+  }
+  processMtx.unlock();
+}
+
+void resumeConnectionContext(MQHCONN hConn) {
+
+  MQCTLO mqctlo = {MQCTLO_DEFAULT};
+  MQLONG CC, RC;
+
+  debugf(LOG_DEBUG, "Explicit resume Context");
+
+  _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+}
+
+// Get rid of the async consumer for the connection - remove all object listeners.
+void cleanupConnectionContext(MQHCONN hConn) {
+  MQLONG CC;
+  MQLONG RC;
+
+  debugf(LOG_DEBUG, "cleanupConnectionContext for keys %d/*", hConn);
+
+  // Don't need to call MQCB, just remove all object contexts for this hConn
+  string key = makeKey(hConn, HOBJ_WILDCARD);
+  for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
+    string mapKey = it->first;
+    if (mapKey.find(key, 0) == 0) { // startswith()
+      size_t idx = mapKey.find("/", 0);
+      if (idx != string::npos && idx < (mapKey.length()-1)) {
+        try {
+          auto hObjStr = mapKey.substr(idx + 1); // step past the "/"
+          auto hObj = stoi(hObjStr, nullptr);
+          // Ignore any problems removing the message listener
+          cleanupObjectContext(hConn, hObj, &CC, &RC, false);
+        } catch (exception &e) {
+          // Bad value - catch the exception just in case there's something odd in the map key
+        }
+      }
+    }
+  }
+
+  processMtx.lock(); /* Protect against attempts to DISC from two environments */
+  if (connContextMap.count(hConn) == 1) {
+    ConnContext *connContext = connContextMap[hConn];
+    if (connContext) {
+      delete (connContext);
+      connContextMap.erase(hConn);
+    }
+  }
+  processMtx.unlock(); 
 }

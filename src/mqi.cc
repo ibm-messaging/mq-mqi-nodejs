@@ -44,6 +44,7 @@
 Configuration config = Configuration();
 int logLevel = 0;
 
+/* Function pointers for each verb */
 static const char *mqiFunctions[] = {"MQCONNX", "MQDISC",  "MQOPEN",  "MQCLOSE", "MQPUT1",  "MQPUT",   "MQGET",  "MQINQ",
                                      "MQSET",   "MQBEGIN", "MQCMIT",  "MQBACK",  "MQSTAT",  "MQCB",    "MQCTL",  "MQCALLBACK",
                                      "MQSUB",   "MQSUBRQ", "MQCRTMH", "MQDLTMH", "MQSETMP", "MQDLTMP", "MQINQMP"};
@@ -126,7 +127,7 @@ Object UNSUPPORTED_FUNCTION(const CallbackInfo &info) {
 /* an MQI client library during `npm install` - a postinstall script    */
 /* can pull it in for later runtime use.                                */
 /*                                                                      */
-/* Note that we don't dlclose the module, so it remains available for   */
+/* Note that we never dlclose the module, so it remains available for   */
 /* the process runtime.                                                 */
 /************************************************************************/
 Object LoadLib(const CallbackInfo &info) {
@@ -252,7 +253,7 @@ void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size
     memset(out, 0, len);
   } else {
     // printf("Type of field is %s\n",in.Get(field));
-    Buffer<unsigned char> b = in.Get(field).As<Buffer<unsigned char>>();
+    BUC b = in.Get(field).As<BUC>();
     // printf("  .. converted to buffer of length %d\n",(int)b.Length());
     if (b.Length() != len) {
       throwRE(env, "Input buffer wrong length for MQI field", field);
@@ -292,7 +293,7 @@ void getMQIBytes(Env env, unsigned char *in, Object out, const char *field, size
     fprintf(stderr, "ERROR: getMQIBytes trying to read from empty field %s\n", field);
   } else {
     // printf("Type of field is %s\n",in.Get(field));
-    Buffer<unsigned char> b = out.Get(field).As<Buffer<unsigned char>>();
+    BUC b = out.Get(field).As<BUC>();
     if (b.Length() != len) {
       throwRE(env, "Input buffer wrong length for MQI field", field);
     } else {
@@ -413,7 +414,7 @@ void debugDest(Env env, void *s) {
   return;
 }
 
-/* Show a JS object - fields and values. Is recursive to show nested objects */
+/* Dump a JS object - fields and values. Is recursive to show nested objects */
 static const char *spaces = "                                                                                                      ";
 static void dumpObject(Env env, const char *objectType, Object o, int offset) {
   Array names = o.GetPropertyNames();
@@ -421,8 +422,8 @@ static void dumpObject(Env env, const char *objectType, Object o, int offset) {
     Value n = names[i];
     Value v = o.Get(n.As<String>());
     if (v.IsBuffer()) {
-      unsigned char *b = v.As<Buffer<unsigned char>>().Data();
-      int l = v.As<Buffer<unsigned char>>().Length();
+      unsigned char *b = v.As<BUC>().Data();
+      int l = v.As<BUC>().Length();
       fprintf(stderr, "%*.*s  %-32.32s : [ ", offset, offset, spaces, n.As<String>().Utf8Value().c_str());
       for (int j = 0; j < 8 && j < l; j++) {
         fprintf(stderr, "%02X ", b[j]);
@@ -464,6 +465,7 @@ void dumpObject(Env env, const char *objectType, Object o) {
   }
 }
 
+/* A simple formatter for hex data showing chars and bytes */
 void dumpHex(const char *title, void *buf, int length) {
   int i, j;
   unsigned char *p = (unsigned char *)buf;
@@ -481,7 +483,6 @@ void dumpHex(const char *title, void *buf, int length) {
   fprintf(fp, "-- %s -- (%d bytes) --------------------\n", title, length);
 
   rows = (length + 15) / 16;
-
   for (i = 0; i < rows; i++) {
 
     memset(line, ' ', sizeof(line));
@@ -514,6 +515,7 @@ void dumpHex(const char *title, void *buf, int length) {
   return;
 }
 
+/* Useful when debugging verb parameters */
 const char *napiType(napi_valuetype t) {
   switch (t) {
   case napi_undefined:
@@ -539,8 +541,11 @@ const char *napiType(napi_valuetype t) {
   }
 }
 
-// Setup the exports object with references to the various functions
-// implemented in the C++ code.
+/* 
+ *Setup the exports object with references to the various functions
+ * implemented in the C++ code. Most of these are the analogues to the MQI verbs
+ * themselves.
+ */
 Object Init(Env env, Object exports) {
 
   exports.Set(String::New(env, "BuildTime"), String::New(env, __TIME__));
@@ -577,6 +582,8 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "SetMp"), Function::New(env, SETMP));
   exports.Set(String::New(env, "InqMp"), Function::New(env, INQMP));
   exports.Set(String::New(env, "DltMp"), Function::New(env, DLTMP));
+
+  exports.Set(String::New(env, "_SetTuningParameters"), Function::New(env, SetTuningParameters));
 
   // This entrypoint is for "internal" use only, allowing test functions
   // to be compiled into the add-on without disruption

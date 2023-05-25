@@ -1,6 +1,12 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 25 May 2023: v2.0.0 (!!)
+* Still not being published on npm, so will be other updates
+  without changing version number
+* A lot of code cleanup
+* A real async MQGET replacing the looped version
+
 ## 09 May 2023: v0.0.3 (!!)
 * This is a forked version with a deliberately low version number 
 * It is a near-total rewrite to reduce dependency chains. See the README

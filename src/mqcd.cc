@@ -19,6 +19,8 @@
 
 #include "mqi.h"
 
+/* Conversion routines for the MQCD (channel definition) structure */
+
 void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   int i;
 
@@ -49,7 +51,6 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   Array a = jscd.Get("HdrCompList").As<Array>();
   for (i = 0; i < 2; i++) {
     Value v = a[i];
-    // Object o = v.As<Object>();
     pmqcd->HdrCompList[i] = v.As<Number>().Int32Value();
   }
   a = jscd.Get("MsgCompList").As<Array>();
