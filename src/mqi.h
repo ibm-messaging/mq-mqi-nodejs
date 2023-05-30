@@ -61,6 +61,7 @@ Object PUT1(const CallbackInfo &info);
 Object GET(const CallbackInfo &info);
 Object GETASYNC(const CallbackInfo &info);
 Object GETDONE(const CallbackInfo &info);
+Object CTL(const CallbackInfo &info);
 
 Object CRTMH(const CallbackInfo &info);
 Object DLTMH(const CallbackInfo &info);

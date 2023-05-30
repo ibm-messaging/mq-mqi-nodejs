@@ -17,6 +17,7 @@
     Mark Taylor   - Initial Contribution
 */
 
+
 /*
   This module implements the asynchronous consume model using MQ's
   callback feature. MQ will deliver messages or events through a thread
@@ -24,14 +25,15 @@
   we tell MQ about will be executing on that thread. Which cannot directly call
   JS callback functions. Those can only be invoked from the main thread. So we use
   a N-API TypedThreadSafeFunction to schedule the callback. We cannot use the
-  BlockingCall method that would pause returning from the C callback - that leads
+  BlockingCall method that could pause returning from the C callback - that leads
   to potential deadlock if other MQ verbs are being called at the same time. Instead
   we use NonBlockingCall to queue the work of invoking the JS callback.
 
   The C callback returns immediately to the qmgr after setting up the TSFN work. In order
-  for the next callback to not overwrite the data before we've had a chance to pass it to
-  the application, we take copies (malloc/memcpy). Which is a bit inefficient but seems
-  to be necessary. A structure is allocated pointing to those copies and other required fields.
+  pass control structures and message data to the application, we take copies (malloc/memcpy).
+  Which is a bit inefficient but is necessary. Those structures are held in stack memory in the calling
+  process so disappear after return from the C callback. So a local structure is allocated pointing to
+  those copies and other required fields.
 
   When the TSFN runs, it is given that structure and can then combine that with information in the ObjContext
   map to work out which JS function to call. Which it will do synchronously. The flow then goes
@@ -40,15 +42,42 @@
   at some future point. The application cannot rely on the buffer contents (MQMD, MQGMO, message body) after it
   returns from its own callback.
 
+  Any changes that the application attempts to the structures are not sent back into the qmgr. So you can't change,
+  for example, the GMO.Options value. This is not a restriction specific to this NodeJS layer; it is true for all MQI
+  application environments.
+
+  Callback Tuning Options:
+  -----------------------
+  There are two high-level tuning parameter options to affect how callbacks are managed. 
+
+  The first is callbackStrategy.
+
   There are a number of possible strategies to ensure some degree of "fairness" between queueing work from the MQ callback
   and having the application JS code run. We would rather not have the queued work be too far ahead of the application
-  seeing the message data, but there's no single solution I've found to having it run in a timely way. There are some
-  mutexed areas active/commented out as ways of blocking the MQ callback thread temporarily; these might turn some of that
-  into a tuningparameters option. But for regular message arrival/consumption patterns, this seems to work as long as the
-  application callback does not spend too much time processing the message. I've chosen to have the async worker queue for the TSFN 
+  seeing the message data, but there's no single solution I've found to having it run in a timely way.
+
+  The CB_SYNCED callbackStrategy setting for this code uses temporary suspend/resume operations to only
+  have a single outstanding application callback per hConn. When connecting as a client, the MQCTL operations are still
+  handled locally, so are not network-performance sensitive.
+
+  The CB_READAHEAD strategy allows the queued work to get a long way ahead of the delivery of messages from the queue manager.
+  There are some mutexed areas active/commented out as ways of blocking the MQ callback thread temporarily. Some aspects
+  of that behaviour can be affected by tuningParamters. This strategy might perform better for some workloads.
+
+  But for regular message arrival/consumption patterns, the READAHEAD seems to work as long as the
+  application callback does not spend too much time processing the message. I've chosen to have the async worker queue for the TSFN
   be unlimited length by default.
 
-  The MQ thread management has a separate calllback thread for each hConn, hence the need to possible handle both an hConn and a process-wide
+  The second tuningParameter is a boolean called "useCtl".
+
+  For most applications, the default value (false) of this parameter will be fine. But if you are setting up a number of 
+  consumer callbacks, you might not want to kick any of them off until all the callbacks are in place. With the useCtl value
+  set to true, applications can call ibmmq.Get() many times before any messages will be delivered. Once all the callbacks are
+  ready, then use Ctl(MQOP_START) to begin processing of inbound messages. This new Ctl() verb is the analogue of MQCTL. It 
+  supports the 3 relevant operations - MQOP_START, MQOP_SUSPEND and MQOP_RESUME. Stopping of consumers is handled during 
+  application exit or when all object handles are closed.
+
+  Also note that the MQ thread management has a separate callback thread for each hConn, hence the need to possible handle both an hConn and a process-wide
   mutex model.
 
  */
@@ -89,7 +118,6 @@ public:
   int len;
 };
 
-
 using Context = void; // Not going to use any
 void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data);
 
@@ -103,7 +131,20 @@ static TSFN tsfn;
 static bool initialised = false;
 static mutex processMtx;
 
-enum { IDX_GETA_HCONN = 0, IDX_GETA_HOBJ, IDX_GETA_JSHOBJ, IDX_GETA_MD, IDX_GETA_GMO, IDX_GETA_JS_CALLBACK, IDX_GETA_APP_CALLBACK, IDX_LAST };
+enum CB_STRATEGY { CB_SYNCED, CB_READAHEAD };
+CB_STRATEGY callbackStrategy = CB_SYNCED;
+
+enum {
+  IDX_GETA_HCONN = 0,
+  IDX_GETA_HOBJ,
+  IDX_GETA_JSHOBJ,
+  IDX_GETA_MD,
+  IDX_GETA_GMO,
+  IDX_GETA_USECTL,
+  IDX_GETA_JS_CALLBACK,
+  IDX_GETA_APP_CALLBACK,
+  IDX_LAST
+};
 
 // This is only called on the main thread so doesn't need locking
 static void initTsfn(const CallbackInfo &info) {
@@ -133,13 +174,11 @@ This function is scheduled for being called on the main thread. It builds the va
 passed back
 */
 void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
-  
+
   debugf(LOG_TRACE, "In PreJsCB");
-  debugf(LOG_OBJECT, "PreJSCB - ReturnedData is passed at %p", data);
-  
+
   Object o;
   if (env != nullptr) {
-
     if (callback != nullptr) {
       BUC b1;
       BUC b2;
@@ -158,7 +197,6 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
       } else {
-        debugf(LOG_DEBUG, "Map contains %d entries for key", mapCount);
         o = Object::New(env);
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
@@ -166,6 +204,7 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
       if (data->mqmd) {
         b1 = BUC::New(env, data->mqmd, MQMD_LENGTH_2, BUCFinalize);
+        // We don't need these additional finalizers other than for debug
         // b1.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQMD"));
       }
       if (data->mqgmo) {
@@ -197,6 +236,18 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
   } else {
     debugf(LOG_DEBUG, "PreJsCB - called with no env");
   }
+
+  // Can now resume reception of messages for this hConn
+  if (callbackStrategy == CB_SYNCED) {
+    MQLONG CC, RC;
+    MQCTLO mqctlo = {MQCTLO_DEFAULT};
+ 
+    _MQCTL(data->hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+    debugf(LOG_DEBUG, "PreJsCB - MQCTL RESUME hConn=%d CC=%d RC=%d", data->hConn, CC, RC);
+  }
+
+  // We don't need the returnedData structure any more */
+  delete (data);
 }
 
 // May have many of these invoked before preJsCB gets executed
@@ -210,7 +261,6 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   debugf(LOG_TRACE, "In mqnCB");
 
   auto retData = new ReturnedData;
-  debugf(LOG_OBJECT, "mqnCB  - ReturnedData is stored for %d/%d at %p", hConn, pContext->Hobj, retData);
 
   retData->hConn = hConn;
   retData->hObj = pContext->Hobj;
@@ -226,17 +276,21 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   case MQCBCT_MSG_REMOVED:
   case MQCBCT_MSG_NOT_REMOVED:
     len = pmqgmo->ReturnedLength;
+    retData->len = len;
+
     // dumpHex("Async MQMD", pmqmd, MQMD_LENGTH_2);
     // dumpHex("Async Message", buf, len);
-    {
-      retData->mqmd = (unsigned char *)malloc(MQMD_LENGTH_2);
-      memcpy(retData->mqmd, pmqmd, MQMD_LENGTH_2);
-      retData->mqgmo = (unsigned char *)malloc(MQGMO_LENGTH_4);
-      memcpy(retData->mqgmo, pmqgmo, MQGMO_LENGTH_4);
-      retData->body = (unsigned char *)malloc(len);
-      memcpy(retData->body, buf, len);
-      retData->len = len;
-    }
+
+    // These structures passed from the queue manager are in stack storage so
+    // they disappear after we return from this function. So we have to take copies of them
+    // before passing to the real main-thread callback
+    retData->mqgmo = (unsigned char *)malloc(MQGMO_LENGTH_4);
+    memcpy(retData->mqgmo, pmqgmo, MQGMO_LENGTH_4);
+
+    retData->mqmd = (unsigned char *)malloc(MQMD_LENGTH_2);
+    memcpy(retData->mqmd, pmqmd, MQMD_LENGTH_2);
+    retData->body = (unsigned char *)malloc(len);
+    memcpy(retData->body, buf, len);
 
     if (pContext->Reason != MQRC_NONE) {
       debugf(LOG_DEBUG, "mqnCB - Message delivery returned error %d for calltype %d ", pContext->Reason, pContext->CallType);
@@ -260,24 +314,26 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   //
   // This is one strategy for delaying the callbacks a little while to allow the
   // PreJsCB functions a chance to catch up.
-  if (connContextMap.count(hConn) == 1) {
-    ConnContext *connContext = connContextMap[hConn];
-    if (connContext != NULL && connContext->queuedCount++ > config.maxConsecutiveGets) {
-      connContext->mtx.lock();
-      // Test again under the lock
-      if (connContext->queuedCount++ > config.maxConsecutiveGets) {
-        connContext->queuedCount = 0;
-        debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d after %d messages: %dms", hConn, config.maxConsecutiveGets, config.getLoopDelayTimeMs);
-        MQLONG CC, RC;
-        MQCTLO mqctlo = {MQCTLO_DEFAULT};
+  if (callbackStrategy != CB_SYNCED) {
+    if (connContextMap.count(hConn) == 1) {
+      ConnContext *connContext = connContextMap[hConn];
+      if (connContext != NULL && connContext->queuedCount++ > config.maxConsecutiveGets) {
+        connContext->mtx.lock();
+        // Test again under the lock
+        if (connContext->queuedCount++ > config.maxConsecutiveGets) {
+          connContext->queuedCount = 0;
+          debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d after %d messages: %dms", hConn, config.maxConsecutiveGets, config.getLoopDelayTimeMs);
+          MQLONG CC, RC;
+          MQCTLO mqctlo = {MQCTLO_DEFAULT};
 
-        _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
-        debugf(LOG_DEBUG, "mqnCB - MQCTL(1)    CC:%d RC %d", CC, RC);
-        this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
-        _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
-        debugf(LOG_DEBUG, "mqnCB - MQCTL(2)    CC:%d RC %d", CC, RC);
+          _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+          debugf(LOG_DEBUG, "mqnCB - MQCTL(1)    CC:%d RC %d", CC, RC);
+          this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
+          _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+          debugf(LOG_DEBUG, "mqnCB - MQCTL(2)    CC:%d RC %d", CC, RC);
+        }
+        connContext->mtx.unlock();
       }
-      connContext->mtx.unlock();
     }
   }
 
@@ -299,6 +355,17 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
     }
   }
   // processMtx.unlock();
+
+  // For the strategy of not having any backlog of queued work, we stop any further delivery of
+  // messages for this hConn until the application callback has completed.
+  if (callbackStrategy == CB_SYNCED) {
+    MQLONG CC, RC;
+    MQCTLO mqctlo = {MQCTLO_DEFAULT};
+
+    _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+    debugf(LOG_DEBUG, "mqnCB - MQCTL SUSPEND hConn=%d CC=%d RC=%d", hConn, CC, RC);
+
+  }
 
   return;
 }
@@ -323,6 +390,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   MQCBD mqcbd = {MQCBD_DEFAULT};
   MQCTLO mqctlo = {MQCTLO_DEFAULT};
+  bool useCtl;
 
   MQLONG CC = -1;
   MQLONG RC = -1;
@@ -344,7 +412,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   hConn = info[IDX_GETA_HCONN].As<Number>().Int32Value();
   hObj = info[IDX_GETA_HOBJ].As<Number>().Int32Value();
-
+  useCtl = info[IDX_GETA_USECTL].As<Boolean>();
   Value v = info[IDX_GETA_MD];
   if (v.IsBuffer()) {
     pmqmd = (PMQMD)v.As<BUC>().Data();
@@ -387,23 +455,34 @@ Object GETASYNC(const CallbackInfo &info) {
   // So we temporarily suspend any that might be going on.
   // The first MQCTL may fail if there is no active async thread. It's fine ... we
   // just note the fact so that we can decide whether to do a start or resume in a moment
-  _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
-  if (RC == MQRC_OPERATION_NOT_ALLOWED) {
-    alreadyActive = false;
-  }
-  debugf(LOG_DEBUG, "GETASYNC - MQCTL(1)    CC:%d RC %d", CC, RC);
-
-  _MQCB(hConn, MQOP_REGISTER, &mqcbd, hObj, pmqmd, pmqgmo, &CC, &RC);
-  debugf(LOG_DEBUG, "GETASYNC - MQCB    CC:%d RC %d", CC, RC);
-
-  if (CC == MQCC_OK) {
-    _MQCTL(hConn, alreadyActive ? MQOP_RESUME : MQOP_START, &mqctlo, &CC, &RC);
-    debugf(LOG_DEBUG, "GETASYNC - MQCTL(2)    CC:%d RC %d", CC, RC);
-  }
-
   // Add an hConn context map entry if there's not already one
   if (connContextMap.count(hConn) == 0) {
     connContextMap[hConn] = new ConnContext;
+  }
+
+  if (!useCtl) {
+    bool suspended = false;
+    int i;
+    for (i = 0; i < 5 && !suspended; i++) {
+      _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+      debugf(LOG_DEBUG, "GETASYNC - MQCTL(1)    CC:%d RC %d", CC, RC);
+
+      if (RC == MQRC_NONE) {
+        suspended = true;
+      } else if (RC == MQRC_OPERATION_NOT_ALLOWED) {
+        alreadyActive = false;
+        suspended = true;
+      }
+    }
+  }
+
+  _MQCB(hConn, MQOP_REGISTER, &mqcbd, hObj, pmqmd, pmqgmo, &CC, &RC);
+  debugf(LOG_DEBUG, "GETASYNC - MQCB    CC:%d RC %d", CC, RC);
+  
+  if (!useCtl) {
+    MQLONG tmpCC,tmpRC;
+    _MQCTL(hConn, alreadyActive ? MQOP_RESUME : MQOP_START, &mqctlo, &tmpCC, &tmpRC);
+    debugf(LOG_DEBUG, "GETASYNC - MQCTL(2)    CC:%d RC %d", tmpCC, tmpRC);
   }
 
   result.Set("jsCc", Number::New(env, CC));
@@ -412,6 +491,7 @@ Object GETASYNC(const CallbackInfo &info) {
   return result;
 }
 #undef VERB
+
 /***************************************************************************************************************
  * The application calls this to remove any listeners for the hObj.
  */
@@ -441,8 +521,34 @@ Object GETDONE(const CallbackInfo &info) {
 }
 #undef VERB
 
+#define VERB "CTL"
+Object CTL(const CallbackInfo &info) {
+  enum { IDX_CTL_HCONN = 0, IDX_CTL_OPERATION, IDX_LAST };
+
+  Env env = info.Env();
+
+  if (info.Length() != IDX_LAST) {
+    throwTE(env, VERB, "Wrong number of arguments");
+  }
+
+  MQHCONN hConn = info[IDX_CTL_HCONN].As<Number>().Int32Value();
+  MQLONG operation = info[IDX_CTL_OPERATION].As<Number>().Int32Value();
+  MQCTLO ctlo = {MQCTLO_DEFAULT};
+  MQLONG CC = -1;
+  MQLONG RC = -1;
+
+  _MQCTL(hConn, operation, &ctlo, &CC, &RC);
+
+  Object result = Object::New(env);
+  result.Set("jsCc", Number::New(env, CC));
+  result.Set("jsRc", Number::New(env, RC));
+
+  return result;
+}
+#undef VERB
+
 /***************************************************************************************************************
- * Tuning parameters can be set in the application and passed to here (where they affect async consume).
+ * Tuning parameters can be set in the application and passed to here (where they may affect async consume).
  */
 int maxConsecutiveGetsDefault = 1000;
 int getLoopDelayTimeMsDefault = 250;
@@ -457,6 +563,13 @@ void SetTuningParameters(const CallbackInfo &info) {
   dumpObject(env, "TuningParameters", tuningParameters);
   config.maxConsecutiveGets = tuningParameters.Get("maxConsecutiveGets").As<Number>().Int32Value();
   config.getLoopDelayTimeMs = tuningParameters.Get("getLoopDelayTimeMs").As<Number>().Int32Value();
+  string s = tuningParameters.Get("callbackStrategy").As<String>();
+  transform(s.begin(), s.end(), s.begin(), ::toupper);
+  if (s.compare("READAHEAD") == 0) {
+    callbackStrategy = CB_READAHEAD;
+  } else {
+    callbackStrategy = CB_SYNCED;
+  }
 }
 #undef VERB
 
@@ -489,7 +602,7 @@ void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
 
   debugf(LOG_DEBUG, "cleanupObjectContext for key %d/%d resume=%b", hConn, hObj, resume);
 
-  // Always clean up the maps, even if the MQCB failed - it is most likely
+  // Always clean up the maps, even if the MQCB fails - it is most likely
   // because the hObj has already been removed.
   string key = makeKey(hConn, hObj);
   processMtx.lock(); // Locking is probably unnecessary, but just in case ...
@@ -535,7 +648,7 @@ void cleanupConnectionContext(MQHCONN hConn) {
     string mapKey = it->first;
     if (mapKey.find(key, 0) == 0) { // startswith()
       size_t idx = mapKey.find("/", 0);
-      if (idx != string::npos && idx < (mapKey.length()-1)) {
+      if (idx != string::npos && idx < (mapKey.length() - 1)) {
         try {
           auto hObjStr = mapKey.substr(idx + 1); // step past the "/"
           auto hObj = stoi(hObjStr, nullptr);
@@ -548,7 +661,7 @@ void cleanupConnectionContext(MQHCONN hConn) {
     }
   }
 
-  processMtx.lock(); /* Protect against attempts to DISC from two environments */
+  processMtx.lock(); /* Protect against attempts to MQDISC from two environments */
   if (connContextMap.count(hConn) == 1) {
     ConnContext *connContext = connContextMap[hConn];
     if (connContext) {
@@ -556,5 +669,5 @@ void cleanupConnectionContext(MQHCONN hConn) {
       connContextMap.erase(hConn);
     }
   }
-  processMtx.unlock(); 
+  processMtx.unlock();
 }

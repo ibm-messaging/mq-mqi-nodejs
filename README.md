@@ -19,7 +19,8 @@ set the dependency to pull direct from github instead of npm:
   }
 ```
 The rewrite should not have changed any application behaviour. The API is unchanged; 
-all the sample programs in this repo continue without modifications.
+all the sample programs in this repo continue without modifications except for
+the remove of some TuningParameter options.
 
 ## MQI Description
 The package exposes the IBM MQ programming interface via
@@ -97,16 +98,18 @@ active after delivering a message to permit receipt of multiple messages. To
 stop the callback being called for further messages, use the *GetDone()* function. This
 behaviour is similar to how the MQI *MQCB* callback invocation works.
 
-The asynchronous retrieval is implemented using a polling MQGET(immediate)
-operation. Originally, this package used the MQCB and MQCTL functions to
-work fully asynchronously, but the threading model used within the
-MQ libraries does not work well with the Node model, and testing
-demonstrated deadlocks that could not be solved without changes
-to the underlying
-MQ products. The polling is done by default every 10 seconds; applications
-can override that by calling the *setTuningParameters* function.
+This package uses MQCB/MQCTL-managed callbacks for true asynchronous 
+processing. As such, some of the TuningParameter values that were available in 
+the 1.x versions of the code have been removed. You will get an exception if you try
+to use those parameters. 
 
-Sample programs **amqsget** and **amqsgeta** demonstrate the two different
+For more advanced handling of inbound messages, there is a new *Ctl()* verb. This is
+an analogue of `MQCTL` and requires you to explicitly start message consumption. You should
+use this if you are going to open multiple queues simultaneously for reading. The `tuningParameter.useCtl` or (`MQIJS_NOUSECTL` environment variable) controls whether or not
+to require use of the new verb. Older applications can use `useCtl=false` or the environment variable for
+backwards compatibility; newer applications should use *Ctl()* going forward.
+
+Sample programs **amqsget**, **amqsgeta**, and **amqsgetac** demonstrate the different
 techniques.
 
 ## Alternative JavaScript routes into MQ

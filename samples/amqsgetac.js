@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017,2023
+  Copyright (c) IBM Corporation 2023
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,13 +27,6 @@
  *
  * Each MQI call prints its success or failure.
  */
-
-// One way of running in compatibility mode for asynchronous
-// message retrieval is to set an environment variable. Without
-// this, you have to call mq.Ctl() to start the retrieval after the
-// callbacks are installed with mq.Get().
-// Could also mq.setTuningParameters{useCtl:false} once the package is loaded.
-process.env['MQIJS_NOUSECTL'] = true;
 
 // Import the MQ package
 var mq = require('ibmmq');
@@ -98,6 +91,11 @@ function getMessages() {
   // Set up the callback handler to be invoked when there
   // are any incoming messages.
   mq.Get(queueHandle,md,gmo,getCB);
+
+  // And now enable the callback
+  mq.Ctl(connectionHandle,MQC.MQOP_START, function(err) {
+    console.log(formatErr(err));
+  });
 
 }
 

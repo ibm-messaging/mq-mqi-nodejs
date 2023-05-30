@@ -575,6 +575,7 @@ Object Init(Env env, Object exports) {
   exports.Set(String::New(env, "Get"), Function::New(env, GET));
   exports.Set(String::New(env, "GetAsync"), Function::New(env, GETASYNC));
   exports.Set(String::New(env, "GetDone"), Function::New(env, GETDONE));
+  exports.Set(String::New(env, "Ctl"), Function::New(env, CTL));
 
   exports.Set(String::New(env, "CrtMh"), Function::New(env, CRTMH));
   exports.Set(String::New(env, "DltMh"), Function::New(env, DLTMH));
