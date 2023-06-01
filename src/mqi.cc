@@ -375,7 +375,7 @@ void unlock() {}
 void debugf(int level, const char *fmt, ...) {
   if (logLevel >= level) {
     char buf[1024] = {0};
-    char timebuf[32];
+    char timebuf[32] = {0};
     va_list va;
 
     va_start(va, fmt);
@@ -387,7 +387,7 @@ void debugf(int level, const char *fmt, ...) {
 #if defined(WIN32)
     SYSTEMTIME now;
     GetSystemTime(&now);
-    sprintf(timebuf, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ", now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond, now.wMilliseconds);
+    snprintf(timebuf, sizeof(timebuf)-1, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ", now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond, now.wMilliseconds);
     fprintf(stderr, "[%s] %s : %s", "mqnpi", timebuf, buf);
 #else
     struct timeval tv;
@@ -486,7 +486,7 @@ void dumpHex(const char *title, void *buf, int length) {
   for (i = 0; i < rows; i++) {
 
     memset(line, ' ', sizeof(line));
-    o = sprintf(line, "%8.8X : ", i * 16);
+    o = snprintf(line, sizeof(line)-1, "%8.8X : ", i * 16);
 
     for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
       line[o++] = hex[p[j] >> 4];

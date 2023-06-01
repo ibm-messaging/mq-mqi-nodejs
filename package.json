@@ -4,9 +4,10 @@
   "description": "Bindings to call IBM MQ API using N-API",
   "main": "./lib/mqi.js",
   "scripts": {
+    "prebuild": "prebuildify --napi",
+    "install": "node-gyp-build",
     "postinstall": "node postinstall.js",
     "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript",
-    "build": "node-gyp rebuild",
     "test": "node tests/builtOK.js UNKNOWNQMGR",
     "clean": "node-gyp clean"
   },
@@ -18,20 +19,21 @@
   },
   "typings": "./types/index.d.ts",
   "devDependencies": {
-    "node-gyp": "^9.3.1",
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^20.2.3",
-    "@typescript-eslint/eslint-plugin": "^5.59.7",
-    "@typescript-eslint/parser": "^5.59.7",
+    "@types/node": "^20.2.5",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
     "eslint": "^8.41.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsdoc": "^44.2.5",
+    "eslint-plugin-jsdoc": "^46.1.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-prettier": "^4.2.1"
+    "eslint-plugin-prettier": "^4.2.1",
+    "node-gyp": "^9.3.1"
   },
   "gypfile": true,
   "dependencies": {
-    "node-addon-api": "^6.1.0"
+    "node-addon-api": "^6.1.0",
+    "node-gyp-build": "^4.6.0"
   },
   "engines": {
     "node": ">=16.0"

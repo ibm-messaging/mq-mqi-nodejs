@@ -656,6 +656,7 @@ void cleanupConnectionContext(MQHCONN hConn) {
           cleanupObjectContext(hConn, hObj, &CC, &RC, false);
         } catch (exception &e) {
           // Bad value - catch the exception just in case there's something odd in the map key
+          debugf(LOG_DEBUG,"Caught exception - processing %s in stio: %s ",mapKey.c_str(),e.what());
         }
       }
     }
