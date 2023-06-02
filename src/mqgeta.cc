@@ -112,10 +112,8 @@ public:
   MQHOBJ hObj;
   MQLONG mqcc;
   MQLONG mqrc;
-  unsigned char *mqmd;
-  unsigned char *mqgmo;
-  unsigned char *body;
-  int len;
+  unsigned char *buf;
+  int bodyLen;
 };
 
 using Context = void; // Not going to use any
@@ -171,7 +169,8 @@ void BUCFinalize(Env env, unsigned char *p) {
 
 /*
 This function is scheduled for being called on the main thread. It builds the various objects/values to be
-passed back
+passed back into a single buffer. This function has to match with mqnCB below, and preJsAppCB in mqigeta.js,
+so that the buffer is parsed correctly (GMO, MD, body).
 */
 void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
@@ -180,9 +179,7 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
   Object o;
   if (env != nullptr) {
     if (callback != nullptr) {
-      BUC b1;
-      BUC b2;
-      BUC b3;
+      BUC b;
 
       string key = makeKey(data->hConn, data->hObj);
 
@@ -202,32 +199,17 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
         o.Set("jsRc", Number::New(env, data->mqrc));
       }
 
-      if (data->mqmd) {
-        b1 = BUC::New(env, data->mqmd, MQMD_LENGTH_2, BUCFinalize);
-        // We don't need these additional finalizers other than for debug
-        // b1.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQMD"));
-      }
-      if (data->mqgmo) {
-        b2 = BUC::New(env, data->mqgmo, MQGMO_LENGTH_4, BUCFinalize);
-        // b2.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB MQGMO"));
-      }
-
-      if (data->body) {
-        b3 = BUC::New(env, data->body, data->len, BUCFinalize);
-        // b3.AddFinalizer(debugDest, mqnStrdup(env, "PreJsCB BODY"));
-      }
-
       // And now we can call a JS function - this is actually a "proxy" in
       // the ibmmq layer that in turn calls the real application callback
       if (data->mqcc == MQCC_OK) {
-        callback.Call({o, b1, b2, b3});
-        debugf(LOG_DEBUG, "Called the callback with buffers.");
-        // Any cleanup can be done here - should we free the Buffer contents here? Doesn't
-        // seem to be necessary as BUCFinalize does get called
+        b = BUC::New(env, data->buf, MQGMO_LENGTH_4 + MQMD_LENGTH_2 + data->bodyLen, BUCFinalize);
+        callback.Call({o, b});
+        debugf(LOG_DEBUG, "Called the callback with buffer.");
+        // Any cleanup can be done here - no need to free the Buffer contents here as
+        // BUCFinalize does get called at regular intervals
       } else {
         callback.Call({o});
         debugf(LOG_DEBUG, "Called the callback with no data.");
-        // Any cleanup can be done here
       }
 
     } else {
@@ -258,6 +240,8 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pContext) {
 
   MQLONG len;
+  size_t totalAlloc;
+  unsigned char *p;
   debugf(LOG_TRACE, "In mqnCB");
 
   auto retData = new ReturnedData;
@@ -267,30 +251,32 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   retData->mqrc = pContext->Reason;
   retData->mqcc = pContext->CompCode;
 
-  retData->mqmd = NULL;
-  retData->mqgmo = NULL;
-  retData->body = NULL;
-  retData->len = 0;
+  retData->buf = NULL;
+  retData->bodyLen = 0;
 
   switch (pContext->CallType) {
   case MQCBCT_MSG_REMOVED:
   case MQCBCT_MSG_NOT_REMOVED:
     len = pmqgmo->ReturnedLength;
-    retData->len = len;
+    retData->bodyLen = len;
 
     // dumpHex("Async MQMD", pmqmd, MQMD_LENGTH_2);
     // dumpHex("Async Message", buf, len);
 
     // These structures passed from the queue manager are in stack storage so
     // they disappear after we return from this function. So we have to take copies of them
-    // before passing to the real main-thread callback
-    retData->mqgmo = (unsigned char *)malloc(MQGMO_LENGTH_4);
-    memcpy(retData->mqgmo, pmqgmo, MQGMO_LENGTH_4);
+    // before passing to the real main-thread callback. Allocate a single block large enough
+    // for all the stuff we pass.
+    totalAlloc = MQGMO_LENGTH_4 + MQMD_LENGTH_2 + len;
+    retData->buf = (unsigned char *)malloc(totalAlloc);
+    memcpy(retData->buf, pmqgmo, MQGMO_LENGTH_4);
+    p = retData->buf + MQGMO_LENGTH_4;
+    memcpy(p, pmqmd, MQMD_LENGTH_2);
 
-    retData->mqmd = (unsigned char *)malloc(MQMD_LENGTH_2);
-    memcpy(retData->mqmd, pmqmd, MQMD_LENGTH_2);
-    retData->body = (unsigned char *)malloc(len);
-    memcpy(retData->body, buf, len);
+    p += MQMD_LENGTH_2;
+    if (len > 0) {
+      memcpy(p, buf, len);
+    }
 
     if (pContext->Reason != MQRC_NONE) {
       debugf(LOG_DEBUG, "mqnCB - Message delivery returned error %d for calltype %d ", pContext->Reason, pContext->CallType);
