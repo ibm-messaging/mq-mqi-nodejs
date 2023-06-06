@@ -80,7 +80,7 @@ function getMessages() {
   gmo.WaitInterval = waitInterval * 1000; // 3 seconds
 
   // Set up the callback handler to be invoked when there
-  // are any incoming messages. 
+  // are any incoming messages.
   mq.Get(queueHandle, md, gmo, getCB);
   mq.Ctl(connectionHandle,MQC.MQOP_START);
 

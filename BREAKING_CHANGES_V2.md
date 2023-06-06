@@ -1,7 +1,7 @@
 # Incompatibilities with previous versions
 
 This document describes incompatibilities between the V0.x/V1.x releases
-of the `ibmmq` package and the V2.x.
+of the `ibmmq` package and V2.x.
 
 In general, the API has not changed. The provided sample programs have not
 needed modification other than as noted below for message consumers.
@@ -12,7 +12,7 @@ that the C++ compilation of native code needs to be done. While some prebuilt mo
 are provided, these may not cover as many platforms as the previous dependency chain
 supplied. So you will need the compile tools associated with npm/node to be available.
 
-On Windows, these are now readily installed as a tick-box option when you install node itself.
+On Windows, these are readily installed as a tick-box option when you install node itself.
 
 ## Asynchronous message delivery
 A large internal change is the implementation of message delivery (`MQGET`) for asynchronous
@@ -30,7 +30,7 @@ delivery starting. The `amqsgetac.js` sample demonstrates this approach.
 
 If you have existing MQ Node.js applications, then you can either add the `Ctl()` call or revert to 
 the previous behaviour with an environment variable (`MQIJS_NOUSECTL` - any non-null value) or 
-setting a tuning parameter (`tuningParameters.useCtl=false`). If you do take either of these actions, then
+setting a tuning parameter (`tuningParameters.useCtl=false`). If you do not take either of these actions, then
 no messages will be delivered.
 
 The `Ctl()` verb is the analogue of the underlying `MQCTL` and allows message consumption to be started,

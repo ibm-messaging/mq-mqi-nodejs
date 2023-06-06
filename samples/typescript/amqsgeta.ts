@@ -23,7 +23,7 @@
 // this, you have to call mq.Ctl() to start the retrieval after the
 // callbacks are installed with mq.Get().
 // Could also mq.setTuningParameters{useCtl:false} once the package is loaded.
-process.env['MQIJS_NOUSECTL'] = 'true';
+process.env.MQIJS_NOUSECTL = "true";
 
 
 /*
@@ -98,7 +98,7 @@ function getMessages() {
   }
 
   // Set up the callback handler to be invoked when there
-  // are any incoming messages. 
+  // are any incoming messages.
   mq.Get(queueHandle, md, gmo, getCB);
 }
 
