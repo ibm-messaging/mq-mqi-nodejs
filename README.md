@@ -6,21 +6,11 @@ running in a Node.js environment.
 ## N-API REWRITE (May 2023)
 This version of the package has been heavily rewritten, to remove some of the
 outdated/unmaintained dependencies. There are other potential benefits to the
-rewrite that I want to explore later too. But it needs a good shakedown first.
+rewrite, including improved performance and the opportunity to port to platforms
+that the dependencies could not support.
 
-For this initial release, the package is not being released to npm. That will 
-happen assuming the package proves to be reliable and useful.
-
-For now, you can access the package from its github branch. In your _package.json_ files,
-set the dependency to pull direct from github instead of npm:
-```
-  "dependencies": {
-    "ibmmq": "github:ibmmqmet/mq-mqi-nodejs"
-  }
-```
-The rewrite should not have changed any application behaviour. The API is unchanged; 
-all the sample programs in this repo continue without modifications except for
-the remove of some TuningParameter options.
+See the [BREAKING_CHANGES](BREAKING_CHANGES.md) file for changes you might
+need to make to your application.
 
 ## MQI Description
 The package exposes the IBM MQ programming interface via

@@ -20,15 +20,15 @@
   "typings": "./types/index.d.ts",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^20.2.5",
-    "@typescript-eslint/eslint-plugin": "^5.59.8",
-    "@typescript-eslint/parser": "^5.59.8",
-    "eslint": "^8.41.0",
+    "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.11",
+    "@typescript-eslint/parser": "^5.59.11",
+    "eslint": "^8.42.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsdoc": "^46.1.0",
+    "eslint-plugin-jsdoc": "^46.2.6",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.2.1",
-    "node-gyp": "^9.3.1"
+    "node-gyp": "^9.4.0"
   },
   "gypfile": true,
   "dependencies": {

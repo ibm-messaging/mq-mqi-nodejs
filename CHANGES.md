@@ -1,7 +1,14 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## 25 May 2023: v2.0.0 (!!)
+## 25 Jun 2023: v2.0.0 (pushed to main repo)
+* Published to npm
+* See BREAKING_CHANGES.md for notes on application changes
+  - Any future updates will be based on this stream
+* Update for MQ 9.3.3
+* Update various dependency versions
+
+## 25 May 2023: v2.0.0 (only in forked repo)
 * Still not being published on npm, so will be other updates
   without changing version number
 * A lot of code cleanup
@@ -9,7 +16,7 @@ Newest updates are at the top of this file.
 * Some TuningParameters removed
 * MQCTL equivalent added - CHANGE TO HOW ASYNC GET IS PROGRAMMED
 
-## 09 May 2023: v0.0.3 (!!)
+## 09 May 2023: v0.0.3 
 * This is a forked version with a deliberately low version number 
 * It is a near-total rewrite to reduce dependency chains. See the README
   for more information.
