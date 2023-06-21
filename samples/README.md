@@ -26,6 +26,8 @@ Current samples in this directory include
 * amqsputp : Put a single message to a queue using Promises for the MQ verbs
 * amqsget  : Get all the messages from a queue synchronously.
 * amqsgeta : Get all the messages from a queue using asynchronous retrieval. Optionally get a specific message by its id
+* amqsgetac: Get all the messages from a queue using asynchronous retrieval. Optionally get a specific message by its id.
+             Use Ctl() verb to manage when the callbacks start.
 * amqsbra  : Non-destructive browse of messages on a queue
 * amqspub  : Publish to a topic
 * amqssub  : Subscribe to a topic and receive publications

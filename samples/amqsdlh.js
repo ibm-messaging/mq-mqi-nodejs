@@ -112,14 +112,16 @@ function getMessage(hObj) {
 
   try {
     var len = mq.GetSync(hObj,mqmd,gmo,buf);
+    console.log("MQGET successful");
+
     var format = mqmd.Format;
 
     // If the message has a DLH then
     // parse and print it.
     if (format == MQC.MQFMT_DEAD_LETTER_HEADER) {
       var hdr = mq.MQDLH.getHeader(buf);
-      console.log("HDR is %j",hdr);
-      printMessage(hdr.Format,buf.slice(hdr.StrucLength),len-hdr.StrucLength);
+      console.log("DLH is %j",hdr);
+      printMessage(hdr.Format,buf.subarray(hdr.StrucLength),len-hdr.StrucLength);
     } else {
       printMessage(format,buf,len);
     }

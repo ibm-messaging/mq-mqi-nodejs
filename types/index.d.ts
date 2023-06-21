@@ -677,6 +677,15 @@ declare module "ibmmq" {
   ): void;
 
   /**
+   * Ctl - control message consumer callbacks
+   */
+  function Ctl(
+    jsQueueManager: MQQueueManager,
+    operation:  number, 
+    cb?: (err: MQError | null) => void
+  ): void;
+
+  /**
    * Inq - Inquire on attributes of an object
    *
    * @param {MQObject}

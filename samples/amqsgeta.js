@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017
+  Copyright (c) IBM Corporation 2017,2023
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,6 +27,13 @@
  *
  * Each MQI call prints its success or failure.
  */
+
+// One way of running in compatibility mode for asynchronous
+// message retrieval is to set an environment variable. Without
+// this, you have to call mq.Ctl() to start the retrieval after the
+// callbacks are installed with mq.Get().
+// Could also mq.setTuningParameters{useCtl:false} once the package is loaded.
+process.env['MQIJS_NOUSECTL'] = true;
 
 // Import the MQ package
 var mq = require('ibmmq');
@@ -89,9 +96,7 @@ function getMessages() {
   }
 
   // Set up the callback handler to be invoked when there
-  // are any incoming messages. As this is a sample, I'm going
-  // to tune down the poll interval from default 10 seconds to 0.5s.
-  mq.setTuningParameters({getLoopPollTimeMs: 500});
+  // are any incoming messages.
   mq.Get(queueHandle,md,gmo,getCB);
 
 }
@@ -161,8 +166,6 @@ if (myArgs[1]) {
 if (myArgs[2]) {
   msgId  = myArgs[2];
 }
-
-mq.setTuningParameters({syncMQICompat:true});
 
 
 // Connect to the queue manager, including a callback function for

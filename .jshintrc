@@ -3,6 +3,6 @@
     "require":false
   },
     "node": true,
-    "esversion": 6,
+    "esversion": 11,
     "sub": true
 }

@@ -6,6 +6,6 @@
   "author": "Mark Taylor",
   "license": "Apache-2.0",
   "dependencies": {
-    "ibmmq": ">=1.0.6"
+    "ibmmq": ">=2.0.0"
   }
 }

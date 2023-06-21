@@ -8,6 +8,7 @@ topic="dev/JSTopic"
 qmgr="QM1"
 
 node amqssub.js $topic $qmgr &
+sleep 0.5s
 for i in 0 1 2 3 4
 do
   node amqspub.js $topic $qmgr  >/dev/null 

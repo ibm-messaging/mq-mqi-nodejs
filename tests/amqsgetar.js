@@ -193,7 +193,6 @@ if (myArgs[3]) {
   msgId2 = myArgs[3];
 }
 
-mq.setTuningParameters({ syncMQICompat: true });
 
 
 // Connect to the queue manager, including a callback function for

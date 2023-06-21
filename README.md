@@ -2,8 +2,14 @@
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
 
-NOTE: This release will be the final one for the 1.x stream. The 
-next release will be 2.x, with some minor breaking API changes.
+## N-API REWRITE (May 2023)
+This version of the package has been heavily rewritten, to remove some of the
+outdated/unmaintained dependencies. There are other potential benefits to the
+rewrite, including improved performance and the opportunity to port to platforms
+that the dependencies could not support.
+
+See the [BREAKING_CHANGES](BREAKING_CHANGES.md) file for changes you might
+need to make to your application.
 
 ## MQI Description
 The package exposes the IBM MQ programming interface via
@@ -36,11 +42,8 @@ objects and data. If the callback is not provided by the application,
 then either an exception is thrown, or the verb returns.
 
 ###  Synchrony
-**Note**: This has changed significantly from the 0.9.2 version of the module onwards.
-
 The main verbs - `Conn(x)`, `Disc`, `Open`, `Close`, `Sub`, `Put`, `Put1`
-and `Get` - have
-true synchronous and asynchronous variations. The default is that the verbs
+and `Get` - have true synchronous and asynchronous variations. The default is that the verbs
 are asynchronous, to be more natural in a Node.js environment. When given a `...Sync`
 suffix (eg `OpenSync`) then the verb is synchronous. Callback functions are now required
 for the OpenSync and SubSync verbs to obtain the object handles; these are not returned
@@ -59,10 +62,7 @@ function to determine the success of the Put calls, but it is not related to
 asynchronous notification of the operation completion in JavaScript terms.
 
 #### Synchronous compatibility option
-If you wish to continue to use the original pseudo-async calls made by this module
-without changing the verbs to use the Sync variants, then you can set the SyncMQICompat
-variable to `true`. This variable should be considered a temporary migration path; it
-will likely be removed at some point in the future.
+The SyncMQICompat tuning parameter has been removed.
 
 ### Promises
 Most of the core MQI verbs (excluding the GET variants) have Promise-based alternatives
@@ -87,16 +87,18 @@ active after delivering a message to permit receipt of multiple messages. To
 stop the callback being called for further messages, use the *GetDone()* function. This
 behaviour is similar to how the MQI *MQCB* callback invocation works.
 
-The asynchronous retrieval is implemented using a polling MQGET(immediate)
-operation. Originally, this package used the MQCB and MQCTL functions to
-work fully asynchronously, but the threading model used within the
-MQ libraries does not work well with the Node model, and testing
-demonstrated deadlocks that could not be solved without changes
-to the underlying
-MQ products. The polling is done by default every 10 seconds; applications
-can override that by calling the *setTuningParameters* function.
+This package uses MQCB/MQCTL-managed callbacks for true asynchronous 
+processing. As such, some of the TuningParameter values that were available in 
+the 1.x versions of the code have been removed. You will get an exception if you try
+to use those parameters. 
 
-Sample programs **amqsget** and **amqsgeta** demonstrate the two different
+For more advanced handling of inbound messages, there is a new *Ctl()* verb. This is
+an analogue of `MQCTL` and requires you to explicitly start message consumption. You should
+use this if you are going to open multiple queues simultaneously for reading. The `tuningParameter.useCtl` or (`MQIJS_NOUSECTL` environment variable) controls whether or not
+to require use of the new verb. Older applications can use `useCtl=false` or the environment variable for
+backwards compatibility; newer applications should use *Ctl()* going forward.
+
+Sample programs **amqsget**, **amqsgeta**, and **amqsgetac** demonstrate the different
 techniques.
 
 ## Alternative JavaScript routes into MQ
@@ -169,17 +171,10 @@ The package includes a couple of verbs that are not standard in the MQI.
 *MQConstants.lookup()* method in Java.
 
 ## Requirements
-* node version 10.20 or greater. Older versions will no longer work because
-of requirements from the ffi-napi package
+* node version 16 or greater. 
 * On platforms other than Windows and Linux x64, you must also install
 the MQ client package
-* The package makes use of the `libffi` capabilities for direct access to the
-MQ API. For some platforms the libffi and ffi-napi components may need
-additional configuration before they can be build. That package is not available at all 
-on z/OS - there is no way that this
-package can run on that platform even with handcrafting build steps.
-
-I have run it on Windows, where the NPM 'windows-build-tools' package
+* I have run it on Windows, where the NPM 'windows-build-tools' package
 also needed to be installed first. See [this document](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#environment-setup-and-configuration) for more information on Windows.
 
 ## Installation:

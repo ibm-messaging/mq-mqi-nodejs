@@ -1,6 +1,13 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 25 Jun 2023: v2.0.0 
+* Published to npm
+* See BREAKING_CHANGES.md for notes on application changes
+  - Any future updates will be based on this stream
+* Update for MQ 9.3.3
+* Update various dependency versions
+
 ## 21 Jun 2023: v1.0.6
 * Update for MQ 9.3.3
 * Update various dependency versions

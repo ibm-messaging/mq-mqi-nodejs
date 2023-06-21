@@ -1,6 +1,6 @@
 'use strict';
 /*
-  Copyright (c) IBM Corporation 2017, 2019
+  Copyright (c) IBM Corporation 2017, 2023
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -80,16 +80,13 @@ function getMessages() {
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
   // To start with, set the option to browse the FIRST message on the queue
-  gmo.Options |= MQC.MQGMO_BROWSE_FIRST;
+  gmo.Options |= MQC.MQGMO_BROWSE_NEXT;
 
   gmo.MatchOptions = MQC.MQMO_NONE;
   gmo.WaitInterval = waitInterval * 1000; // 3 seconds
 
-  // Set up the callback handler to be invoked when there
-  // are any incoming messages. As this is a sample, I'm going
-  // to tune down the poll interval from default 10 seconds to 0.5s.
-  mq.setTuningParameters({getLoopPollTimeMs: 500});
   mq.Get(queueHandle,md,gmo,getCB);
+  mq.Ctl(connectionHandle,MQC.MQOP_START);
 
 }
 
@@ -117,12 +114,6 @@ function getCB(err, hObj, gmo,md,buf, hConn) {
      } else {
        console.log("binary message: " + buf);
      }
-     // After the first message has been browsed, change the option
-     // to retrieve further messages on the queue.
-     // First remove the original option using a bitwise operation to clear the flag
-     gmo.Options &= ~MQC.MQGMO_BROWSE_FIRST;
-     // And then set the new flag.
-     gmo.Options |= MQC.MQGMO_BROWSE_NEXT;
   }
 }
 

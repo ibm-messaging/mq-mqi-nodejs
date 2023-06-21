@@ -1,12 +1,15 @@
 {
   "name": "ibmmq",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild": "prebuildify --napi",
+    "install": "node-gyp-build",
     "postinstall": "node postinstall.js",
-    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript"
+    "lint": "eslint -c .eslintrc.js --ext .ts samples/typescript",
+    "test": "node tests/builtOK.js UNKNOWNQMGR",
+    "clean": "node-gyp clean"
   },
   "author": "Mark Taylor",
   "license": "Apache-2.0",
@@ -18,21 +21,21 @@
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
     "@types/node": "^20.3.1",
-    "@typescript-eslint/eslint-plugin": "^5.59.11",
-    "@typescript-eslint/parser": "^5.59.11",
-    "eslint": "^8.42.0",
-    "eslint-plugin-import": "^2.27.5", 
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
+    "eslint": "^8.43.0",
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsdoc": "^46.2.6",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-prettier": "^4.2.1"
+    "eslint-plugin-prettier": "^4.2.1",
+    "node-gyp": "^9.4.0"
   },
+  "gypfile": true,
   "dependencies": {
-    "ffi-napi": "^4.0.3",
-    "ref-array-di": "^1.2.2",
-    "ref-napi": "^3.0.3",
-    "ref-struct-di": "^1.1.1"
+    "node-addon-api": "^7.0.0",
+    "node-gyp-build": "^4.6.0"
   },
   "engines": {
-    "node": ">=10.20"
+    "node": ">=16.0"
   }
 }
