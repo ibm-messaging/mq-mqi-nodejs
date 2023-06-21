@@ -55,7 +55,7 @@ COPY package.docker ${APP_DIR}/package.json
 
 # Now get all the prereq packages installed and cleanup the
 # pieces that are not needed after building the C interface.
-RUN npm install --omit=dev  \
+RUN npm install --omit=dev  --foreground-scripts=true \
    && apt-get autoremove -y curl make gcc g++ python3 git \
    && apt-get purge -y \
    && rm -rf /var/lib/apt/lists/* \

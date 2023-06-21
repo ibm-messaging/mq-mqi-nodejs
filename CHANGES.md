@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 21 Jun 2023: v1.0.6
+* Update for MQ 9.3.3
+* Update various dependency versions
+* Final 1.x release 
+
 ## 15 Feb 2023: v1.0.5
 * Update for MQ 9.3.2
 * Update various dependency versions

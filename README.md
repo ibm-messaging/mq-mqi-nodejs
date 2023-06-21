@@ -2,6 +2,9 @@
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
 
+NOTE: This release will be the final one for the 1.x stream. The 
+next release will be 2.x, with some minor breaking API changes.
+
 ## MQI Description
 The package exposes the IBM MQ programming interface via
 a wrapper layer implemented in JavaScript. This should make it
@@ -204,9 +207,7 @@ variable to `production` will cause downloads of only the runtime dependencies.
 The package also requires the MQ C client libraries to be installed/available.
 
 For Windows and Linux x64, the npm installation process tries to access
-the Redistributable Client packages and unpack them automatically. The
-installation of this library succeeds even if the download and unpack of the
-MQ runtime libraries fails in some way.
+the Redistributable Client packages and unpack them automatically. 
 
 Note: IBM removes older levels of the Redistributable Client packages when
 they become unsupported. If you want to continue to use older versions of

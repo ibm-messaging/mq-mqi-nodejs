@@ -72,6 +72,10 @@ Dockerfiles are provided. The default uses images based around debian/ubuntu con
 If you set the `FROM` environment variable to "UBI" then images from the Red Hat Universal
 Base Images repository are used instead.
 
+The automatic installation of the MQ client code only works for platforms where the Redistributable Client package is available. For other platforms, you have
+to modify the Dockerfile to incorporate the MQ client from your own existing
+images.
+
 ## More information
 Comments in the programs explain what they are doing. For more detailed information about the
 MQ API, the functions, structures, and constants, see the

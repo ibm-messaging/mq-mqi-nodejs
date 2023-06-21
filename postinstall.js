@@ -16,7 +16,7 @@ var redistDir=baseDir+"/redist";
 var macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.3.2";
+var vrm="9.3.3";
 // This is the default fixpack or CSU level that we might want to apply
 var defaultFp="0";
 
@@ -58,6 +58,10 @@ const newBaseDir="redist";
 var currentPlatform=process.platform;
 var preferredVersion=14;
 //currentPlatform='darwin'; // for forcing a platform test
+if (process.env.MQIJS_PLATFORM != null) {
+  currentPlatform=process.env.MQIJS_PLATFORM; // Another way to override
+}
+
 
 // Some functions used at the end of the operation
 function cleanup(rc) {
@@ -270,17 +274,14 @@ try {
         fs.closeSync(fd);
         console.log("Unpacking libraries...");
         execSync(unpackCommand);
-        // On Windows we have to run the unzip separately as there may
-        // not be a command line interface available. So use a nodejs
-        // package to manage it.
+        // On Windows we use PowerShell to to the unpacking of the zip 
+        // file. We can be "reasonably" certain that this will work. The Node.js
+        // unzip packages seemed to sometimes create corrupt files silently.
         if (currentPlatform === 'win32') {
-          var unzip = require('unzipper');
-          fs.createReadStream(file)
-             .pipe(unzip.Extract({ path: newBaseDir })
-             .on('close',function() {
-               console.log("Finished Windows unzip");
-               removeUnneeded();
-             }));
+	  var psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
+          var psCmd2 = "powershell -command \"" + psCmd + "\"";
+          execSync(psCmd2, {"windowsHide":true});
+          removeUnneeded();
         } else {
           removeUnneeded();
         }
