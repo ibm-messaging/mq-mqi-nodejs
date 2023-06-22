@@ -8,7 +8,7 @@ outdated/unmaintained dependencies. There are other potential benefits to the
 rewrite, including improved performance and the opportunity to port to platforms
 that the dependencies could not support.
 
-See the [BREAKING_CHANGES](BREAKING_CHANGES.md) file for changes you might
+See the [BREAKING_CHANGES](BREAKING_CHANGES_V2.md) file for changes you might
 need to make to your application.
 
 ## MQI Description
