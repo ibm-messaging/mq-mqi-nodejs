@@ -24,6 +24,8 @@
 void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   int i;
 
+  pmqcd->Version = 11;  // The latest version relevant to client channels (V12 exists, but doesn't have anything interesting for clients)
+
   setMQIString(env, pmqcd->ChannelName, jscd, "ChannelName", MQ_CHANNEL_NAME_LENGTH);
   setMQIString(env, pmqcd->ConnectionName, jscd, "ConnectionName", MQ_CONN_NAME_LENGTH);
   pmqcd->DiscInterval = getMQLong(jscd,"DiscInterval");
@@ -32,7 +34,7 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   pmqcd->MaxMsgLength = getMQLong(jscd,"MaxMsgLength");
   pmqcd->HeartbeatInterval =getMQLong(jscd,"HeartbeatInterval");
   setMQIString(env, pmqcd->SSLCipherSpec, jscd, "SSLCipherSpec", MQ_SSL_CIPHER_SPEC_LENGTH);
-
+  
   Value v = jscd.Get("SSLPeerName");
   if (v.IsString()) {
     pmqcd->SSLPeerNamePtr = mqnStrdup(env,v.As<String>().Utf8Value().c_str());

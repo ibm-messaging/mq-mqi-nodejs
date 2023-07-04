@@ -83,7 +83,7 @@ var sco = new mq.MQSCO();
 // Add authentication via the MQCSP structure
 var csp = new mq.MQCSP();
 csp.UserId = "mqguest";
-csp.Password = "passw0rd";
+csp.Password = "passw0rd!Passw0rd";
 // Make the MQCNO refer to the MQCSP so it knows to use the structure
 cno.SecurityParms = csp;
 
@@ -105,7 +105,7 @@ cd.ChannelName = "SYSTEM.SSL.SVRCONN";
 // SSLClientAuth is set to MQC.MQSCA_REQUIRED. You may
 // also want to set the sco.CertificateLabel to choose  
 // which certificate is to be sent.
-cd.SSLCipherSpec = "TLS_RSA_WITH_AES_128_CBC_SHA256";
+cd.SSLCipherSpec = "ANY_TLS12_OR_HIGHER";
 cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
 // Make the MQCNO refer to the MQCD

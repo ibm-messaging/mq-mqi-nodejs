@@ -2,7 +2,7 @@
 This repository demonstrates a way to call IBM MQ from applications
 running in a Node.js environment.
 
-## N-API REWRITE (May 2023)
+## N-API REWRITE for V2 (Jun 2023)
 This version of the package has been heavily rewritten, to remove some of the
 outdated/unmaintained dependencies. There are other potential benefits to the
 rewrite, including improved performance and the opportunity to port to platforms
@@ -62,7 +62,7 @@ function to determine the success of the Put calls, but it is not related to
 asynchronous notification of the operation completion in JavaScript terms.
 
 #### Synchronous compatibility option
-The SyncMQICompat tuning parameter has been removed.
+The SyncMQICompat tuning parameter (among other tuning options) has been removed.
 
 ### Promises
 Most of the core MQI verbs (excluding the GET variants) have Promise-based alternatives
@@ -92,7 +92,7 @@ processing. As such, some of the TuningParameter values that were available in
 the 1.x versions of the code have been removed. You will get an exception if you try
 to use those parameters. 
 
-For more advanced handling of inbound messages, there is a new *Ctl()* verb. This is
+For more advanced handling of inbound messages, there is a *Ctl()* verb. This is
 an analogue of `MQCTL` and requires you to explicitly start message consumption. You should
 use this if you are going to open multiple queues simultaneously for reading. The `tuningParameter.useCtl` or (`MQIJS_NOUSECTL` environment variable) controls whether or not
 to require use of the new verb. Older applications can use `useCtl=false` or the environment variable for
@@ -245,10 +245,6 @@ If you get an error message such as "gyp: No Xcode or CLT version detected" whil
 running `npm install` you may need to install the developer tools. Usually
 the command `xcode-select --install` will deal with this.
 
-You may also see a number of warnings from the C++ compiler as it compiles
-some of the FFI prerequisite packages. While undesirable, there should be no
-actual errors shown and the generated code does seem to work ok.
-
 ### Other platforms
 For other MQ-supported platforms and environments, the C runtime can be
 installed from your MQ installation media, or from the full Client downloads at
@@ -258,7 +254,9 @@ The Redistributable Client packages for Windows and Linux x64 are also available
 directly from
 [this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
-As noted above, this package cannot run on z/OS as the prerequisite elements are not available there.
+This package cannot currently run on z/OS as the prerequisite MQ libraries are not available there in 
+the same way as other platforms. However, it might be possible in future to add that platform as there
+are no dependencies on 3rd party non-core components (eg lib-ffi) that would never be available on z/OS. 
 
 ## Sample applications
 See the samples [README](samples/README.md) file for more information about the sample programs.

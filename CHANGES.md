@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 05 Jul 2023: v2.0.1 
+* Added LinuxARM definitions
+* Fix TLS channels not using correct structure version
+
 ## 25 Jun 2023: v2.0.0 
 * Published to npm
 * See BREAKING_CHANGES.md for notes on application changes
