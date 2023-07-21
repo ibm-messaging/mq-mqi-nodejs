@@ -258,6 +258,28 @@ This package cannot currently run on z/OS as the prerequisite MQ libraries are n
 the same way as other platforms. However, it might be possible in future to add that platform as there
 are no dependencies on 3rd party non-core components (eg lib-ffi) that would never be available on z/OS. 
 
+### Downloading behind a proxy
+
+Downloading the Redistributable C Client libraries behind a proxy is supported. Use the environment 
+variables `https_proxy` and `no_proxy` to control proxy behaviour.
+
+For example, the following command will use a proxy server at `http://localhost:8080` to download 
+the redistributable libraries:
+
+```
+% HTTPS_PROXY=http://localhost:8080 npm install
+```
+
+You can disable this behaviour by adding `public.dhe.ibm.com` to the `NO_PROXY`
+environment variable. The following command will not use the proxy to download
+the redistributable libraries:
+
+```
+% NO_PROXY="public.dhe.ibm.com" HTTPS_PROXY=http://localhost:8080 npm install
+```
+
+Alternatively, you can simply `unset HTTPS_PROXY`.
+
 ## Sample applications
 See the samples [README](samples/README.md) file for more information about the sample programs.
 

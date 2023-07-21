@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 21 Jul 2023: v2.0.2
+* Updated `postinstall` to support http proxy environment variables 
+
 ## 05 Jul 2023: v2.0.1 
 * Added LinuxARM definitions
 * Fix TLS channels not using correct structure version
