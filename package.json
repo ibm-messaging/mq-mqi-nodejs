@@ -33,7 +33,8 @@
   "gypfile": true,
   "dependencies": {
     "node-addon-api": "^7.0.0",
-    "node-gyp-build": "^4.6.0"
+    "node-gyp-build": "^4.6.0",
+    "proxy-agent": "^6.3.0"
   },
   "engines": {
     "node": ">=16.0"

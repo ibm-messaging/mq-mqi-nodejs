@@ -1,31 +1,33 @@
-'use strict';
+"use strict";
 
 // External packages we require
-var fs = require('fs');
-var path = require('path');
-var http  = require('http');
-var https = require('https');
+const fs = require("fs");
+const path = require("path");
+const http  = require("http");
+const https = require("https");
 
-const execSync = require('child_process').execSync;
+const { ProxyAgent } = require("proxy-agent");
+
+const execSync = require("child_process").execSync;
 
 // How to get to the MQ Redistributable Client package
-var protocol = "https://";
-var host="public.dhe.ibm.com";
-var baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
-var redistDir=baseDir+"/redist";
-var macDir=baseDir+"/mactoolkit";
+const protocol = "https://";
+const host="public.dhe.ibm.com";
+const baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
+const redistDir=baseDir+"/redist";
+const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-var vrm="9.3.3";
+let vrm="9.3.3";
 // This is the default fixpack or CSU level that we might want to apply
-var defaultFp="0";
+const defaultFp="0";
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
 // same format eg "1.2.3". Note that IBM keeps a limited set of versions for
 // download - once a version of MQ is no longer supported, that level of
 // Redistributable Client package is removed from public sites.
-var vrmenv=process.env['MQIJS_VRM'];
+const vrmenv=process.env.MQIJS_VRM;
 if (vrmenv != null) {
   vrm=vrmenv;
 }
@@ -34,12 +36,12 @@ if (vrmenv != null) {
 // to 0, which is the base level for CD versions of MQ. Only
 // the LTS level gets fixpacks but CD versions do now receive
 // CSU ("cumulative security update") releases which are equivalent
-// to fixpacks in the installation/version sense. 
-var vrmf=vrm + "." + defaultFp;
+// to fixpacks in the installation/version sense.
+let vrmf=vrm + "." + defaultFp;
 
 // Allow overriding the fixpack for both LTS and CD versions to permit
 // picking up a CSU.
-const fixpack=process.env['MQIJS_FIXPACK'];
+const fixpack=process.env.MQIJS_FIXPACK;
 if (fixpack != null ) {
   vrmf=vrm+"."+fixpack;
 }
@@ -66,7 +68,7 @@ function cleanup(rc) {
   // Always run to try to delete the downloaded zip/tar file
   try {
     // Allow it to be overridden for debug purposes
-    const doNotRemove = process.env['MQIJS_NOREMOVE_DOWNLOAD'];
+    const doNotRemove = process.env.MQIJS_NOREMOVE_DOWNLOAD;
     if (doNotRemove == null) {
       console.log("Removing " + file);
       fs.unlinkSync(file);
@@ -77,9 +79,9 @@ function cleanup(rc) {
     // Ignore error
   }
   // This script originally deliberately ignored errors in downloading
-  // the redist client package. But when npm changed policy to not 
+  // the redist client package. But when npm changed policy to not
   // print a lot of status output during script execution it was harder
-  // to see that something was broken. So we now exit with an error if 
+  // to see that something was broken. So we now exit with an error if
   // requested.
   process.exit(rc);
 }
@@ -93,7 +95,7 @@ function printError(err) {
 // Equivalent of "rm -rf"
 function removeDirRecursive(d) {
   if (fs.existsSync(d)) {
-    fs.readdirSync(d).forEach(function(e) {
+    fs.readdirSync(d).forEach(function (e) {
       const ePath = path.join(d, e);
       if (fs.lstatSync(ePath).isDirectory()) {
         removeDirRecursive(ePath);
@@ -113,7 +115,7 @@ function removeDirRecursive(d) {
 
 function removePattern(d,type) {
   if (fs.lstatSync(d).isDirectory()) {
-    fs.readdirSync(d).forEach(function(e) {
+    fs.readdirSync(d).forEach(function (e) {
     if (e.match(type)) {
         const ePath = path.join(d, e);
         try {
@@ -128,7 +130,7 @@ function removePattern(d,type) {
 
 function removeUnthreaded(d) {
   if (fs.lstatSync(d).isDirectory()) {
-    fs.readdirSync(d).forEach(function(e) {
+    fs.readdirSync(d).forEach(function (e) {
       if (e.match(/.*.so/) && !(e.match(/.*_r.so/))) {
         const t = e.replace(".so","_r.so");
         const tpath = path.join(d,t);
@@ -149,7 +151,7 @@ function removeUnthreaded(d) {
 // should help shrink any runtime container a bit
 function removeUnneeded() {
   let d;
-  const doNotRemove = process.env['MQIJS_NOREMOVE'];
+  const doNotRemove = process.env.MQIJS_NOREMOVE;
   if (doNotRemove != null) {
     console.log("Environment variable set to keep all files in client package");
   } else {
@@ -195,7 +197,7 @@ function removeUnneeded() {
 // the Redist client package. I did consider doing this automatically by
 // trying to locate the libraries in the "usual" places, but decided it was
 // better to be explicit about the choice.
-const doit = process.env["MQIJS_NOREDIST"];
+const doit = process.env.MQIJS_NOREDIST;
 if (doit != null) {
   console.log("Environment variable set to not install " + title);
   process.exit(0);
@@ -205,7 +207,7 @@ if (doit != null) {
 if (currentPlatform === "win32") {
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
-  unwantedDirs=[ "exits","exits64", "bin", 
+  unwantedDirs=[ "exits","exits64", "bin",
                  "tools/cobol", "tools/cplus", "tools/dotnet",
                  "tools/c/Samples", "tools/c/include",
                  "tools/Lib", "tools/Lib64",
@@ -244,9 +246,9 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 let url = protocol + host + "/" + dir + "/" + file;
-const useLocal = process.env["MQIJS_LOCALURL"];
+const useLocal = process.env.MQIJS_LOCALURL;
 if (useLocal != null) {
-  const useLocalServer = process.env["MQIJS_LOCAL_SERVER"];
+  const useLocalServer = process.env.MQIJS_LOCAL_SERVER;
   if (useLocalServer != null) {
     url = useLocalServer + "/" + file;
   } else {
@@ -255,7 +257,7 @@ if (useLocal != null) {
 }
 console.log("Getting " + url);
 
-var client = http;
+let client = http;
 if (url.startsWith("https"))
   client=https;
 
@@ -265,7 +267,9 @@ if (url.startsWith("https"))
 try {
   // The downloaded file goes into the current directory (node_modules/ibmmq)
   const fd = fs.openSync(file, "w");
-  client.get(url, (res) => {
+  const agent = new ProxyAgent();
+
+  client.get(url, { agent }, (res) => {
     let error;
 
     if (res.statusCode < 200 || res.statusCode > 299) {
@@ -277,18 +281,18 @@ try {
       printError(error);
     }
 
-    res.on('data', (chunk) => {
+    res.on("data", (chunk) => {
       fs.appendFileSync(fd,chunk);
     });
-    res.on('end', () => {
+    res.on("end", () => {
       try {
         fs.closeSync(fd);
         console.log("Unpacking libraries...");
         execSync(unpackCommand);
-        // On Windows we use PowerShell to to the unpacking of the zip 
+        // On Windows we use PowerShell to to the unpacking of the zip
         // file. We can be "reasonably" certain that this will work. The Node.js
         // unzip packages seemed to sometimes create corrupt files silently.
-        if (currentPlatform === 'win32') {
+        if (currentPlatform === "win32") {
           const psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
           const psCmd2 = "powershell -command \"" + psCmd + "\"";
           execSync(psCmd2, { windowsHide:true });
@@ -298,7 +302,7 @@ try {
         printError(error);
       }
     });
-  }).on('error', (error) => {
+  }).on("error", (error) => {
     printError(error);
   });
 } catch (err) {
