@@ -1,8 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## 21 Jul 2023: v2.0.2
-* Updated `postinstall` to support http proxy environment variables 
+## xx xxx 2023: v2.0.2
+* Change the postinstall to use genmqpkg on Linux
+* Can configure postinstall to download client from local URL
+* Updated postinstall to support http proxy environment variables (#167)
 
 ## 05 Jul 2023: v2.0.1 
 * Added LinuxARM definitions

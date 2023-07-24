@@ -199,7 +199,7 @@ variable to `production` will cause downloads of only the runtime dependencies.
 
 ### The MQ C Client libraries
 
-The package also requires the MQ C client libraries to be installed/available.
+The package requires the MQ C client libraries to be installed/available.
 
 For Windows and Linux x64, the npm installation process tries to access
 the Redistributable Client packages and unpack them automatically. 
@@ -211,23 +211,56 @@ will have to keep a local copy of the tar/zip files and unpack it as part
 of your build process, using the MQIJS_* environment variables to control
 installation and runtime.
 
-If you do not want this automatic installation of the MQ runtime, then set the
+#### Controlling the download location
+
+The download of the Redistributable Client packages will, by default, try to 
+go to the `public.dhe.ibm.com` site. If that is not reachable - perhaps you are
+installing into a machine that does not have access to the public internet - then you
+can override the location that the install process tries to use. Set the environment
+variable `MQIJS_LOCAL_URL=true` to something like `https://myserver.example.com:8080/MQClients`. 
+
+If you do not want the automatic installation of the MQ runtime at all, then set the
 environment variable `MQIJS_NOREDIST` to any value before running npm install.
 The MQ libraries are then be found at runtime using mechanisms such as
 searching `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows).
 
+## Controlling the downloaded version
+
 The post-installation program will usually be pointing at the most recent Continuous Delivery
-version of MQ (for example 9.1.4.0). These versions of MQ do not have fixpacks released. However
-you can override both the version (VRM) and fixpack to be installed, assuming that full VRMF
+version of MQ (for example 9.1.4.0). These versions of MQ do not have fixpacks released, though
+they may have updates available specifically aimed at security vulnerabilities (CSU packages). 
+You can override both the version (VRM) and fixpack to be installed, assuming that full VRMF
 level is still available for download. Setting the environment variables `MQIJS_VRM` and
 `MQIJS_FIXPACK` will select a specific Redistributable Client package to be installed. Note that
 installing an older VRM than the default in the current version of this package may not work, if
 newer options have been introduced to the MQI. At the time of writing this paragraph, the latest
 version of MQ was 9.2.0 (with no later CD releases), but there was also a 9.2.0.1 fixpack. If
-you want to pick that up instead of the base 9.2.0 referred to in postinstall.js, then
+you want to pick that up instead of the base 9.2.0.0 referred to in postinstall.js, then
 set `MQIJS_FIXPACK=1` before running `npm install`. Once newer CD levels are available, then the
-postinstall script will point at those instead by default.
+postinstall script will point at those instead by default. If you want to select a CSU level (very similar
+to a fixpack, but with a more limited scope) then the same environment variable can be used.
 
+### Downloading behind a proxy
+
+Downloading the Redistributable C Client libraries behind a proxy is supported. Use the environment 
+variables `https_proxy` and `no_proxy` to control proxy behaviour.
+
+For example, the following command will use a proxy server at `http://localhost:8080` to download 
+the redistributable libraries:
+
+```
+% HTTPS_PROXY=http://localhost:8080 npm install
+```
+
+You can disable this behaviour by adding `public.dhe.ibm.com` to the `NO_PROXY`
+environment variable. The following command will not use the proxy to download
+the redistributable libraries:
+
+```
+% NO_PROXY="public.dhe.ibm.com" HTTPS_PROXY=http://localhost:8080 npm install
+```
+
+Alternatively, you can simply `unset HTTPS_PROXY`.
 
 ### MacOS
 The MQ client package for MacOS can be found at

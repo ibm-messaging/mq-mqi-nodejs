@@ -5,7 +5,6 @@ const fs = require("fs");
 const path = require("path");
 const http  = require("http");
 const https = require("https");
-
 const { ProxyAgent } = require("proxy-agent");
 
 const execSync = require("child_process").execSync;
@@ -26,7 +25,7 @@ const defaultFp="0";
 // may depend on MQI features in the listed version. Must be given in the
 // same format eg "1.2.3". Note that IBM keeps a limited set of versions for
 // download - once a version of MQ is no longer supported, that level of
-// Redistributable Client package is removed from public sites.
+// Redistributable Client package may be removed from public sites.
 const vrmenv=process.env.MQIJS_VRM;
 if (vrmenv != null) {
   vrm=vrmenv;
@@ -73,7 +72,11 @@ function cleanup(rc) {
       console.log("Removing " + file);
       fs.unlinkSync(file);
     } else {
-      console.log("Preserving " + file);
+      // If there was an error, we will leave the file alone if it exists,
+      // but it's probably not there. So don't print this progress message.
+      if (rc == 0) {
+        console.log("Preserving " + file);
+      }
     }
   } catch(err) {
     // Ignore error
@@ -147,6 +150,35 @@ function removeUnthreaded(d) {
   }
 }
 
+// The genmqpkg script is better maintained than having the unwanted directories/files
+// explicitly named.
+function removeUnneededWithGenMQPkg(fullNewBaseDir) {
+  const doNotRemove = process.env.MQIJS_NOREMOVE;
+  if (doNotRemove != null) {
+    console.log("Environment variable set to keep all files in client package");
+  } else {
+    // Set the filters for which files genmqpkg is going to preserve
+    process.env.genmqpkg_incnls=1;
+    process.env.genmqpkg_incsdk=1;
+    process.env.genmqpkg_inctls=1;
+    process.env.genmqpkg_incadm=1; // For runmqsc, even though it leaves more files than we really need
+
+    let debugGenObj = {};
+    let debugGenOpt="";
+
+    if (process.env.MQIJS_TRACE_GENMQPKG != null) {
+      debugGenObj = { stdio:"inherit" };
+      debugGenOpt="-v";
+    }
+
+    const psCmd="cd " + fullNewBaseDir + ";./bin/genmqpkg.sh -b " + debugGenOpt + " " + fullNewBaseDir;
+
+    console.log("Running genmqpkg...");
+    execSync(psCmd, debugGenObj );
+    cleanup(0);
+  }
+}
+
 // Remove directories from the client that are not needed for Node execution. This
 // should help shrink any runtime container a bit
 function removeUnneeded() {
@@ -205,6 +237,8 @@ if (doit != null) {
 
 // Check if the install is for an environment where there is a Redistributable Client.
 if (currentPlatform === "win32") {
+  // The Windows "unpack" command here simply creates the output directory. Other processing
+  // will do the real unpack.
   file=file+"Win64.zip";
   unpackCommand="mkdir " +  newBaseDir;
   unwantedDirs=[ "exits","exits64", "bin",
@@ -216,14 +250,22 @@ if (currentPlatform === "win32") {
 } else if (currentPlatform === "linux" && process.arch === "x64"){
   file=file+"LinuxX64.tar.gz";
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
-  unwantedDirs=[ "samp", "bin","inc","java", "gskit8/lib", ".github" ];
+  // These "unwanted" directories are not explicitly used with the genmqpkg.sh command that
+  // is now being used.
+  unwantedDirs=[ "samp",
+                 "bin",
+                 "inc",
+                 "java",
+                 "gskit8/lib",
+                 "lib64/netstandard2.0",
+                 ".github" ];
 // } else if (currentPlatform === 'darwin'){
 //  The MacOS client for MQ is released under a different license - 'Developers' not
 //  'Redistributable' - so we should not try to automatically download it.
 //
 //  As another issue, the MacOS client is now being delivered in signed pkg format, not zip. So this won't
-//  work. I'm leaving this bit of code in just to remind us of the directory from which
-//  the file can be downloaded but enabling it is not going to help.
+//  work anyway. I'm leaving this bit of code in just to remind us of the directory from which
+//  the file can be downloaded but simply enabling it in this script is not going to help.
 //
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
@@ -246,14 +288,13 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 let url = protocol + host + "/" + dir + "/" + file;
-const useLocal = process.env.MQIJS_LOCALURL;
-if (useLocal != null) {
-  const useLocalServer = process.env.MQIJS_LOCAL_SERVER;
-  if (useLocalServer != null) {
-    url = useLocalServer + "/" + file;
-  } else {
-    url = "http://localhost:8000/"+file; // My local version for testing this script
-  }
+const useLocalUrl = process.env.MQIJS_LOCAL_URL;
+const useLocalServer = process.env.MQIJS_LOCAL_SERVER;
+
+if (useLocalUrl != null) {
+  url = useLocalUrl + "/" + file;
+} else if (useLocalServer != null) {
+  url = "http://localhost:8000/"+file; // My local version for testing this script
 }
 console.log("Getting " + url);
 
@@ -287,23 +328,27 @@ try {
     res.on("end", () => {
       try {
         fs.closeSync(fd);
-        console.log("Unpacking libraries...");
+        const fullNewBaseDir=path.resolve(newBaseDir);
+        console.log("Unpacking libraries into "+ fullNewBaseDir + "...");
         execSync(unpackCommand);
-        // On Windows we use PowerShell to to the unpacking of the zip
+        // On Windows we use PowerShell to do the unpacking of the zip
         // file. We can be "reasonably" certain that this will work. The Node.js
         // unzip packages seemed to sometimes create corrupt files silently.
         if (currentPlatform === "win32") {
           const psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
           const psCmd2 = "powershell -command \"" + psCmd + "\"";
           execSync(psCmd2, { windowsHide:true });
+          removeUnneeded();
+        } else {
+          removeUnneededWithGenMQPkg(fullNewBaseDir);
+          // removeUnneeded();
         }
-        removeUnneeded();
-      } catch (error) {
-        printError(error);
+      } catch (err) {
+        printError(err);
       }
     });
-  }).on("error", (error) => {
-    printError(error);
+  }).on("error", (err) => {
+    printError(err);
   });
 } catch (err) {
   printError(err);
