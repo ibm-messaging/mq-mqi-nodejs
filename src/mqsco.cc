@@ -23,6 +23,8 @@
 
 void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
 
+  pmqsco->Version = MQSCO_VERSION_4; // Assume this base level
+
   setMQIString(env,pmqsco->KeyRepository, jssco, "KeyRepository",MQ_SSL_KEY_REPOSITORY_LENGTH);
   setMQIString(env,pmqsco->CryptoHardware,jssco, "CryptoHardware", MQ_SSL_CRYPTO_HARDWARE_LENGTH);
   pmqsco->KeyResetCount     = getMQLong(jssco,"KeyResetCount");
@@ -35,14 +37,19 @@ void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
   }
   pmqsco->CertificateValPolicy = getMQLong(jssco,"CertificateValPolicy");
   setMQIString(env, pmqsco->CertificateLabel , jssco,"CertificateLabel",MQ_CERT_LABEL_LENGTH);
+  if (pmqsco->CertificateLabel[0] != ' ' && pmqsco->CertificateLabel[0] != 0) {
+    if (pmqsco->Version < MQSCO_VERSION_5) {
+      pmqsco->Version = MQSCO_VERSION_5;
+    }
+  }
 
   Value v = jssco.Get("KeyRepoPassword");
   if (v.IsString()) {
     pmqsco->KeyRepoPasswordPtr = mqnStrdup(env,jssco.Get("KeyRepoPassword").As<String>().Utf8Value().c_str());
     pmqsco->KeyRepoPasswordOffset = 0;
     pmqsco->KeyRepoPasswordLength = strlen((char *)pmqsco->KeyRepoPasswordPtr);
-    if (pmqsco->Version < 6) {
-      pmqsco->Version = 6;
+    if (pmqsco->Version < MQSCO_VERSION_6) {
+      pmqsco->Version = MQSCO_VERSION_6;
     }
   }
 

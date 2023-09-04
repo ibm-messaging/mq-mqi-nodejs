@@ -93,7 +93,7 @@ function cleanup(hConn: mq.MQQueueManager, hObjPubQ: mq.MQObject, hObjSubscripti
     console.log("MQCLOSE (Subscription) successful");
   } catch (err) {
     const mqerr = err as mq.MQError;
-    console.log("MQCLOSE (Subscription) ended with reason "  + mqerr.toString());
+    console.log("MQCLOSE (Subscription) ended with reason "  + mqerr.message);
   }
 
   mq.Close(hObjPubQ, 0, function (closeErr) {

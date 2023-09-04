@@ -154,8 +154,8 @@ Object CONNX(const CallbackInfo &info) {
         w->jscd = v.As<Object>();
         w->cno.ClientConnPtr = &w->cd;
         copyCDtoC(env, w->jscd, &w->cd);
-        if (w->cno.Version < 2) {
-          w->cno.Version = 2;
+        if (w->cno.Version < MQCNO_VERSION_2) {
+          w->cno.Version = MQCNO_VERSION_2;
         }
       }
 
@@ -164,8 +164,8 @@ Object CONNX(const CallbackInfo &info) {
         w->jssco = v.As<Object>();
         w->cno.SSLConfigPtr = &w->sco;
         copySCOtoC(env, w->jssco, &w->sco);
-        if (w->cno.Version < 4) {
-          w->cno.Version = 4;
+        if (w->cno.Version < MQCNO_VERSION_4) {
+          w->cno.Version = MQCNO_VERSION_4;
         }
       }
 
@@ -174,8 +174,8 @@ Object CONNX(const CallbackInfo &info) {
         w->jscsp = v.As<Object>();
         w->cno.SecurityParmsPtr = &w->csp;
         copyCSPtoC(env, w->jscsp, &w->csp);
-        if (w->cno.Version < 5) {
-          w->cno.Version = 5;
+        if (w->cno.Version < MQCNO_VERSION_5) {
+          w->cno.Version = MQCNO_VERSION_5;
         }
       }
 
@@ -184,16 +184,16 @@ Object CONNX(const CallbackInfo &info) {
         w->cno.CCDTUrlPtr = mqnStrdup(env, w->jscno.Get("CCDTUrl").As<String>().Utf8Value().c_str());
         w->cno.CCDTUrlOffset = 0;
         w->cno.CCDTUrlLength = strlen(w->cno.CCDTUrlPtr);
-        if (w->cno.Version < 6) {
-          w->cno.Version = 6;
+        if (w->cno.Version < MQCNO_VERSION_6) {
+          w->cno.Version = MQCNO_VERSION_6;
         }
       }
 
       v = w->jscno.Get("ApplName");
       if (v.IsString()) {
         setMQIString(env, w->cno.ApplName, w->jscno, "ApplName", MQ_APPL_NAME_LENGTH);
-        if (w->cno.Version < 7) {
-          w->cno.Version = 7;
+        if (w->cno.Version < MQCNO_VERSION_7) {
+          w->cno.Version = MQCNO_VERSION_7;
         }
       }
 
@@ -202,8 +202,8 @@ Object CONNX(const CallbackInfo &info) {
         w->jsbno = v.As<Object>();
         w->cno.BalanceParmsPtr = &w->bno;
         copyBNOtoC(env, w->jsbno, &w->bno);
-        if (w->cno.Version < 8) {
-          w->cno.Version = 8;
+        if (w->cno.Version < MQCNO_VERSION_8) {
+          w->cno.Version = MQCNO_VERSION_8;
         }
       }
     }

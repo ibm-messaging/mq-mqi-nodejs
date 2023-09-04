@@ -30,11 +30,9 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
   char *cUserId = NULL;
   char *cPassword = NULL;
   char *cInitialKey = NULL;
+  char *cToken = NULL;
 
   // Set the Authentication type if there's a non-empty Userid specified.
-  // There's only one non-default option for now. We don't copy it into the
-  // C structure if the userid is empty because the CSP might be being used
-  // only for the InitialKey setting.
   String UserId = jscsp.Get("UserId").As<String>();
   if (!UserId.IsNull() && !UserId.IsUndefined()) {
     cUserId = mqnStrdup(env,UserId.Utf8Value().c_str());
@@ -43,6 +41,10 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
     pmqcsp->CSPUserIdLength = strlen(cUserId);
 
     pmqcsp->AuthenticationType = getMQLong(jscsp,"_authenticationType");
+    // If you've set a non-blank userid, then you MUST be asking for userid/pwd checking.
+    if (pmqcsp->AuthenticationType == MQCSP_AUTH_NONE) {
+      pmqcsp->AuthenticationType = MQCSP_AUTH_USER_ID_AND_PWD;
+    }
   }
 
   Object Password = jscsp.Get("Password").As<Object>();
@@ -59,6 +61,22 @@ void copyCSPtoC(Env env, Object jscsp, PMQCSP pmqcsp) {
     pmqcsp->InitialKeyPtr = cInitialKey;
     pmqcsp->InitialKeyOffset = 0;
     pmqcsp->InitialKeyLength = strlen(cInitialKey);
+    if (pmqcsp->Version < MQCSP_VERSION_2) {
+      pmqcsp->Version = MQCSP_VERSION_2;
+    }
+  }
+
+  Object Token = jscsp.Get("Token").As<Object>();
+  if (!Token.IsNull() && !Token.IsUndefined()) {
+    cToken = mqnStrdup(env,Token.As<String>().Utf8Value().c_str());
+    pmqcsp->TokenPtr = cToken;
+    pmqcsp->TokenOffset = 0;
+    pmqcsp->TokenLength = strlen(cToken);
+    // Using a token overrides userid/password checking
+    pmqcsp->AuthenticationType = MQCSP_AUTH_ID_TOKEN;
+    if (pmqcsp->Version < MQCSP_VERSION_3) {
+      pmqcsp->Version = MQCSP_VERSION_3;
+    }
   }
 }
 
@@ -67,5 +85,6 @@ void cleanupCSP(PMQCSP pCsp) {
       mqnFreeString(pCsp->CSPUserIdPtr);
       mqnFreeString(pCsp->CSPPasswordPtr);
       mqnFreeString(pCsp->InitialKeyPtr);
+      mqnFreeString(pCsp->TokenPtr);
     }
 }
