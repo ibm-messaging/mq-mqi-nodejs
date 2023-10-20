@@ -1,9 +1,7 @@
 declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the mqdlh
-   * (MQ Dead Letter Header) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q096110_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Dead Letter Header) structure. 
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQDLH {

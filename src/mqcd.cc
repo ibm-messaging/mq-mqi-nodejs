@@ -40,7 +40,8 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
     pmqcd->SSLPeerNamePtr = mqnStrdup(env,v.As<String>().Utf8Value().c_str());
     pmqcd->SSLPeerNameLength = strlen((char *)pmqcd->SSLPeerNamePtr);
   }
-  pmqcd->SSLClientAuth = getMQLong(jscd,"SSLClientAuth");
+  // This is not used by the client. Field is only relevant on the server end of a connection.
+  // pmqcd->SSLClientAuth = getMQLong(jscd,"SSLClientAuth");
   pmqcd->KeepAliveInterval = getMQLong(jscd,"KeepAliveInterval");
   pmqcd->SharingConversations = getMQLong(jscd,"SharingConversations");
   pmqcd->PropertyControl = getMQLong(jscd,"PropertyControl");

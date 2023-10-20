@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  5/31/23 12:58 PM                              */
- /* Build Level:   p933-L230531                                  */
+ /* Generated on:  9/27/23 11:53 AM                              */
+ /* Build Level:   p934-L230927                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -527,7 +527,8 @@
  /* Structure Version Number */
  #define MQCSP_VERSION_1                1
  #define MQCSP_VERSION_2                2
- #define MQCSP_CURRENT_VERSION          2
+ #define MQCSP_VERSION_3                3
+ #define MQCSP_CURRENT_VERSION          3
 
  /* Structure Length */
 #if defined(MQ_64_BIT)
@@ -541,14 +542,20 @@
  #define MQCSP_LENGTH_2                 68
 #endif
 #if defined(MQ_64_BIT)
- #define MQCSP_CURRENT_LENGTH           80
+ #define MQCSP_LENGTH_3                 104
 #else
- #define MQCSP_CURRENT_LENGTH           68
+ #define MQCSP_LENGTH_3                 88
+#endif
+#if defined(MQ_64_BIT)
+ #define MQCSP_CURRENT_LENGTH           104
+#else
+ #define MQCSP_CURRENT_LENGTH           88
 #endif
 
  /* Authentication Types */
  #define MQCSP_AUTH_NONE                0
  #define MQCSP_AUTH_USER_ID_AND_PWD     1
+ #define MQCSP_AUTH_ID_TOKEN            2
 
  /****************************************************************/
  /* Values Related to MQCNO Structure                            */
@@ -1925,6 +1932,7 @@
  #define MQ_CREATION_DATE_LENGTH        12
  #define MQ_CREATION_TIME_LENGTH        8
  #define MQ_CSP_PASSWORD_LENGTH         256
+ #define MQ_CSP_TOKEN_LENGTH            8192
  #define MQ_DATE_LENGTH                 12
  #define MQ_DISTINGUISHED_NAME_LENGTH   1024
  #define MQ_DNS_GROUP_NAME_LENGTH       18
@@ -2112,6 +2120,7 @@
  #define MQRC_REPORT_OPTIONS_ERROR      2061
  #define MQRC_SECOND_MARK_NOT_ALLOWED   2062
  #define MQRC_SECURITY_ERROR            2063
+ #define MQRC_TOKEN_TIMESTAMP_NOT_VALID 2064
  #define MQRC_SELECTOR_COUNT_ERROR      2065
  #define MQRC_SELECTOR_LIMIT_EXCEEDED   2066
  #define MQRC_SELECTOR_ERROR            2067
@@ -2865,7 +2874,8 @@
  #define MQCMDL_LEVEL_931               931
  #define MQCMDL_LEVEL_932               932
  #define MQCMDL_LEVEL_933               933
- #define MQCMDL_CURRENT_LEVEL           933
+ #define MQCMDL_LEVEL_934               934
+ #define MQCMDL_CURRENT_LEVEL           934
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0
@@ -4276,12 +4286,21 @@
    MQLONG   InitialKeyOffset;    /* Offset of initial key */
    MQLONG   InitialKeyLength;    /* Length of initial key */
    /* Ver:2 */
+   MQBYTE8  Reserved4;           /* Reserved */
+   MQPTR    TokenPtr;            /* Address of Token */
+   MQLONG   TokenOffset;         /* Offset of Token */
+   MQLONG   TokenLength;         /* Length of Token */
+   /* Ver:3 */
  };
 
  #define MQCSP_DEFAULT {MQCSP_STRUC_ID_ARRAY},\
                        MQCSP_VERSION_1,\
                        MQCSP_AUTH_NONE,\
                        {'\0','\0','\0','\0'},\
+                       NULL,\
+                       0,\
+                       0,\
+                       {'\0','\0','\0','\0','\0','\0','\0','\0'},\
                        NULL,\
                        0,\
                        0,\

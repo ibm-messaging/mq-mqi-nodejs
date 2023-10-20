@@ -1,9 +1,7 @@
 declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQIMPO
-   * (MQ Inquire Message Property Options) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q097210_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Inquire Message Property Options) structure. 
    */
   class MQIMPO {
     Options: number | MQC_MQIMPO[];    
@@ -15,9 +13,7 @@ declare module "ibmmq" {
 
   /**
    * This is a class containing the fields needed for the MQSMPO
-   * (MQ Set Message Property Options) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q100270_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Set Message Property Options) structure. 
    */
   class MQSMPO {
     Options: number | MQC_MQSMPO[];    
@@ -25,9 +21,7 @@ declare module "ibmmq" {
 
   /**
    * This is a class containing the fields needed for the MQDMPO
-   * (MQ Delete Message Property Options) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q096430_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Delete Message Property Options) structure. 
    */
   class MQDMPO {
     Options: number | MQC_MQDMPO[];    
@@ -35,9 +29,7 @@ declare module "ibmmq" {
 
   /**
    * This is a class containing the fields needed for the MQPD
-   * (MQ Property Descriptor) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q098510_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Property Descriptor) structure. 
    */
   class MQPD {
     Options: number | MQC_MQPD_OPTIONS[];          

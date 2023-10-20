@@ -1,9 +1,7 @@
 declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQCD
-   * (MQ Channel Definition) structure. See the
-   * {@link https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q108220_.htm |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Channel Definition) structure.
    * Not all of the underlying fields may be exposed in this object.
    */
   class MQCD {
@@ -16,7 +14,7 @@ declare module "ibmmq" {
     HeartbeatInterval: number;
     SSLCipherSpec: string;
     SSLPeerName: string;
-    SSLClientAuth: MQC_MQSCA;
+    SSLClientAuth: MQC_MQSCA; /* Not used, but leave here for compatibility */
     KeepAliveInterval: MQC_MQKAI;
     SharingConversations: number;
     PropertyControl: MQC_MQPROP;

@@ -75,7 +75,7 @@ function getMessages() {
   var md = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
-  gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+  gmo.Options = MQC.MQGMO_SYNCPOINT |
                 MQC.MQGMO_WAIT |
                 MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
@@ -122,6 +122,15 @@ function getCB(err, hObj, gmo,md,buf, hConn ) {
        console.log("message <%s>", decoder.write(buf));
      } else {
        console.log("binary message: " + buf);
+     }
+     // If we were using Syncpoint, then we may want to commit the updates.
+     if ((gmo.Options & MQC.MQGMO_SYNCPOINT) != 0) {
+   
+      mq.Cmit(connectionHandle, function (err) {
+        if (err) console.log(formatErr(err));
+        else console.log("Commit OK");
+      });  
+   
      }
   }
 }

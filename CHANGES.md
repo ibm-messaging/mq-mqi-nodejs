@@ -1,10 +1,14 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## xx xxx 2023: v2.0.2
+## 19 Oct 2023: v2.0.2
+* Update for MQ 9.3.4
+  - Support for JWT Token authentication
 * Change the postinstall to use genmqpkg on Linux
 * Can configure postinstall to download client from local URL
 * Updated postinstall to support http proxy environment variables (#167)
+* Fix calling the MQI within message delivery callback (#169)  
+* Update documentation links
 
 ## 05 Jul 2023: v2.0.1 
 * Added LinuxARM definitions

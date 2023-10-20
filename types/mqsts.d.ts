@@ -1,9 +1,7 @@
 declare module "ibmmq" {
   /**
    * This is a class containing the fields needed for the MQSTS
-   * (MQ Status reporting) structure. See the
-   * {@link https://www.ibm.com/docs/en/ibm-mq/9.2?topic=mqi-mqsts-status-reporting-structure |MQ Knowledge Center}
-   * for more details on the usage of each field.
+   * (MQ Status reporting) structure. 
    */
   class MQSTS {
     CompCode: MQC_MQCC;

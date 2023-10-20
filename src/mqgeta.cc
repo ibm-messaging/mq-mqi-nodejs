@@ -234,7 +234,8 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
 // May have many of these invoked before preJsCB gets executed
 // There may also be invocations on various different threads. Each hConn has
-// to have its own callback thread, and they might be invoked simultaneously.
+// to have its own callback thread, and they might be invoked simultaneously. But for a given
+// hConn, the callbacks will always be made from the MQI to the same thread.
 // In any case, there is no critical use of global data here (either read or write)
 // so shouldn't need any locking.
 void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pContext) {
@@ -269,6 +270,10 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
     // for all the stuff we pass.
     totalAlloc = MQGMO_LENGTH_4 + MQMD_LENGTH_2 + len;
     retData->buf = (unsigned char *)malloc(totalAlloc);
+    if (retData->buf == NULL) {
+      // A malloc problem is going to be fairly fatal
+      Error::Fatal("mqmCB", "Out of memory error. Call to malloc returned NULL.");
+    }
     memcpy(retData->buf, pmqgmo, MQGMO_LENGTH_4);
     p = retData->buf + MQGMO_LENGTH_4;
     memcpy(p, pmqmd, MQMD_LENGTH_2);
@@ -282,12 +287,25 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       debugf(LOG_DEBUG, "mqnCB - Message delivery returned error %d for calltype %d ", pContext->Reason, pContext->CallType);
     }
     break;
+
   case MQCBCT_EVENT_CALL:
-    if ((pContext->Reason == MQRC_OBJECT_CHANGED) || (pContext->Reason == MQRC_CONNECTION_BROKEN) || (pContext->Reason == MQRC_Q_MGR_STOPPING) ||
-        (pContext->Reason == MQRC_Q_MGR_QUIESCING) || (pContext->Reason == MQRC_CONNECTION_QUIESCING) || (pContext->Reason == MQRC_CONNECTION_STOPPING) ||
-        (pContext->Reason == MQRC_NO_MSG_AVAILABLE)) {
+    // Some errors are "interesting". The app should probably quit/reconnect with these errors. So we trace them
+    // to help debug.
+    switch (pContext->Reason) {
+    case MQRC_OBJECT_CHANGED:
+    case MQRC_CONNECTION_BROKEN:
+    case MQRC_Q_MGR_STOPPING:
+    case MQRC_Q_MGR_QUIESCING:
+    case MQRC_CONNECTION_QUIESCING:
+    case MQRC_CONNECTION_STOPPING:
+    case MQRC_NO_MSG_AVAILABLE:
       debugf(LOG_DEBUG, "mqnCB - Error %d for hConn/hObj %d/%d", pContext->Reason, hConn, pContext->Hobj);
+      break;
+    default:
+      // Pass it through
+      break;  
     }
+ 
     break;
 
   default:
@@ -295,12 +313,28 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
     break;
   }
 
-  // C++ automatically creates an object if you simply use x=myMap[unknown_key].So check the key exists
-  // in the map first.
-  //
-  // This is one strategy for delaying the callbacks a little while to allow the
-  // PreJsCB functions a chance to catch up.
-  if (callbackStrategy != CB_SYNCED) {
+  switch (callbackStrategy) {
+
+  case CB_SYNCED:
+    // For the strategy of not having any backlog of queued work, we stop any further delivery of
+    // messages for this hConn until the application callback has completed. Do the suspension BEFORE
+    // scheduling the callback.
+    {
+      MQLONG CC, RC;
+      MQCTLO mqctlo = {MQCTLO_DEFAULT};
+
+      _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+      debugf(LOG_DEBUG, "mqnCB - MQCTL SUSPEND hConn=%d CC=%d RC=%d", hConn, CC, RC);
+    }
+    break;
+
+  case CB_READAHEAD:
+    // This is an alternative strategy for getting the messages off the queeu as fast as possbile, but at the cost
+    // of potential unreliabilty and overlapping work. Lots of callbacks can be scheduled to run "simultaneously" with
+    // their own message contents.We may decide here to delay callbacks a little while to allow the
+    // PreJsCB functions a chance to catch up if we think there might be too many in a queue.
+    // C++ automatically creates an object if you simply use x=myMap[unknown_key].So check the key exists
+    // in the map first.
     if (connContextMap.count(hConn) == 1) {
       ConnContext *connContext = connContextMap[hConn];
       if (connContext != NULL && connContext->queuedCount++ > config.maxConsecutiveGets) {
@@ -321,12 +355,23 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
         connContext->mtx.unlock();
       }
     }
+    break;
+  
+  default:
+    debugf(LOG_DEBUG,"mqnCB - unknown callback strategy!");
+    break;    
   }
 
   bool queued = false;
   int retries = 0;
 
   //  processMtx.lock(); // Block all callbacks temporarily while we give the worker queue a chance to drain.
+
+  // Now add the user's callback (actually our NodeJS proxy function) to the queue to be executed
+  //
+  // Try it a few times - when using CB_SYNCED, this should always work. But the readahead strategy might 
+  // give us a long queue - while again it should always work as the queue is defined as unlimited, we may still
+  // want to careful.
   while (!queued && retries < 10) {
     napi_status status = tsfn.NonBlockingCall(retData);
     if (status == napi_ok) {
@@ -337,21 +382,14 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
       retries++;
     } else {
-      Error::Fatal("ThreadEntry", "TypedThreadSafeNapi::Function.NonBlockingCall() failed");
+      // Something else has gone wrong - consider it fatal
+      std::string errmsg = "TypedThreadSafeNapi::Function.NonBlockingCall() failed with status ";
+      std::string s = std::to_string(status);
+      Error::Fatal("mqmCB", (errmsg + s).c_str());
     }
   }
+
   // processMtx.unlock();
-
-  // For the strategy of not having any backlog of queued work, we stop any further delivery of
-  // messages for this hConn until the application callback has completed.
-  if (callbackStrategy == CB_SYNCED) {
-    MQLONG CC, RC;
-    MQCTLO mqctlo = {MQCTLO_DEFAULT};
-
-    _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
-    debugf(LOG_DEBUG, "mqnCB - MQCTL SUSPEND hConn=%d CC=%d RC=%d", hConn, CC, RC);
-
-  }
 
   return;
 }

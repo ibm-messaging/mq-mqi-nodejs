@@ -17,7 +17,7 @@ const redistDir=baseDir+"/redist";
 const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.3.3";
+let vrm="9.3.4";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
 
@@ -161,6 +161,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
     process.env.genmqpkg_incnls=1;
     process.env.genmqpkg_incsdk=1;
     process.env.genmqpkg_inctls=1;
+    process.env.genmqpkg_incras=1;
     process.env.genmqpkg_incadm=1; // For runmqsc, even though it leaves more files than we really need
 
     let debugGenObj = {};

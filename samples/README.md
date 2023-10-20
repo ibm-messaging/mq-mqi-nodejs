@@ -1,16 +1,14 @@
 # Sample program information
 Files in this directory are samples to demonstrate use of the Node.js interface to IBM MQ.
 
-You can run them individually using `node <program>.js` with any additional
-required or optional parameters on the command line. Look at the source code to see
-which configuration values can be changed.
+You can run them individually using `node <program>.js` with any additional required or optional parameters on the
+command line. Look at the source code to see which configuration values can be changed.
 
-Make sure you first read the README in the root of this repository to set up an environment
-where Node.js programs can be executed, and how the packages refer to the MQ interfaces.
+Make sure you first read the README in the root of this repository to set up an environment where Node.js programs can
+be executed, and how the packages refer to the MQ interfaces.
 
-Samples are provided to demonstrate most MQI uses, including ways put and get
-messages, and to subscribe to topics. The source code of these samples should be reviewed for
-an fuller idea of how this package can be used.
+Samples are provided to demonstrate most MQI uses, including ways put and get messages, and to subscribe to topics. The
+source code of these samples should be reviewed for an fuller idea of how this package can be used.
 
 ## Default values
 Where needed for the sample programs:
@@ -41,13 +39,11 @@ Allow use of a userid/password for authentication. There are no default values f
 
 
 ## Running the programs
-Apart from the `amqsconn` and `amqsconntls` programs, the other samples are designed to either connect
-to a local queue manager (on the same machine) or for the client configuration to be
-provided externally such as by the MQSERVER environment variable or the
-MQ Client Channel Definition Table (CCDT) file. The MQ_CONNECT_TYPE environment
-variable can be used to force client connections to be made, even if you have
-installed the full server product; that variable is not needed if you have
-only installed the MQ client libraries.
+Apart from the `amqsconn` and `amqsconntls` programs, the other samples are designed to either connect to a local queue
+manager (on the same machine) or for the client configuration to be provided externally such as by the MQSERVER
+environment variable or the MQ Client Channel Definition Table (CCDT) file. The MQ_CONNECT_TYPE environment variable can
+be used to force client connections to be made, even if you have installed the full server product; that variable is not
+needed if you have only installed the MQ client libraries.
 
 Run like:
 
@@ -59,30 +55,28 @@ node amqsput.js
 node amqsget.js
 ~~~
 
-There are various forms of the setmqenv command parameters, depending on your
-environment and platform. This is just one example; read the KnowledgeCenter for
-more options if you need them.
+There are various forms of the setmqenv command parameters, depending on your environment and platform. This is just one
+example; read the KnowledgeCenter for more options if you need them.
 
 ### Working with NPM
-You may need to run `npm link` or `npm link ibmmq` from the samples directory or
-the root of the repository if the program cannot find the ibmmq module. See
-the [npm documentation](https://docs.npmjs.com/cli/link.html) for more information.
+You may need to run `npm link` or `npm link ibmmq` from the samples directory or the root of the repository if the
+program cannot find the ibmmq module. See the [npm documentation](https://docs.npmjs.com/cli/link.html) for more
+information.
 
 ## Running in a container
-The `run.docker` script builds and runs a container with the `amqsput` program. Two
-Dockerfiles are provided. The default uses images based around debian/ubuntu containers.
-If you set the `FROM` environment variable to "UBI" then images from the Red Hat Universal
-Base Images repository are used instead.
+The `run.docker` script builds and runs a container with the `amqsput` program. Two Dockerfiles are provided. The
+default uses images based around debian/ubuntu containers. If you set the `FROM` environment variable to "UBI" then
+images from the Red Hat Universal Base Images repository are used instead.
 
-The automatic installation of the MQ client code only works for platforms where the Redistributable Client package is available. For other platforms, you have
-to modify the Dockerfile to incorporate the MQ client from your own existing
+The automatic installation of the MQ client code only works for platforms where the Redistributable Client package is
+available. For other platforms, you have to modify the Dockerfile to incorporate the MQ client from your own existing
 images.
 
 ## More information
-Comments in the programs explain what they are doing. For more detailed information about the
-MQ API, the functions, structures, and constants, see the
-[MQ Knowledge Center](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.ref.dev.doc/q089590_.htm).
+Comments in the programs explain what they are doing. For more detailed information about the MQ API, the functions,
+structures, and constants, see the [MQ Documentation](https://www.ibm.com/docs/en/ibm-mq/latest).
 
-You can also find general MQ application development advice [here](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_latest/com.ibm.mq.dev.doc/q022830_.htm).
-Information about development for procedural programming languages such as C in that
-documentation is most relevant for the interface exported by this Go package.
+You can also find general MQ application development advice
+[here](https://www.ibm.com/docs/en/ibm-mq/latest?topic=mq-developing-applications). Information about development for
+procedural programming languages such as C in that documentation is most relevant for the interface exported by this
+package.

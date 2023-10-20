@@ -17,6 +17,7 @@ doc/
 tests.untracked/
 samples.untracked/
 defects/
+issues/
 redist/
 archive/
 redist.full/
@@ -29,3 +30,4 @@ samples/mykey.*
  
 ibmmq*tar.gz
 
+t
