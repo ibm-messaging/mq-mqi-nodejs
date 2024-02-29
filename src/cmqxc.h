@@ -13,13 +13,13 @@
  /*  <copyright                                                  */
  /*  notice="lm-source-program"                                  */
  /*  pids="5724-H72"                                             */
- /*  years="1993,2023"                                           */
+ /*  years="1993,2024"                                           */
  /*  crc="2042140514" >                                          */
  /*  Licensed Materials - Property of IBM                        */
  /*                                                              */
  /*  5724-H72                                                    */
  /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2023 All Rights Reserved.     */
+ /*  (C) Copyright IBM Corp. 1993, 2024 All Rights Reserved.     */
  /*                                                              */
  /*  US Government Users Restricted Rights - Use, duplication or */
  /*  disclosure restricted by GSA ADP Schedule Contract with     */
@@ -38,12 +38,12 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  9/27/23 11:53 AM                              */
- /* Build Level:   p934-L230927                                  */
+ /* Generated on:  2/1/24 12:04 PM                               */
+ /* Build Level:   p935-L240201                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p934-L230927 su=_4-aYmF0ZEe6zC4r8n5F4rg       */
+ /* @(#) MQMBID sn=p935-L240201 su=_TSUFq8DwEe6a1qdb8O1Dfw       */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/

@@ -36,6 +36,7 @@ Allow use of a userid/password for authentication. There are no default values f
 * amqsinq  : Demonstrate how to inquire about object attributes
 * amqsset  : Demonstrate how to set attributes of an MQ object using the MQSET verb
 * amqsdlh  : Demonstrate how to set and parse the Dead Letter Header on messages
+* amqsjwt  : Demonstrate how to obtain and use a JWT token for authentication
 
 
 ## Running the programs

@@ -681,7 +681,7 @@ declare module "ibmmq" {
    */
   function Ctl(
     jsQueueManager: MQQueueManager,
-    operation:  number, 
+    operation:  number,
     cb?: (err: MQError | null) => void
   ): void;
 
@@ -1059,25 +1059,18 @@ declare module "ibmmq" {
   function Lookup(range: string, val: number): string | null;
 
   /**
-   * @property {number} getLoopPollTimeMs - Milliseconds between each full poll cycle.
-   * Default is 10000 (10 seconds)
-   * @property {number} getLoopDelayTimeMs - Milliseconds to delay after a partial poll cycle.
-   * Default is 250 (1/4 second)
-   * @property {number} maxConsecutiveGets - How many messages to get from a queue before trying a different queue.
-   * Default is 100
-   * @property {boolean} syncMQICompat - Make the MQI verbs all use the Synchronous model (the
-   * original style for this package).
-   * Default is false
-   * @property {boolean} debugLog - Turn on debug logging dynamically.
-   * Default is false
+   * The TuningParameters options used to override some of the default
+   * async and logging behaviours.
    */
   interface TuningParameters {
-    getLoopPollTimeMs?: number;
-    getLoopDelayTimeMs?: number;
+
     maxConsecutiveGets?: number;
-    syncMQICompat?: boolean;
+    getLoopDelayTimeMs?: number;
+    callbackStrategy?: number;
+    useCtl?: boolean;
     debugLongCalls?: boolean;
     debugLog?: boolean;
+    traceLog?: boolean;
   }
 
   /**

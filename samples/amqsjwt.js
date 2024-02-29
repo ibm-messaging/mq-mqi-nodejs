@@ -39,25 +39,22 @@ If an error occurs, the error is reported.
 const mq = require("ibmmq");
 const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
-// Import the https package
+// Import the https package for connection to the Token Server
 const https = require("https");
 const querystring = require("querystring");
 
 // Options from the command line parameters with defaults set here
 const cf = {
   qMgrName:       "QM1",
-	connectionName: "localhost(1414)",
-	channel       : "SYSTEM.DEF.SVRCONN",
-	tokenHost     : "localhost",
+  connectionName: "localhost(1414)",
+  channel       : "SYSTEM.DEF.SVRCONN",
+  tokenHost     : "localhost",
   tokenPort     : 8443,
-	tokenUserName : "jwtuser",
-	tokenPassword : "passw0rd",
-	tokenClientId : "jwtcid",
-	tokenRealm    : "mq",
+  tokenUserName : "jwtuser",
+  tokenPassword : "passw0rd",
+  tokenClientId : "jwtcid",
+  tokenRealm    : "mq",
 };
-
-let token = null;
-
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
@@ -78,24 +75,24 @@ function sleep(ms) {
 function printSyntax() {
   const usage =
 `Usage for amqsjwt:
-  -host string
-   	address (default "localhost")
-  -port string
-      portnumber (default 8443)
   -channel string
-    	Channel Name (default "SYSTEM.DEF.SVRCONN")
+        MQ Channel Name (default "SYSTEM.DEF.SVRCONN")
   -clientId string
-    	ClientId (default "jwtcid")
+        ClientId (default "jwtcid")
   -connection string
-    	Connection Name (default "localhost(1414)")
+        MQ Connection Name (default "localhost(1414)")
+  -host string
+      hostname for Token Server (default "localhost")
+  -port string
+      portnumber for Token Server (default 8443)      
   -m string
-    	Queue Manager (default "QM1")
+        Queue Manager (default "QM1")
   -password string
-    	Password (default "passw0rd")
+        Password (default "passw0rd")
   -realm string
-    	Realm (default "mq")
+        Realm (default "mq")
   -user string
-    	UserName (default "jwtuser")
+        UserName (default "jwtuser")
 `;
   console.log(usage);
   process.exit(1);
@@ -103,6 +100,8 @@ function printSyntax() {
 
 // Parse the argument list. Don't try anything too fancy.
 function parseArgs() {
+  try {
+  // Skip "node amqsjwt" argv from the start of the line
   for (let i=2;i<process.argv.length;i++) {
     switch (process.argv[i]) {
     case "-m":
@@ -127,38 +126,49 @@ function parseArgs() {
       cf.tokenClientId = process.argv[++i];
       break;
     case "-host":
-        cf.tokenHost = process.argv[++i];
-        break;
+      cf.tokenHost = process.argv[++i];
+      break;
     case "-port":
-        cf.tokenPort = process.argv[++i];
-        break;
+      cf.tokenPort = process.argv[++i];
+      break;
     default:
       console.error("Unrecognised parameter: ",process.argv[i]);
       printSyntax();
     }
   }
+  } catch (e) {
+    printSyntax();
+  }
 }
 
-/* The core of the sample. It will call the Token Server with an HTTPS POST
- * and then the callback function does the MQCONN using the returned token
+/* The core of the sample. It will call the Token Server with an HTTPS POST.
+ * Then the passed callback function does the MQCONN using the returned token
  */
-function obtainToken(cb) {
-	const formData = querystring.stringify({
-		username:   cf.tokenUserName,
-		password:   cf.tokenPassword,
-		client_id:  cf.tokenClientId,
-		grant_type: "password",
-	});
+function obtainToken(connectCb) {
+  /*
+   * Build the string that is passed as form data to the server
+   */
+  const formData = querystring.stringify({
+                username:   cf.tokenUserName,
+                password:   cf.tokenPassword,
+                client_id:  cf.tokenClientId,
+                grant_type: "password",
+  });
 
   /*
-	 * NOTE: The use of "rejectUnauthorized" is not a good idea for production, but it means
+   * NOTE 1: The use of "rejectUnauthorized" is not a good idea for production, but it means
    * we don't need to set up a truststore for the server's certificate. We will simply trust
    * it - useful if it's a development-level server with a self-signed cert.
-	 */
+   * NOTE 2: If you do choose to set up a truststore/keystore for the connection to the token server,
+   * then they must be in a suitable format for OpenSSL (such as pem, p12), not the kdb format usually 
+   * used for an MQ connection.
+   */
   const options = {
     hostname: cf.tokenHost,
     port: cf.tokenPort,
     rejectUnauthorized: false,
+    // The "path" element works for the Token Server on my machine; other servers might
+    // have a slightly different structure.
     path: "/realms/" + cf.tokenRealm + "/protocol/openid-connect/token",
     method: "POST",
     headers: {
@@ -167,7 +177,9 @@ function obtainToken(cb) {
     },
   };
 
-  // Make the call to the server and build up the response
+  /*
+   * Make the call to the server and build up the response
+   */
   const req = https.request(options, function (res) {
     let result = "";
 
@@ -176,11 +188,13 @@ function obtainToken(cb) {
     });
 
     res.on("end", function () {
+      // The returned JSON has a number of fields; "access_token" is the one
+      // we care about.
       const j = JSON.parse(result);
-      token = j.access_token;
+
       // We've now successfully completed the POST call so can
-      // call the MQCONN piece to check that the token really worked
-      cb();
+      // call MQCONNX to check that the token really worked
+      connectCb(j.access_token);
     });
 
     res.on("error", function (err) {
@@ -201,12 +215,13 @@ function obtainToken(cb) {
 /*
  * This function is driven as a callback once the token has been retrieved from the server
  */
-function connect() {
-  console.log("Token is %s",token);
+function connect(token) {
 
   if (token == null) {
     cleanup("Could not obtain token");
   }
+
+  console.log("Using token: %s",token);
 
   // Create default MQCNO structure
   const cno = new mq.MQCNO();
@@ -234,11 +249,11 @@ function connect() {
     if (err) {
       console.log(formatErr(err));
     } else {
-      console.log("MQCONN to %s successful ", cf.qMgrName);
+      console.log("MQCONN to QM %s successful ", cf.qMgrName);
       // Sleep for a few seconds - bad in a real program but good for this one
       sleep(3 *1000).then(() => {
         mq.Disc(conn, function (err2) {
-          if (err) {
+          if (err2) {
             console.log(formatErr(err2));
           } else {
             console.log("MQDISC successful");
@@ -249,8 +264,9 @@ function connect() {
   });
 }
 
-
-// The main program starts here.
-console.log("Sample AMQJWT.JS start");
+/*
+ *  The main program starts here.
+ */
+console.log("Sample AMQSJWT.JS start");
 parseArgs();
 obtainToken(connect);

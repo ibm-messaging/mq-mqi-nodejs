@@ -241,6 +241,13 @@ also a 9.2.0.1 fixpack. If you want to pick that up instead of the base 9.2.0.0 
 point at those instead by default. If you want to select a CSU level (very similar to a fixpack, but with a more limited
 scope) then the same environment variable can be used.
 
+### Setting environment variables for the installation process
+
+The MQIJS_* environment variables used during  `npm install` can also be set in an *.npmrc* file.  These are more commonly
+written in lowercase, so `export MQIJS_VRM=9.3.4` would become `mqijs_vrm=9.3.4` in the NPM configuration file. But 
+the package does attempt to reference a variety of case options. The real environment variable takes precedence over the
+*.npmrc* setting.
+
 ### Downloading behind a proxy
 
 Downloading the Redistributable C Client libraries behind a proxy is supported. Use the environment variables
@@ -273,16 +280,19 @@ For example
 
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
+The MacOS client is also now available via the `brew` command. See [here](https://github.com/ibm-messaging/homebrew-ibmmq) 
+for instructions on configuring your system for downloads using this mechanism.
+
 #### Errors and warnings during build
 If you get an error message such as "gyp: No Xcode or CLT version detected" while running `npm install` you may need to
 install the developer tools. Usually the command `xcode-select --install` will deal with this.
 
 ### Other platforms
 For other MQ-supported platforms and environments, the C runtime can be installed from your MQ installation media, or
-from the full Client downloads at [this site](http://www-01.ibm.com/support/docview.wss?uid=swg24042176).
+from the full Client downloads at [this site](https://www.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&platform=All&function=fixid&fixids=*-IBM-MQC-*).
 
 The Redistributable Client packages for Windows and Linux x64 are also available directly from
-[this site](http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
+[this site](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
 
 This package cannot currently run on z/OS as the prerequisite MQ libraries are not available there in the same way as
 other platforms. However, it might be possible in future to add that platform as there are no dependencies on 3rd party

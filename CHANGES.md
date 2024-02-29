@@ -1,6 +1,12 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 28 Feb 2024: v2.0.3
+* Update for MQ 9.3.5
+* Add sample showing JWT Token Authentication
+* Deal with event callbacks from Client library (#173)
+* Allow env vars for postinstall to be read from .npmrc (#176)
+
 ## 19 Oct 2023: v2.0.2
 * Update for MQ 9.3.4
   - Support for JWT Token authentication

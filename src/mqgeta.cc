@@ -105,6 +105,8 @@ public:
 static map<string, ObjContext *> objContextMap;
 static map<MQLONG, ConnContext *> connContextMap;
 
+#define HOBJ_WILDCARD (-2)
+
 /* This is what gets passed from the callback registered with MQ to the PreJsCB function. */
 class ReturnedData {
 public:
@@ -112,6 +114,7 @@ public:
   MQHOBJ hObj;
   MQLONG mqcc;
   MQLONG mqrc;
+  MQLONG callType;
   unsigned char *buf;
   int bodyLen;
 };
@@ -173,6 +176,7 @@ passed back into a single buffer. This function has to match with mqnCB below, a
 so that the buffer is parsed correctly (GMO, MD, body).
 */
 void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
+  bool foundCb = false;
 
   debugf(LOG_TRACE, "In PreJsCB");
 
@@ -193,10 +197,43 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
         o.Set("jsHObj", objContext->jsHObjRef.Value());
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
-      } else {
+        o.Set("jsCallType", Number::New(env, data->callType));
+        foundCb = true;
+      } else if (data->callType == MQCBCT_EVENT_CALL) {
+        // We do not register for EVENT callbacks, but the MQ Client libraries
+        // create an EVENT_CALL anyway. This is confusing but accurate. 
+        // So if we receive one, we will fake up a response to send back to the 
+        // application by calling one of the registered listeners for the hConn.
+        // 
+        // See Issue #173.
+        
+        // We search the map and try to find the first callback for this hConn.
+        key = makeKey(data->hConn, HOBJ_WILDCARD);
+        for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
+          string mapKey = it->first;
+          if (mapKey.find(key, 0) == 0) { // startswith()
+            ObjContext *objContext = objContextMap[mapKey];
+            Function f = objContext->appCBRef.Value().As<Function>();
+
+            o = objContext->result.Value();
+            o.Set("appCB", f);
+            o.Set("jsHObj", objContext->jsHObjRef.Value());
+            o.Set("jsCc", Number::New(env, data->mqcc));
+            o.Set("jsRc", Number::New(env, data->mqrc));
+            o.Set("jsCallType", Number::New(env, data->callType));
+            debugf(LOG_DEBUG, "setting up the callback for event for key %s",mapKey.c_str());
+            foundCb = true;
+            break;
+          }
+        }  
+      } 
+      
+      if (!foundCb) {
         o = Object::New(env);
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
+        o.Set("jsCallType", Number::New(env, data->callType));
+        debugf(LOG_DEBUG, "No callback object found for key %s",key.c_str());
       }
 
       // And now we can call a JS function - this is actually a "proxy" in
@@ -251,6 +288,7 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   retData->hObj = pContext->Hobj;
   retData->mqrc = pContext->Reason;
   retData->mqcc = pContext->CompCode;
+  retData->callType = pContext->CallType;
 
   retData->buf = NULL;
   retData->bodyLen = 0;
@@ -606,15 +644,14 @@ void SetTuningParameters(const CallbackInfo &info) {
  * queue manager requires that the whole async environmetn is not active.
  */
 
-#define HOBJ_WILDCARD (-2)
 std::string makeKey(MQHCONN hConn, MQHOBJ hObj) {
   string s;
   if (hObj == HOBJ_WILDCARD) { // special case for
     s = std::to_string(hConn) + "/";
   } else {
     s = std::to_string(hConn) + "/" + std::to_string(hObj);
-    // debugf(LOG_DEBUG, "MakeKey: %s mapCount: %d", s.c_str(), objContextMap.count(s));
   }
+  debugf(LOG_DEBUG, "MakeKey: %s mapCount: %d", s.c_str(), objContextMap.count(s));
   return s;
 }
 

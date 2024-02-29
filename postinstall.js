@@ -17,16 +17,39 @@ const redistDir=baseDir+"/redist";
 const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.3.4";
+let vrm="9.3.5";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
+
+// Try a few ways to pick up environment variables
+function pEnv(s) {
+  var e = process.env[s];
+  var v;
+  if (!e) {
+    v = 'npm_config_' + s;
+    e = process.env[v];  
+  }
+  if (!e) {
+    v = 'npm_config_' + s.toLowerCase();
+    e = process.env[v];  
+  }
+  if (!e) {
+    v = 'NPM_CONFIG_' + s;
+    e = process.env[v];  
+  }
+  if (!e) {
+    v = v.toUpperCase();
+    e = process.env[v];  
+  }
+  return e;
+}
 
 // Allow overriding the VRM - but you need to be careful as this package
 // may depend on MQI features in the listed version. Must be given in the
 // same format eg "1.2.3". Note that IBM keeps a limited set of versions for
 // download - once a version of MQ is no longer supported, that level of
 // Redistributable Client package may be removed from public sites.
-const vrmenv=process.env.MQIJS_VRM;
+const vrmenv=pEnv('MQIJS_VRM');
 if (vrmenv != null) {
   vrm=vrmenv;
 }
@@ -40,7 +63,7 @@ let vrmf=vrm + "." + defaultFp;
 
 // Allow overriding the fixpack for both LTS and CD versions to permit
 // picking up a CSU.
-const fixpack=process.env.MQIJS_FIXPACK;
+const fixpack=pEnv('MQIJS_FIXPACK');
 if (fixpack != null ) {
   vrmf=vrm+"."+fixpack;
 }
@@ -58,8 +81,8 @@ const newBaseDir="redist";
 
 let currentPlatform=process.platform;
 // currentPlatform='darwin'; // for forcing a platform test
-if (process.env.MQIJS_PLATFORM != null) {
-  currentPlatform=process.env.MQIJS_PLATFORM; // Another way to override
+if (pEnv('MQIJS_PLATFORM') != null) {
+  currentPlatform=pEnv('MQIJS_PLATFORM'); // Another way to override
 }
 
 // Some functions used at the end of the operation
@@ -67,7 +90,7 @@ function cleanup(rc) {
   // Always run to try to delete the downloaded zip/tar file
   try {
     // Allow it to be overridden for debug purposes
-    const doNotRemove = process.env.MQIJS_NOREMOVE_DOWNLOAD;
+    const doNotRemove = pEnv('MQIJS_NOREMOVE_DOWNLOAD');
     if (doNotRemove == null) {
       console.log("Removing " + file);
       fs.unlinkSync(file);
@@ -153,7 +176,7 @@ function removeUnthreaded(d) {
 // The genmqpkg script is better maintained than having the unwanted directories/files
 // explicitly named.
 function removeUnneededWithGenMQPkg(fullNewBaseDir) {
-  const doNotRemove = process.env.MQIJS_NOREMOVE;
+  const doNotRemove = pEnv('MQIJS_NOREMOVE');
   if (doNotRemove != null) {
     console.log("Environment variable set to keep all files in client package");
   } else {
@@ -167,7 +190,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
     let debugGenObj = {};
     let debugGenOpt="";
 
-    if (process.env.MQIJS_TRACE_GENMQPKG != null) {
+    if (pEnv('MQIJS_TRACE_GENMQPKG') != null) {
       debugGenObj = { stdio:"inherit" };
       debugGenOpt="-v";
     }
@@ -184,7 +207,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
 // should help shrink any runtime container a bit
 function removeUnneeded() {
   let d;
-  const doNotRemove = process.env.MQIJS_NOREMOVE;
+  const doNotRemove = pEnv('MQIJS_NOREMOVE');
   if (doNotRemove != null) {
     console.log("Environment variable set to keep all files in client package");
   } else {
@@ -230,7 +253,7 @@ function removeUnneeded() {
 // the Redist client package. I did consider doing this automatically by
 // trying to locate the libraries in the "usual" places, but decided it was
 // better to be explicit about the choice.
-const doit = process.env.MQIJS_NOREDIST;
+const doit = pEnv('MQIJS_NOREDIST');
 if (doit != null) {
   console.log("Environment variable set to not install " + title);
   process.exit(0);
@@ -289,8 +312,8 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 let url = protocol + host + "/" + dir + "/" + file;
-const useLocalUrl = process.env.MQIJS_LOCAL_URL;
-const useLocalServer = process.env.MQIJS_LOCAL_SERVER;
+const useLocalUrl = pEnv('MQIJS_LOCAL_URL');
+const useLocalServer = pEnv('MQIJS_LOCAL_SERVER');
 
 if (useLocalUrl != null) {
   url = useLocalUrl + "/" + file;
