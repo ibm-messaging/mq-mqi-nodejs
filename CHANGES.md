@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 15 Mar 2024: v2.0.4
+* Fixes for unexpected MQRC_HCONN_ASYNC_ACTIVE (#179)
+* Code cleanup from linter
+
 ## 28 Feb 2024: v2.0.3
 * Update for MQ 9.3.5
 * Add sample showing JWT Token Authentication

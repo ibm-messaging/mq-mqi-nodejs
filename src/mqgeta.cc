@@ -48,7 +48,7 @@
 
   Callback Tuning Options:
   -----------------------
-  There are two high-level tuning parameter options to affect how callbacks are managed. 
+  There are two high-level tuning parameter options to affect how callbacks are managed.
 
   The first is callbackStrategy.
 
@@ -70,11 +70,11 @@
 
   The second tuningParameter is a boolean called "useCtl".
 
-  For most applications, the default value (false) of this parameter will be fine. But if you are setting up a number of 
+  For most applications, the default value (false) of this parameter will be fine. But if you are setting up a number of
   consumer callbacks, you might not want to kick any of them off until all the callbacks are in place. With the useCtl value
   set to true, applications can call ibmmq.Get() many times before any messages will be delivered. Once all the callbacks are
-  ready, then use Ctl(MQOP_START) to begin processing of inbound messages. This new Ctl() verb is the analogue of MQCTL. It 
-  supports the 3 relevant operations - MQOP_START, MQOP_SUSPEND and MQOP_RESUME. Stopping of consumers is handled during 
+  ready, then use Ctl(MQOP_START) to begin processing of inbound messages. This new Ctl() verb is the analogue of MQCTL. It
+  supports the 3 relevant operations - MQOP_START, MQOP_SUSPEND and MQOP_RESUME. Stopping of consumers is handled during
   application exit or when all object handles are closed.
 
   Also note that the MQ thread management has a separate callback thread for each hConn, hence the need to possible handle both an hConn and a process-wide
@@ -201,12 +201,12 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
         foundCb = true;
       } else if (data->callType == MQCBCT_EVENT_CALL) {
         // We do not register for EVENT callbacks, but the MQ Client libraries
-        // create an EVENT_CALL anyway. This is confusing but accurate. 
-        // So if we receive one, we will fake up a response to send back to the 
+        // create an EVENT_CALL anyway. This is confusing but accurate.
+        // So if we receive one, we will fake up a response to send back to the
         // application by calling one of the registered listeners for the hConn.
-        // 
+        //
         // See Issue #173.
-        
+
         // We search the map and try to find the first callback for this hConn.
         key = makeKey(data->hConn, HOBJ_WILDCARD);
         for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
@@ -225,9 +225,9 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
             foundCb = true;
             break;
           }
-        }  
-      } 
-      
+        }
+      }
+
       if (!foundCb) {
         o = Object::New(env);
         o.Set("jsCc", Number::New(env, data->mqcc));
@@ -260,7 +260,7 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
   if (callbackStrategy == CB_SYNCED) {
     MQLONG CC, RC;
     MQCTLO mqctlo = {MQCTLO_DEFAULT};
- 
+
     _MQCTL(data->hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
     debugf(LOG_DEBUG, "PreJsCB - MQCTL RESUME hConn=%d CC=%d RC=%d", data->hConn, CC, RC);
   }
@@ -341,9 +341,9 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       break;
     default:
       // Pass it through
-      break;  
+      break;
     }
- 
+
     break;
 
   default:
@@ -394,10 +394,10 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       }
     }
     break;
-  
+
   default:
     debugf(LOG_DEBUG,"mqnCB - unknown callback strategy!");
-    break;    
+    break;
   }
 
   bool queued = false;
@@ -407,7 +407,7 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
 
   // Now add the user's callback (actually our NodeJS proxy function) to the queue to be executed
   //
-  // Try it a few times - when using CB_SYNCED, this should always work. But the readahead strategy might 
+  // Try it a few times - when using CB_SYNCED, this should always work. But the readahead strategy might
   // give us a long queue - while again it should always work as the queue is defined as unlimited, we may still
   // want to careful.
   while (!queued && retries < 10) {
@@ -540,7 +540,7 @@ Object GETASYNC(const CallbackInfo &info) {
 
   _MQCB(hConn, MQOP_REGISTER, &mqcbd, hObj, pmqmd, pmqgmo, &CC, &RC);
   debugf(LOG_DEBUG, "GETASYNC - MQCB    CC:%d RC %d", CC, RC);
-  
+
   if (!useCtl) {
     MQLONG tmpCC,tmpRC;
     _MQCTL(hConn, alreadyActive ? MQOP_RESUME : MQOP_START, &mqctlo, &tmpCC, &tmpRC);
@@ -666,7 +666,7 @@ void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
   // Always clean up the maps, even if the MQCB fails - it is most likely
   // because the hObj has already been removed.
   string key = makeKey(hConn, hObj);
-  processMtx.lock(); // Locking is probably unnecessary, but just in case ...
+  //processMtx.lock(); // Locking is probably unnecessary
   if (objContextMap.count(key) == 1) {
     ObjContext *objContext = objContextMap[key];
     delete (objContext);
@@ -683,7 +683,7 @@ void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
     _MQCTL(hConn, MQOP_RESUME, &mqctlo, pCC, pRC);
     debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(2) CC:%d RC %d", *pCC, *pRC);
   }
-  processMtx.unlock();
+  //processMtx.unlock();
 }
 
 void resumeConnectionContext(MQHCONN hConn) {

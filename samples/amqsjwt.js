@@ -84,7 +84,7 @@ function printSyntax() {
   -host string
       hostname for Token Server (default "localhost")
   -port string
-      portnumber for Token Server (default 8443)      
+      portnumber for Token Server (default 8443)
   -m string
         Queue Manager (default "QM1")
   -password string
@@ -160,7 +160,7 @@ function obtainToken(connectCb) {
    * we don't need to set up a truststore for the server's certificate. We will simply trust
    * it - useful if it's a development-level server with a self-signed cert.
    * NOTE 2: If you do choose to set up a truststore/keystore for the connection to the token server,
-   * then they must be in a suitable format for OpenSSL (such as pem, p12), not the kdb format usually 
+   * then they must be in a suitable format for OpenSSL (such as pem, p12), not the kdb format usually
    * used for an MQ connection.
    */
   const options = {
@@ -180,14 +180,14 @@ function obtainToken(connectCb) {
   /*
    * Make the call to the server and build up the response
    */
-  const req = https.request(options, function (res) {
+  const req = https.request(options,  (res) => {
     let result = "";
 
-    res.on("data", function (chunk) {
+    res.on("data", (chunk) => {
       result += chunk;
     });
 
-    res.on("end", function () {
+    res.on("end", () =>{
       // The returned JSON has a number of fields; "access_token" is the one
       // we care about.
       const j = JSON.parse(result);
@@ -197,12 +197,12 @@ function obtainToken(connectCb) {
       connectCb(j.access_token);
     });
 
-    res.on("error", function (err) {
+    res.on("error", (err) => {
       cleanup(err);
     });
   });
 
-  req.on("error", function (err) {
+  req.on("error", (err) => {
     cleanup(err);
   });
 
@@ -245,14 +245,14 @@ function connect(token) {
   cno.ClientConn = cd;
 
   // Now we can try to connect
-  mq.Connx(cf.qMgrName, cno, function (err,conn) {
+  mq.Connx(cf.qMgrName, cno, (err,conn) => {
     if (err) {
       console.log(formatErr(err));
     } else {
       console.log("MQCONN to QM %s successful ", cf.qMgrName);
       // Sleep for a few seconds - bad in a real program but good for this one
       sleep(3 *1000).then(() => {
-        mq.Disc(conn, function (err2) {
+        mq.Disc(conn, (err2) => {
           if (err2) {
             console.log(formatErr(err2));
           } else {

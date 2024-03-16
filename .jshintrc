@@ -2,6 +2,7 @@
   "globals" : {
     "require":false
   },
+    "laxcomma": true,
     "node": true,
     "esversion": 11,
     "sub": true

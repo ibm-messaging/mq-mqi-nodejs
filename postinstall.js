@@ -14,7 +14,7 @@ const protocol = "https://";
 const host="public.dhe.ibm.com";
 const baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
 const redistDir=baseDir+"/redist";
-const macDir=baseDir+"/mactoolkit";
+// const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
 let vrm="9.3.5";
@@ -23,23 +23,23 @@ const defaultFp="0";
 
 // Try a few ways to pick up environment variables
 function pEnv(s) {
-  var e = process.env[s];
-  var v;
+  let e = process.env[s];
+  let v;
   if (!e) {
-    v = 'npm_config_' + s;
-    e = process.env[v];  
+    v = "npm_config_" + s;
+    e = process.env[v];
   }
   if (!e) {
-    v = 'npm_config_' + s.toLowerCase();
-    e = process.env[v];  
+    v = "npm_config_" + s.toLowerCase();
+    e = process.env[v];
   }
   if (!e) {
-    v = 'NPM_CONFIG_' + s;
-    e = process.env[v];  
+    v = "NPM_CONFIG_" + s;
+    e = process.env[v];
   }
   if (!e) {
     v = v.toUpperCase();
-    e = process.env[v];  
+    e = process.env[v];
   }
   return e;
 }
@@ -49,7 +49,7 @@ function pEnv(s) {
 // same format eg "1.2.3". Note that IBM keeps a limited set of versions for
 // download - once a version of MQ is no longer supported, that level of
 // Redistributable Client package may be removed from public sites.
-const vrmenv=pEnv('MQIJS_VRM');
+const vrmenv=pEnv("MQIJS_VRM");
 if (vrmenv != null) {
   vrm=vrmenv;
 }
@@ -63,7 +63,7 @@ let vrmf=vrm + "." + defaultFp;
 
 // Allow overriding the fixpack for both LTS and CD versions to permit
 // picking up a CSU.
-const fixpack=pEnv('MQIJS_FIXPACK');
+const fixpack=pEnv("MQIJS_FIXPACK");
 if (fixpack != null ) {
   vrmf=vrm+"."+fixpack;
 }
@@ -81,8 +81,8 @@ const newBaseDir="redist";
 
 let currentPlatform=process.platform;
 // currentPlatform='darwin'; // for forcing a platform test
-if (pEnv('MQIJS_PLATFORM') != null) {
-  currentPlatform=pEnv('MQIJS_PLATFORM'); // Another way to override
+if (pEnv("MQIJS_PLATFORM") != null) {
+  currentPlatform=pEnv("MQIJS_PLATFORM"); // Another way to override
 }
 
 // Some functions used at the end of the operation
@@ -90,7 +90,7 @@ function cleanup(rc) {
   // Always run to try to delete the downloaded zip/tar file
   try {
     // Allow it to be overridden for debug purposes
-    const doNotRemove = pEnv('MQIJS_NOREMOVE_DOWNLOAD');
+    const doNotRemove = pEnv("MQIJS_NOREMOVE_DOWNLOAD");
     if (doNotRemove == null) {
       console.log("Removing " + file);
       fs.unlinkSync(file);
@@ -176,7 +176,7 @@ function removeUnthreaded(d) {
 // The genmqpkg script is better maintained than having the unwanted directories/files
 // explicitly named.
 function removeUnneededWithGenMQPkg(fullNewBaseDir) {
-  const doNotRemove = pEnv('MQIJS_NOREMOVE');
+  const doNotRemove = pEnv("MQIJS_NOREMOVE");
   if (doNotRemove != null) {
     console.log("Environment variable set to keep all files in client package");
   } else {
@@ -190,7 +190,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
     let debugGenObj = {};
     let debugGenOpt="";
 
-    if (pEnv('MQIJS_TRACE_GENMQPKG') != null) {
+    if (pEnv("MQIJS_TRACE_GENMQPKG") != null) {
       debugGenObj = { stdio:"inherit" };
       debugGenOpt="-v";
     }
@@ -207,7 +207,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
 // should help shrink any runtime container a bit
 function removeUnneeded() {
   let d;
-  const doNotRemove = pEnv('MQIJS_NOREMOVE');
+  const doNotRemove = pEnv("MQIJS_NOREMOVE");
   if (doNotRemove != null) {
     console.log("Environment variable set to keep all files in client package");
   } else {
@@ -253,7 +253,7 @@ function removeUnneeded() {
 // the Redist client package. I did consider doing this automatically by
 // trying to locate the libraries in the "usual" places, but decided it was
 // better to be explicit about the choice.
-const doit = pEnv('MQIJS_NOREDIST');
+const doit = pEnv("MQIJS_NOREDIST");
 if (doit != null) {
   console.log("Environment variable set to not install " + title);
   process.exit(0);
@@ -294,6 +294,8 @@ if (currentPlatform === "win32") {
 //  dir=macDir
 //  title="IBM MacOS Toolkit for Developers"
 //  file=vrmf + "-IBM-MQ-DevToolkit-MacOS" + ".pkg"
+//
+//  Note that the MacOS toolkit is now available via homebrew
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");
@@ -312,8 +314,8 @@ console.log("Downloading " + title + " runtime libraries - version " + vrmf);
 
 // Define the file to be downloaded (it will be deleted later, after unpacking)
 let url = protocol + host + "/" + dir + "/" + file;
-const useLocalUrl = pEnv('MQIJS_LOCAL_URL');
-const useLocalServer = pEnv('MQIJS_LOCAL_SERVER');
+const useLocalUrl = pEnv("MQIJS_LOCAL_URL");
+const useLocalServer = pEnv("MQIJS_LOCAL_SERVER");
 
 if (useLocalUrl != null) {
   url = useLocalUrl + "/" + file;
