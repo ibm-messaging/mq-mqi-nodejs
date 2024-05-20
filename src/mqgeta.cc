@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2023
+  Copyright (c) IBM Corporation 2023, 2024
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -100,6 +100,8 @@ class ConnContext {
 public:
   mutex mtx;
   int queuedCount = 0;
+  bool cbDefined = false;
+  bool cbActive = false;
 };
 
 static map<string, ObjContext *> objContextMap;
@@ -168,6 +170,35 @@ void BUCFinalize(Env env, unsigned char *p) {
   if (p) {
     mqnFree(p);
   }
+}
+
+static bool isCBActive(MQHCONN hConn) {
+  bool rc = false;
+  if (connContextMap.count(hConn) == 1) {
+      ConnContext *connContext = connContextMap[hConn];
+      rc = connContext->cbActive;
+  }
+  debugf(LOG_DEBUG,"isCBActive  hConn:%d rc:%s",hConn,rc?"true":"false");
+  return rc;
+}
+
+static bool isCBDefined(MQHCONN hConn) {
+  bool rc = false;
+  if (connContextMap.count(hConn) == 1) {
+      ConnContext *connContext = connContextMap[hConn];
+      rc = connContext->cbDefined;
+  }
+  debugf(LOG_DEBUG,"isCBDefined  hConn:%d rc:%s",hConn,rc?"true":"false");
+  return rc;
+}
+
+static void setCBActive(MQHCONN hConn, bool b) {
+  if (connContextMap.count(hConn) == 1) {
+      ConnContext *connContext = connContextMap[hConn];
+      connContext->cbActive = b;
+  }
+  debugf(LOG_DEBUG,"setCBActive hConn:%d b:%s",hConn,b?"true":"false");
+  return;
 }
 
 /*
@@ -240,11 +271,13 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
       // the ibmmq layer that in turn calls the real application callback
       if (data->mqcc == MQCC_OK) {
         b = BUC::New(env, data->buf, MQGMO_LENGTH_4 + MQMD_LENGTH_2 + data->bodyLen, BUCFinalize);
+        debugf(LOG_DEBUG, "Calling the callback with buffer.");
         callback.Call({o, b});
         debugf(LOG_DEBUG, "Called the callback with buffer.");
         // Any cleanup can be done here - no need to free the Buffer contents here as
         // BUCFinalize does get called at regular intervals
       } else {
+        debugf(LOG_DEBUG, "Calling the callback with no data.");
         callback.Call({o});
         debugf(LOG_DEBUG, "Called the callback with no data.");
       }
@@ -258,11 +291,8 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
   // Can now resume reception of messages for this hConn
   if (callbackStrategy == CB_SYNCED) {
-    MQLONG CC, RC;
-    MQCTLO mqctlo = {MQCTLO_DEFAULT};
-
-    _MQCTL(data->hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
-    debugf(LOG_DEBUG, "PreJsCB - MQCTL RESUME hConn=%d CC=%d RC=%d", data->hConn, CC, RC);
+    Res(data->hConn);
+    debugf(LOG_DEBUG, "PreJsCB - MQCTL RESUME hConn=%d", data->hConn);
   }
 
   // We don't need the returnedData structure any more */
@@ -363,6 +393,7 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
 
       _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
       debugf(LOG_DEBUG, "mqnCB - MQCTL SUSPEND hConn=%d CC=%d RC=%d", hConn, CC, RC);
+      setCBActive(hConn,false);
     }
     break;
 
@@ -381,14 +412,10 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
         if (connContext->queuedCount++ > config.maxConsecutiveGets) {
           connContext->queuedCount = 0;
           debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d after %d messages: %dms", hConn, config.maxConsecutiveGets, config.getLoopDelayTimeMs);
-          MQLONG CC, RC;
-          MQCTLO mqctlo = {MQCTLO_DEFAULT};
 
-          _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
-          debugf(LOG_DEBUG, "mqnCB - MQCTL(1)    CC:%d RC %d", CC, RC);
+          Sus(hConn);
           this_thread::sleep_for(chrono::milliseconds(config.getLoopDelayTimeMs));
-          _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
-          debugf(LOG_DEBUG, "mqnCB - MQCTL(2)    CC:%d RC %d", CC, RC);
+          Res(hConn);
         }
         connContext->mtx.unlock();
       }
@@ -423,7 +450,7 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
       // Something else has gone wrong - consider it fatal
       std::string errmsg = "TypedThreadSafeNapi::Function.NonBlockingCall() failed with status ";
       std::string s = std::to_string(status);
-      Error::Fatal("mqmCB", (errmsg + s).c_str());
+      Error::Fatal("mqnCB", (errmsg + s).c_str());
     }
   }
 
@@ -519,7 +546,9 @@ Object GETASYNC(const CallbackInfo &info) {
   // just note the fact so that we can decide whether to do a start or resume in a moment
   // Add an hConn context map entry if there's not already one
   if (connContextMap.count(hConn) == 0) {
-    connContextMap[hConn] = new ConnContext;
+    ConnContext *connContext = new ConnContext;
+    connContextMap[hConn] = connContext;
+    connContext->cbDefined = true;
   }
 
   if (!useCtl) {
@@ -531,9 +560,11 @@ Object GETASYNC(const CallbackInfo &info) {
 
       if (RC == MQRC_NONE) {
         suspended = true;
+        setCBActive(hConn,false);
       } else if (RC == MQRC_OPERATION_NOT_ALLOWED) {
         alreadyActive = false;
         suspended = true;
+        setCBActive(hConn,false);
       }
     }
   }
@@ -545,6 +576,9 @@ Object GETASYNC(const CallbackInfo &info) {
     MQLONG tmpCC,tmpRC;
     _MQCTL(hConn, alreadyActive ? MQOP_RESUME : MQOP_START, &mqctlo, &tmpCC, &tmpRC);
     debugf(LOG_DEBUG, "GETASYNC - MQCTL(2)    CC:%d RC %d", tmpCC, tmpRC);
+    if (tmpCC == MQCC_OK) {
+      setCBActive(hConn,true);
+    }
   }
 
   result.Set("jsCc", Number::New(env, CC));
@@ -600,6 +634,13 @@ Object CTL(const CallbackInfo &info) {
   MQLONG RC = -1;
 
   _MQCTL(hConn, operation, &ctlo, &CC, &RC);
+  if (CC == MQCC_OK) {
+    if (operation == MQOP_RESUME || operation == MQOP_START) {
+        setCBActive(hConn,true);
+    } else if (operation == MQOP_SUSPEND || operation == MQOP_STOP) {
+        setCBActive(hConn,false);
+    }
+  }
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -614,6 +655,8 @@ Object CTL(const CallbackInfo &info) {
  */
 int maxConsecutiveGetsDefault = 1000;
 int getLoopDelayTimeMsDefault = 250;
+bool defaultAutoCtl = true;
+bool defaultUseCtl = true;
 #define VERB "SetTuningParameters"
 void SetTuningParameters(const CallbackInfo &info) {
   Env env = info.Env();
@@ -632,6 +675,9 @@ void SetTuningParameters(const CallbackInfo &info) {
   } else {
     callbackStrategy = CB_SYNCED;
   }
+  config.autoCtl = tuningParameters.Get("autoCtl").As<Boolean>();
+  config.useCtl = tuningParameters.Get("useCtl").As<Boolean>();
+
 }
 #undef VERB
 
@@ -657,10 +703,10 @@ std::string makeKey(MQHCONN hConn, MQHOBJ hObj) {
 
 // Get rid of the listener for this object, and remove it from any local context
 // Sometimes we don't need to
-void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, bool resume) {
+bool cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, bool resume) {
 
   MQCTLO mqctlo = {MQCTLO_DEFAULT};
-
+  bool toDelete = false;
   debugf(LOG_DEBUG, "cleanupObjectContext for key %d/%d resume=%b", hConn, hObj, resume);
 
   // Always clean up the maps, even if the MQCB fails - it is most likely
@@ -670,11 +716,18 @@ void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
   if (objContextMap.count(key) == 1) {
     ObjContext *objContext = objContextMap[key];
     delete (objContext);
-    objContextMap.erase(key);
+    if (resume) {
+      objContextMap.erase(key);
+    }
+    toDelete = true;
   }
 
   _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, pCC, pRC);
   debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(1) CC:%d RC %d", *pCC, *pRC);
+  if (*pCC == MQCC_OK) {
+    setCBActive(hConn,false);
+  }
+
 
   _MQCB(hConn, MQOP_DEREGISTER, NULL, hObj, NULL, NULL, pCC, pRC);
   debugf(LOG_DEBUG, "cleanupObjectContext - MQCB    CC:%d RC %d", *pCC, *pRC);
@@ -682,8 +735,13 @@ void cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
   if (resume) {
     _MQCTL(hConn, MQOP_RESUME, &mqctlo, pCC, pRC);
     debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(2) CC:%d RC %d", *pCC, *pRC);
+    if (*pCC == MQCC_OK) {
+      setCBActive(hConn,true);
+    }
   }
   //processMtx.unlock();
+
+  return toDelete;
 }
 
 void resumeConnectionContext(MQHCONN hConn) {
@@ -694,6 +752,9 @@ void resumeConnectionContext(MQHCONN hConn) {
   debugf(LOG_DEBUG, "Explicit resume Context");
 
   _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+  if (CC == MQCC_OK) {
+    setCBActive(hConn,true);
+  }
 }
 
 // Get rid of the async consumer for the connection - remove all object listeners.
@@ -703,18 +764,25 @@ void cleanupConnectionContext(MQHCONN hConn) {
 
   debugf(LOG_DEBUG, "cleanupConnectionContext for keys %d/*", hConn);
 
+  processMtx.lock(); /* Protect against attempts to MQDISC from two environments */
+
   // Don't need to call MQCB, just remove all object contexts for this hConn
   string key = makeKey(hConn, HOBJ_WILDCARD);
-  for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
+  for (auto it = objContextMap.begin(); it != objContextMap.end();) {
     string mapKey = it->first;
+
     if (mapKey.find(key, 0) == 0) { // startswith()
       size_t idx = mapKey.find("/", 0);
       if (idx != string::npos && idx < (mapKey.length() - 1)) {
         try {
           auto hObjStr = mapKey.substr(idx + 1); // step past the "/"
           auto hObj = stoi(hObjStr, nullptr);
-          // Ignore any problems removing the message listener
-          cleanupObjectContext(hConn, hObj, &CC, &RC, false);
+          // Ignore any problems removing the message listener.
+          if (cleanupObjectContext(hConn, hObj, &CC, &RC, false)) {
+            it = objContextMap.erase(it); // Can't erase items in the iteration itself
+          } else {
+            it++;
+          }
         } catch (exception &e) {
           // Bad value - catch the exception just in case there's something odd in the map key
           debugf(LOG_DEBUG,"Caught exception - processing %s in stio: %s ",mapKey.c_str(),e.what());
@@ -723,7 +791,6 @@ void cleanupConnectionContext(MQHCONN hConn) {
     }
   }
 
-  processMtx.lock(); /* Protect against attempts to MQDISC from two environments */
   if (connContextMap.count(hConn) == 1) {
     ConnContext *connContext = connContextMap[hConn];
     if (connContext) {
@@ -733,3 +800,32 @@ void cleanupConnectionContext(MQHCONN hConn) {
   }
   processMtx.unlock();
 }
+
+void Sus(MQHCONN hConn) {
+  MQCTLO mqctlo = {MQCTLO_DEFAULT};
+  MQLONG CC, RC;
+
+  debugf(LOG_DEBUG, "SUS");
+  if (isCBDefined(hConn) && isCBActive(hConn) && config.autoCtl) {
+    _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, &CC, &RC);
+    debugf(LOG_DEBUG, "MQCTL SUSPEND hConn: %d CC: %d RC: %d",hConn,CC,RC);
+    if (CC == MQCC_OK) {
+      setCBActive(hConn,false);
+    }
+  }
+}
+
+void Res(MQHCONN hConn) {
+  MQCTLO mqctlo = {MQCTLO_DEFAULT};
+  MQLONG CC, RC;
+
+  debugf(LOG_DEBUG, "RES");
+  if (isCBDefined(hConn) && !isCBActive(hConn) && config.autoCtl) {
+    _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
+    debugf(LOG_DEBUG, "MQCTL RESUME  hConn: %d CC: %d RC: %d",hConn,CC,RC);
+    if (CC == MQCC_OK) {
+      setCBActive(hConn,true);
+    }
+  }
+}
+

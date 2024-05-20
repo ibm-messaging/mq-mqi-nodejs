@@ -110,6 +110,9 @@ extern std::map<std::string, void *> mqiFnMap;
 #define _MQCTL   CALLMQI("MQCTL", MQHCONN, MQLONG, PMQCTLO, PMQLONG, PMQLONG)
 #define _MQCB    CALLMQI("MQCB", MQHCONN, MQLONG, PMQCBD, MQHOBJ, PMQMD, PMQGMO, PMQLONG, PMQLONG)
 
+void Sus(MQHCONN);
+void Res(MQHCONN);
+
 /* Structure transformations into/out of JS format */
 void copyODtoC(Env, Object, PMQOD);
 void copyODfromC(Env, Object, PMQOD);
@@ -146,7 +149,7 @@ void cleanupCD(PMQCD);
 void cleanupSCO(PMQSCO);
 void cleanupBNO(PMQBNO);
 
-void cleanupObjectContext(MQHCONN, MQHOBJ, PMQLONG, PMQLONG,bool); // For async consumers
+bool cleanupObjectContext(MQHCONN, MQHOBJ, PMQLONG, PMQLONG,bool); // For async consumers
 void cleanupConnectionContext(MQHCONN);
 void resumeConnectionContext(MQHCONN);
 
@@ -186,6 +189,8 @@ extern int logLevel; /* This may be referred to even after Configuration removed
 
 extern int maxConsecutiveGetsDefault;
 extern int getLoopDelayTimeMsDefault;
+extern bool defaultAutoCtl;
+extern bool defaultUseCtl;
 
 class Configuration {
 public:
@@ -196,6 +201,8 @@ public:
   // For tuning the async get routines
   int maxConsecutiveGets = maxConsecutiveGetsDefault;
   int getLoopDelayTimeMs = getLoopDelayTimeMsDefault;
+  bool autoCtl = defaultAutoCtl;
+  bool useCtl = defaultUseCtl;
 };
 extern Configuration config;
 #endif

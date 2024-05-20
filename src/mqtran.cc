@@ -39,8 +39,10 @@ Object BEGIN(const CallbackInfo &info) {
 
   hConn = info[IDX_BEGIN_HCONN].As<Number>().Int32Value();
 
+  Sus(hConn);
   _MQBEGIN(hConn, &CC, &RC);
-  
+  Res(hConn);
+
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
@@ -65,8 +67,10 @@ Object CMIT(const CallbackInfo &info) {
 
   hConn = info[IDX_CMIT_HCONN].As<Number>().Int32Value();
 
+  Sus(hConn);
   _MQCMIT(hConn, &CC, &RC);
-  
+  Res(hConn);
+
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
@@ -90,7 +94,9 @@ Object BACK(const CallbackInfo &info) {
   }
 
   hConn = info[IDX_BACK_HCONN].As<Number>().Int32Value();
+  Sus(hConn);
   _MQBACK(hConn, &CC, &RC);
+  Res(hConn);
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));

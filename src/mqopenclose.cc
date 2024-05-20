@@ -31,7 +31,11 @@ public:
 
   ~OpenWorker() { debugf(LOG_OBJECT, "In OPEN destructor\n"); }
 
-  void Execute() { _MQOPEN(hConn, pmqod, Options, &hObj, &CC, &RC); }
+  void Execute() {
+    Sus(hConn);
+    _MQOPEN(hConn, pmqod, Options, &hObj, &CC, &RC);
+    Res(hConn);
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In OPEN OnOK method.\n");
@@ -100,7 +104,9 @@ Object OPEN(const CallbackInfo &info) {
     w->jsodRef = Persistent(w->jsod);
     w->Queue();
   } else {
-_MQOPEN(w->hConn, w->pmqod, w->Options, &w->hObj, &w->CC, &w->RC);
+    Sus(w->hConn);
+    _MQOPEN(w->hConn, w->pmqod, w->Options, &w->hObj, &w->CC, &w->RC);
+    Res(w->hConn);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -131,7 +137,7 @@ public:
     // Remove any async consumers
     MQLONG cuCC, cuRC;
     cleanupObjectContext(hConn, hObj, &cuCC, &cuRC, false);
-_MQCLOSE(hConn, &hObj, Options, &CC, &RC);
+    _MQCLOSE(hConn, &hObj, Options, &CC, &RC);
     resumeConnectionContext(hConn);
   }
 

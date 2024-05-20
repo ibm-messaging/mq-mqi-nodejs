@@ -1068,6 +1068,7 @@ declare module "ibmmq" {
     getLoopDelayTimeMs?: number;
     callbackStrategy?: number;
     useCtl?: boolean;
+    autoCtl?: boolean;
     debugLongCalls?: boolean;
     debugLog?: boolean;
     traceLog?: boolean;

@@ -85,7 +85,9 @@ Object INQ(const CallbackInfo &info) {
     if (charAttrLen > 0) {
       charAttrs = (char *)mqnAlloc(env, charAttrLen);
     }
+    Sus(hConn);
     _MQINQ(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    Res(hConn);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;
@@ -195,7 +197,9 @@ Object SET(const CallbackInfo &info) {
 
   if (!badSelector) {
     debugf(LOG_DEBUG, "BadSelector=%d CharAttrLen=%d", badSelector ? 1 : 0, charAttrLen);
+    Sus(hConn);
     _MQSET(hConn, hObj, jsSelectors.Length(), mqSelectors, intAttrCount, intAttrValues, charAttrLen, charAttrs, &CC, &RC);
+    Res(hConn);
   } else {
     CC = MQCC_FAILED;
     RC = MQRC_SELECTOR_ERROR;

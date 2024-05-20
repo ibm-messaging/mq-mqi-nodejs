@@ -45,7 +45,9 @@ Object STAT(const CallbackInfo &info) {
 
   copySTStoC(env, jssts, &mqsts);
 
+  Sus(hConn);
   _MQSTAT(hConn, statusType, &mqsts, &CC, &RC);
+  Res(hConn);
 
   copySTSfromC(env, jssts, &mqsts);
 

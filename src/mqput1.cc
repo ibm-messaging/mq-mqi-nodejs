@@ -31,7 +31,11 @@ public:
 
   ~Put1Worker() { debugf(LOG_OBJECT, "In PUT1 destructor\n"); }
 
-  void Execute() { _MQPUT1(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
+  void Execute() {
+    Sus(hConn);
+    _MQPUT1(hConn, pmqod, pmqmd, pmqpmo, buflen, buf, &CC, &RC);
+    Res(hConn);
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In PUT1 OnOK method.\n");
@@ -152,7 +156,7 @@ Object PUT1(const CallbackInfo &info) {
   }
 
   copyODtoC(env, w->jsod, w->pmqod);
-  
+
 
   if (async) {
     w->jsmdRef = Persistent(w->jsmd);
@@ -161,7 +165,9 @@ Object PUT1(const CallbackInfo &info) {
 
     w->Queue();
   } else {
+    Sus(w->hConn);
     _MQPUT1(w->hConn, w->pmqod, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
+    Res(w->hConn);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));

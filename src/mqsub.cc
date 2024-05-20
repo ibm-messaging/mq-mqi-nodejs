@@ -32,7 +32,11 @@ public:
 
   ~SubWorker() { debugf(LOG_OBJECT, "In SUB destructor\n"); }
 
-  void Execute() { _MQSUB(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC); }
+  void Execute() {
+    Sus(hConn);
+    _MQSUB(hConn, pmqsd, &hObjQ, &hObjSub, &CC, &RC);
+    Res(hConn);
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In SUB OnOK method.\n");
@@ -102,7 +106,9 @@ Object SUB(const CallbackInfo &info) {
     w->jssdRef = Persistent(w->jssd);
     w->Queue();
   } else {
+    Sus(w->hConn);
     _MQSUB(w->hConn, w->pmqsd, &w->hObjQ, &w->hObjSub, &w->CC, &w->RC);
+    Res(w->hConn);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -144,7 +150,9 @@ Object SUBRQ(const CallbackInfo &info) {
 
   copySROtoC(env, jssro, &mqsro);
 
+  Sus(hConn);
   _MQSUBRQ(hConn, hSub, action, &mqsro, &CC, &RC);
+  Res(hConn);
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));

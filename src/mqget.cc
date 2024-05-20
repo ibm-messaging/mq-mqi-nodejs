@@ -22,7 +22,7 @@
 /*
  * Invocations of the MQGET verb in the MQI. MQGET can be called either synchronously or asynch. However, this
  * is still fundamentally a synchronous call to the MQI. See mqgeta.cc for the true asynchronous processing using
- * callbacks from the MQ client library. Applications using the GetSync verb from the JS API will end up here. 
+ * callbacks from the MQ client library. Applications using the GetSync verb from the JS API will end up here.
  */
 
 
@@ -40,7 +40,9 @@ public:
   ~GetWorker() { debugf(LOG_OBJECT, "In GET destructor\n"); }
 
   void Execute() {
+    Sus(hConn);
     _MQGET(hConn, hObj, pmqmd, pmqgmo, buflen, buf, &datalen, &CC, &RC);
+    Res(hConn);
   }
 
   void OnOK() {
@@ -53,13 +55,13 @@ public:
 
     if (jsmdIsBuf) {
       dumpHex("MQMD",pmqmd,MQMD_LENGTH_2);
-    } else {  
+    } else {
       copyMDfromC(Env(), jsmdRef.Value().As<Object>(), pmqmd);
     }
 
     if (jsgmoIsBuf) {
       dumpHex("MQGMO",pmqgmo,MQGMO_LENGTH_4);
-    } else {  
+    } else {
       copyGMOfromC(Env(), jsgmoRef.Value().As<Object>(), pmqgmo);
     }
 
@@ -165,7 +167,9 @@ Object GET(const CallbackInfo &info) {
 
     w->Queue();
   } else {
+    Sus(w->hConn);
     _MQGET(w->hConn, w->hObj, w->pmqmd, w->pmqgmo, w->buflen, w->buf, &w->datalen, &w->CC, &w->RC);
+    Res(w->hConn);
 
     result.Set("jsCc", Number::New(env, w->CC));
     result.Set("jsRc", Number::New(env, w->RC));
@@ -179,7 +183,7 @@ Object GET(const CallbackInfo &info) {
 
     if (w->jsmdIsBuf) {
       dumpHex("MQMD",w->pmqmd,MQMD_LENGTH_2);
-    } else {  
+    } else {
       copyMDfromC(env, w->jsmd, w->pmqmd);
     }
 

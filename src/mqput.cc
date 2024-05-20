@@ -31,16 +31,23 @@ public:
 
   ~PutWorker() { debugf(LOG_OBJECT, "In PUT destructor\n"); }
 
-  void Execute() { _MQPUT(hConn, hObj, pmqmd, pmqpmo, buflen, buf, &CC, &RC); }
+  void Execute() {
+    debugf(LOG_TRACE, "Before MQPUT async: CC:%d RC:%d",PCC,PRC);
+    Sus(hConn);
+    _MQPUT(hConn, hObj, pmqmd, pmqpmo, buflen, buf, &PCC, &PRC);
+    Res(hConn);
+    debugf(LOG_TRACE, "After MQPUT async: CC:%d RC:%d",PCC,PRC);
+
+  }
 
   void OnOK() {
     debugf(LOG_TRACE, "In PUT OnOK method.\n");
 
     Object result = Object::New(Env());
-    result.Set("jsCc", Number::New(Env(), CC));
-    result.Set("jsRc", Number::New(Env(), RC));
+    result.Set("jsCc", Number::New(Env(), PCC));
+    result.Set("jsRc", Number::New(Env(), PRC));
 
-    // dumpObject(Env(), "Put Result", result);
+    dumpObject(Env(), "Put Result", result);
     if (jsmdIsBuf) {
       dumpHex("MQMD", pmqmd, MQMD_LENGTH_2);
     } else {
@@ -61,8 +68,8 @@ public:
   MQHCONN hConn = MQHC_UNUSABLE_HCONN;
   MQHOBJ hObj = MQHO_UNUSABLE_HOBJ;
 
-  MQLONG CC = -1;
-  MQLONG RC = -1;
+  MQLONG PCC = -1;
+  MQLONG PRC = -1;
 
   MQLONG buflen;
   MQPTR buf;
@@ -149,10 +156,14 @@ Object PUT(const CallbackInfo &info) {
 
     w->Queue();
   } else {
-    _MQPUT(w->hConn, w->hObj, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->CC, &w->RC);
+    debugf(LOG_TRACE, "Before MQPUT sync");
+    Sus(w->hConn);
+    _MQPUT(w->hConn, w->hObj, w->pmqmd, w->pmqpmo, w->buflen, w->buf, &w->PCC, &w->PRC);
+    Res(w->hConn);
+    debugf(LOG_TRACE, "After MQPUT sync: CC:%d RC:%d",w->PCC,w->PRC);
 
-    result.Set("jsCc", Number::New(env, w->CC));
-    result.Set("jsRc", Number::New(env, w->RC));
+    result.Set("jsCc", Number::New(env, w->PCC));
+    result.Set("jsRc", Number::New(env, w->PRC));
 
     if (w->jspmoIsBuf) {
       dumpHex("MQPMO", w->pmqpmo, MQPMO_LENGTH_3);

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2023
+  Copyright (c) IBM Corporation 2023, 2024
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ static const char *mqiFunctions[] = {"MQCONNX", "MQDISC",  "MQOPEN",  "MQCLOSE",
                                      "MQSUB",   "MQSUBRQ", "MQCRTMH", "MQDLTMH", "MQSETMP", "MQDLTMP", "MQINQMP"};
 std::map<std::string, void *> mqiFnMap = {};
 
-static const char *hex = "0123456789ABCDEF";
+static const char *hexChars = "0123456789ABCDEF";
 
 // Memory allocation/free routines that do basic checks on out-of-memory and throw
 // errors back to the JS environment if necessary.
@@ -107,6 +107,12 @@ void Configure(const CallbackInfo &info) {
     setbuf(stderr, 0);
   }
   debugf(LOG_TRACE, "Configure has loglevel %d", logLevel);
+  debugf(LOG_TRACE, "Library built: %s %s", __DATE__,__TIME__);
+  debugf(LOG_TRACE, "Initial TuningParms: platform:%s arch:%s maxConsecutiveGets:%d getLoopDelayTimeMs:%d useCtl:%s autoCtl:%s",
+    config.platform.c_str(), config.arch.c_str(), 
+    config.maxConsecutiveGets, config.getLoopDelayTimeMs, 
+    config.useCtl?"true":"false", config.autoCtl?"true":"false");
+
 
   return;
 }
@@ -358,7 +364,7 @@ String getMQICharV(Env env, PMQCHARV v, bool free) {
   return str;
 }
 
-#if 0 
+#if 0
 // We may end up needing locking around the debug printing. So we can turn on this block
 std::mutex mtx;
 void lock() { mtx.lock();}
@@ -489,8 +495,8 @@ void dumpHex(const char *title, void *buf, int length) {
     o = snprintf(line, sizeof(line)-1, "%8.8X : ", i * 16);
 
     for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
-      line[o++] = hex[p[j] >> 4];
-      line[o++] = hex[p[j] & 0x0F];
+      line[o++] = hexChars[p[j] >> 4];
+      line[o++] = hexChars[p[j] & 0x0F];
       if (j % 4 == 3)
         line[o++] = ' ';
     }
@@ -541,7 +547,7 @@ const char *napiType(napi_valuetype t) {
   }
 }
 
-/* 
+/*
  *Setup the exports object with references to the various functions
  * implemented in the C++ code. Most of these are the analogues to the MQI verbs
  * themselves.
