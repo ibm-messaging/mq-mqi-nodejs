@@ -17,7 +17,7 @@ const redistDir=baseDir+"/redist";
 // const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.3.5";
+let vrm="9.4.0";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
 
@@ -92,7 +92,12 @@ function cleanup(rc) {
     // Allow it to be overridden for debug purposes
     const doNotRemove = pEnv("MQIJS_NOREMOVE_DOWNLOAD");
     if (doNotRemove == null) {
-      console.log("Removing " + file);
+      if (rc == 0) {
+        // Only print the removal message if we've got here OK
+        // to avoid confusion if there's been some error,
+        // but try to remove the file anyway just in case.
+        console.log("Removing " + file);
+      }
       fs.unlinkSync(file);
     } else {
       // If there was an error, we will leave the file alone if it exists,
@@ -247,6 +252,19 @@ function removeUnneeded() {
   cleanup(0);
 }
 
+// Check that we have an executable command on Linux. A simple way for the commands we care about
+// is to run it with "--help". We know they support that option.
+function isRunnable(cmd) {
+    try {
+      // Don't want to see any output from the command
+      execSync(cmd + " --help", { stdio:"ignore" });
+    } catch (err) {
+      console.error("ERROR: Cannot run command: %s. Make sure it is installed and in the PATH.", cmd);
+      return false;
+    }
+    return true;
+}
+
 // Start main processing here.
 
 // If a particular environment variable is set, do not try to install
@@ -273,6 +291,14 @@ if (currentPlatform === "win32") {
                  "java", "bin64/VS2015" ];
 } else if (currentPlatform === "linux" && process.arch === "x64"){
   file=file+"LinuxX64.tar.gz";
+
+  // The unpack process requires that you've got tar and gzip installed
+  const exe1 = isRunnable("tar");
+  const exe2 = isRunnable("gzip");
+  if (!exe1 || !exe2) {
+    cleanup(1);
+  }
+
   unpackCommand="mkdir -p " +  newBaseDir + " && tar -xvzf " + file + " -C " + newBaseDir;
   // These "unwanted" directories are not explicitly used with the genmqpkg.sh command that
   // is now being used.
@@ -340,7 +366,7 @@ try {
     let error;
 
     if (res.statusCode < 200 || res.statusCode > 299) {
-      error = new Error("Request Failed.\nStatus Code: " + res.statusCode);
+      error = new Error("Request Failed. HTTP Status Code: " + res.statusCode);
     }
 
     if (error) {

@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  2/1/24 12:04 PM                               */
- /* Build Level:   p935-L240201                                  */
+ /* Generated on:  6/5/24 2:30 PM                                */
+ /* Build Level:   p940-L240605.1                                */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -513,6 +513,7 @@
  #define MQ_CERT_VAL_POLICY_DEFAULT     0
  #define MQ_CERT_VAL_POLICY_ANY         0
  #define MQ_CERT_VAL_POLICY_RFC5280     1
+ #define MQ_CERT_VAL_POLICY_NONE        2
 
  /****************************************************************/
  /* Values Related to MQCSP Structure                            */
@@ -2880,7 +2881,8 @@
  #define MQCMDL_LEVEL_933               933
  #define MQCMDL_LEVEL_934               934
  #define MQCMDL_LEVEL_935               935
- #define MQCMDL_CURRENT_LEVEL           935
+ #define MQCMDL_LEVEL_940               940
+ #define MQCMDL_CURRENT_LEVEL           940
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0

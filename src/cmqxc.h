@@ -38,12 +38,12 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  2/1/24 12:04 PM                               */
- /* Build Level:   p935-L240201                                  */
+ /* Generated on:  6/5/24 2:30 PM                                */
+ /* Build Level:   p940-L240605.1                                */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p935-L240201 su=_TSUFq8DwEe6a1qdb8O1Dfw       */
+ /* @(#) MQMBID sn=p940-L240605.1 su=_CgQS4CM2Ee-M5d-9sa1WMw     */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/
@@ -146,6 +146,8 @@
  #define MQCOMPRESS_ZLIBFAST            2
  #define MQCOMPRESS_ZLIBHIGH            4
  #define MQCOMPRESS_SYSTEM              8
+ #define MQCOMPRESS_LZ4FAST             16
+ #define MQCOMPRESS_LZ4HIGH             32
  #define MQCOMPRESS_ANY                 0x0FFFFFFF
 
  /* Transport Types */

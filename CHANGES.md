@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 19 Jun 2024: v2.1.0
+* Update for MQ 9.4.0
+* Postinstall script checks that unpacking program is available
+
 ## 15 May 2024: v2.0.4
 * Fixes for unexpected MQRC_HCONN_ASYNC_ACTIVE (#179)
 * Build problems on latest MacOS compiler (#181)
