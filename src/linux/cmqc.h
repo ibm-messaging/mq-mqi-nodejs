@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  6/5/24 2:30 PM                                */
- /* Build Level:   p940-L240605.1                                */
+ /* Generated on:  10/2/24 4:42 PM                               */
+ /* Build Level:   p941-L241002                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -461,7 +461,8 @@
  #define MQSCO_VERSION_4                4
  #define MQSCO_VERSION_5                5
  #define MQSCO_VERSION_6                6
- #define MQSCO_CURRENT_VERSION          6
+ #define MQSCO_VERSION_7                7
+ #define MQSCO_CURRENT_VERSION          7
 
  /* Structure Length */
 #if defined(MQ_64_BIT)
@@ -495,9 +496,14 @@
  #define MQSCO_LENGTH_6                 636
 #endif
 #if defined(MQ_64_BIT)
- #define MQSCO_CURRENT_LENGTH           648
+ #define MQSCO_LENGTH_7                 672
 #else
- #define MQSCO_CURRENT_LENGTH           636
+ #define MQSCO_LENGTH_7                 656
+#endif
+#if defined(MQ_64_BIT)
+ #define MQSCO_CURRENT_LENGTH           672
+#else
+ #define MQSCO_CURRENT_LENGTH           656
 #endif
 
  /* SuiteB Type */
@@ -514,6 +520,18 @@
  #define MQ_CERT_VAL_POLICY_ANY         0
  #define MQ_CERT_VAL_POLICY_RFC5280     1
  #define MQ_CERT_VAL_POLICY_NONE        2
+
+ /* HTTPS Certificate Validation Type */
+ #define MQ_HTTPSCERTVAL_DEFAULT        0
+ #define MQ_HTTPSCERTVAL_ANY            1
+ #define MQ_HTTPSCERTVAL_NONE           2
+ #define MQ_HTTPSCERTVAL_HOSTNAMECN     3
+
+ /* HTTPS Certificate Revocation Type */
+ #define MQ_HTTPSCERTREV_DEFAULT        0
+ #define MQ_HTTPSCERTREV_REQUIRED       1
+ #define MQ_HTTPSCERTREV_DISABLED       2
+ #define MQ_HTTPSCERTREV_OPTIONAL       3
 
  /****************************************************************/
  /* Values Related to MQCSP Structure                            */
@@ -2494,6 +2512,7 @@
  #define MQRC_OPERATION_ERROR           2488
  #define MQRC_BMHO_ERROR                2489
  #define MQRC_UNSUPPORTED_PROPERTY      2490
+ #define MQRC_MSG_LENGTH_ERROR          2491
  #define MQRC_PROP_NAME_NOT_CONVERTED   2492
  #define MQRC_GET_ENABLED               2494
  #define MQRC_MODULE_NOT_FOUND          2495
@@ -2598,6 +2617,7 @@
  #define MQRC_Q_MGR_RECONNECT_REQUESTED 2601
  #define MQRC_BNO_ERROR                 2602
  #define MQRC_OUTBOUND_SNI_NOT_VALID    2603
+ #define MQRC_HTTPS_KEYSTORE_ERROR      2604
  #define MQRC_REOPEN_EXCL_INPUT_ERROR   6100
  #define MQRC_REOPEN_INQUIRE_ERROR      6101
  #define MQRC_REOPEN_SAVED_CONTEXT_ERR  6102
@@ -2878,7 +2898,8 @@
  #define MQCMDL_LEVEL_934               934
  #define MQCMDL_LEVEL_935               935
  #define MQCMDL_LEVEL_940               940
- #define MQCMDL_CURRENT_LEVEL           940
+ #define MQCMDL_LEVEL_941               941
+ #define MQCMDL_CURRENT_LEVEL           941
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0
@@ -4242,6 +4263,15 @@
    MQLONG     KeyRepoPasswordLength;      /* Length of key repository */
                                           /* password */
    /* Ver:6 */
+   MQLONG     HTTPSCertValidation;        /* HTTPS certificate */
+                                          /* validation level */
+   MQLONG     HTTPSCertRevocation;        /* HTTPS certificate */
+                                          /* revocation level */
+   MQPTR      HTTPSKeyStorePtr;           /* Address of HTTPS */
+                                          /* Keystore */
+   MQLONG     HTTPSKeyStoreOffset;        /* Offset of HTTPS Keystore */
+   MQLONG     HTTPSKeyStoreLength;        /* Length of HTTPS keystore */
+   /* Ver:7 */
  };
 
  #define MQSCO_DEFAULT {MQSCO_STRUC_ID_ARRAY},\
@@ -4259,6 +4289,11 @@
                         MQ_SUITE_B_NOT_AVAILABLE},\
                        MQ_CERT_VAL_POLICY_DEFAULT,\
                        {""},\
+                       NULL,\
+                       0,\
+                       0,\
+                       0,\
+                       0,\
                        NULL,\
                        0,\
                        0

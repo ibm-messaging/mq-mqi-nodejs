@@ -17,7 +17,7 @@ const redistDir=baseDir+"/redist";
 // const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.4.0";
+let vrm="9.4.1";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
 
@@ -310,21 +310,14 @@ if (currentPlatform === "win32") {
                  "lib64/netstandard2.0",
                  ".github" ];
 // } else if (currentPlatform === 'darwin'){
-//  The MacOS client for MQ is released under a different license - 'Developers' not
-//  'Redistributable' - so we should not try to automatically download it.
-//
-//  As another issue, the MacOS client is now being delivered in signed pkg format, not zip. So this won't
-//  work anyway. I'm leaving this bit of code in just to remind us of the directory from which
-//  the file can be downloaded but simply enabling it in this script is not going to help.
-//
-//  dir=macDir
-//  title="IBM MacOS Toolkit for Developers"
-//  file=vrmf + "-IBM-MQ-DevToolkit-MacOS" + ".pkg"
-//
 //  Note that the MacOS toolkit is now available via homebrew
+//  It cannot be simply installed via this script
 } else {
   console.log("No redistributable client package available for this platform.");
   console.log("If an MQ Client library exists for the platform, install it manually.");
+   if (currentPlatform === 'darwin'){
+     console.log("You might be able to use homebrew to install the MQ client.");
+  }
   process.exit(0);
 }
 

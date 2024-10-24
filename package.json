@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -31,9 +31,9 @@
   },
   "gypfile": true,
   "dependencies": {
-    "node-gyp": "^10.1.0",
-    "node-addon-api": "^8.0.0",
-    "node-gyp-build": "^4.8.1",
+    "node-gyp": "^10.2.0",
+    "node-addon-api": "^8.2.1",
+    "node-gyp-build": "^4.8.2",
     "prebuildify": "^6.0.1",
     "proxy-agent": "^6.4.0"
   },

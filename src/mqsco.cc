@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2017, 2023
+  Copyright (c) IBM Corporation 2017, 2024
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -53,6 +53,23 @@ void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {
     }
   }
 
+  v = jssco.Get("HTTPSKeyStore");
+  if (v.IsString()) {
+    pmqsco->HTTPSKeyStorePtr = mqnStrdup(env,jssco.Get("HTTPSKeyStore").As<String>().Utf8Value().c_str());
+    pmqsco->KeyRepoPasswordOffset = 0;
+    pmqsco->KeyRepoPasswordLength = strlen((char *)pmqsco->HTTPSKeyStorePtr);
+    if (pmqsco->Version < MQSCO_VERSION_7) {
+      pmqsco->Version = MQSCO_VERSION_7;
+    }
+  }
+
+  pmqsco->HTTPSCertValidation = getMQLong(jssco,"HTTPSCertValidation");
+  pmqsco->HTTPSCertRevocation = getMQLong(jssco,"HTTPSCertRevocation");
+  if (pmqsco->HTTPSCertRevocation != 0 || pmqsco->HTTPSCertValidation != 0) {
+    if (pmqsco->Version < MQSCO_VERSION_7) {
+      pmqsco->Version = MQSCO_VERSION_7;
+    }
+  }
   return;
 };
 
@@ -63,6 +80,7 @@ void copySCOfromC(Env env, Object jssco, PMQSCO pmqsco) {
 void cleanupSCO(PMQSCO pmqsco) {
   if (pmqsco) {
     mqnFreeString(pmqsco->KeyRepoPasswordPtr);
+    mqnFreeString(pmqsco->HTTPSKeyStorePtr);
   }
   return;
 }

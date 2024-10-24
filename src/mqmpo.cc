@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2023
+  Copyright (c) IBM Corporation 2023,2024
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ Object SETMP(const CallbackInfo &info) {
   }
 
   if (CC == MQCC_OK) {
-                 _MQSETMP(hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
+    _MQSETMP(hConn, hMsg, &smpo, &name, &pd, type, len, valuePtr, &CC, &RC);
   }
 
   Object result = Object::New(env);
@@ -138,7 +138,7 @@ Object DLTMP(const CallbackInfo &info) {
   dmpo.Options = jsDmpo.Get("Options").As<Number>().Int32Value(); // Only item to copy over
   hMsg = info[IDX_DLTMP_HMSG].As<BigInt>().Int64Value(&b);
 
-_MQDLTMP(hConn, &hMsg, &dmpo, &CC, &RC);
+  _MQDLTMP(hConn, &hMsg, &dmpo, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));
@@ -201,7 +201,7 @@ Object INQMP(const CallbackInfo &info) {
   buf = info[IDX_INQMP_BUFFER].As<BUC>().Data();
   buflen = info[IDX_INQMP_BUFFER].As<BUC>().Length();
 
-_MQINQMP(hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
+  _MQINQMP(hConn, hMsg, &impo, &name, &pd, &type, buflen, buf, &datalen, &CC, &RC);
 
   Object result = Object::New(env);
   result.Set("jsCc", Number::New(env, CC));

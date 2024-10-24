@@ -363,6 +363,8 @@ declare module "ibmmq" {
   function MQZSL_STR(MQC_MQZSL): string;
   function MQZTO_STR(MQC_MQZTO): string;
   function MQ_CERT_STR(MQC_MQ_CERT): string;
+  function MQ_HTTPSCERTREV_STR(MQC_MQ_HTTPSCERTREV): string;
+  function MQ_HTTPSCERTVAL_STR(MQC_MQ_HTTPSCERTVAL): string;
   function MQ_MQTT_STR(MQC_MQ_MQTT): string;
   function MQ_SUITE_STR(MQC_MQ_SUITE): string;
 }

@@ -94,6 +94,9 @@ public:
   ObjectReference jsHObjRef;
   ObjectReference result;
   int queuedCount = 0;
+  struct {  
+    int removeRFH2; 
+  } OtelOpts;
 };
 
 class ConnContext {
@@ -146,6 +149,7 @@ enum {
   IDX_GETA_USECTL,
   IDX_GETA_JS_CALLBACK,
   IDX_GETA_APP_CALLBACK,
+  IDX_GETA_OTELOPTS,
   IDX_LAST
 };
 
@@ -229,6 +233,11 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
         o.Set("jsCc", Number::New(env, data->mqcc));
         o.Set("jsRc", Number::New(env, data->mqrc));
         o.Set("jsCallType", Number::New(env, data->callType));
+
+        Object otelOpts = Object::New(env);
+        otelOpts.Set("RemoveRFH2", Boolean::New(env,objContext->OtelOpts.removeRFH2?true:false));
+        o.Set("jsOtelOpts",otelOpts);
+
         foundCb = true;
       } else if (data->callType == MQCBCT_EVENT_CALL) {
         // We do not register for EVENT callbacks, but the MQ Client libraries
@@ -252,6 +261,7 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
             o.Set("jsCc", Number::New(env, data->mqcc));
             o.Set("jsRc", Number::New(env, data->mqrc));
             o.Set("jsCallType", Number::New(env, data->callType));
+
             debugf(LOG_DEBUG, "setting up the callback for event for key %s",mapKey.c_str());
             foundCb = true;
             break;
@@ -522,6 +532,18 @@ Object GETASYNC(const CallbackInfo &info) {
 
   v = info[IDX_GETA_APP_CALLBACK];
 
+  // There may be some additional controls to do with OpenTelemetry processing.
+  // We will stash the flag so it can be passed back on the callback
+  int removeRFH2 = 0;
+  Value otelOpts = info[IDX_GETA_OTELOPTS].As<Object>();
+  if (!otelOpts.IsNull() && !otelOpts.IsUndefined() && otelOpts.IsObject()) {
+    Object otelOptsObj = otelOpts.As<Object>();
+    Value flag = otelOptsObj.Get("RemoveRFH2");
+    if (!flag.IsNull() && !flag.IsUndefined() && flag.IsBoolean()) {
+       removeRFH2 = flag.As<Boolean>().Value() ? 1: 0;
+    }
+  }
+
   // Add a map entry that holds any necessary control information that we need to know later.
   // JS objects need to be marked persistent so they don't get GC'd until we free the objContext during
   // MQCLOSE().
@@ -531,6 +553,8 @@ Object GETASYNC(const CallbackInfo &info) {
   Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
   objContext->jsHObjRef = Persistent(jsHObj);
   objContext->result = Persistent(Object::New(env));
+
+  objContext->OtelOpts.removeRFH2 = removeRFH2;
 
   objContextMap[makeKey(hConn, hObj)] = objContext;
 

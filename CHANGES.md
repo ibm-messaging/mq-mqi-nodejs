@@ -1,6 +1,12 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 24 Oct 2024: v2.1.1
+* Update for MQ 9.4.1
+  * Fields in MQSCO structure
+* New module for instrumenting applications for OpenTelemetry Tracing 
+* Merge fix for MQRFH2.getBuffer (#185)
+
 ## 19 Jun 2024: v2.1.0
 * Update for MQ 9.4.0
 * Postinstall script checks that unpacking program is available
