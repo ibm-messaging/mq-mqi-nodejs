@@ -15,5 +15,6 @@ declare module "ibmmq" {
     NewMsgHandle: HMSG;
     Action: number;
     PubLevel: number;
+    OtelOpts: OtelOpts;
   }
 }

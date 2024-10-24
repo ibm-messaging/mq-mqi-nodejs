@@ -18,5 +18,6 @@ declare module "ibmmq" {
     MsgToken: Buffer;
     ReturnedLength: number;
     MsgHandle: HMSG;
+    OtelOpts: OtelOpts;
   }
 }

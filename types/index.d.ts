@@ -74,6 +74,14 @@ declare module "ibmmq" {
   }
 
   /**
+   * This class holds optional flags needed to control the OpenTelemetry
+   * propagation. It is referenced within the MQGMO and MQPMO structures.
+   */
+  class OtelOpts {
+    RemoveRFH2: boolean;
+  }
+
+  /**
    * ConnxSync - callback is passed object containing the hConn on success.
    *
    * @param {String}
