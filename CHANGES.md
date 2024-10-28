@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 28 Oct 2024: v2.1.2
+* Fix some missing TypeScript definitions
+* Remove eslint dependencies from package.json
+
 ## 24 Oct 2024: v2.1.1
 * Update for MQ 9.4.1
   * Fields in MQSCO structure

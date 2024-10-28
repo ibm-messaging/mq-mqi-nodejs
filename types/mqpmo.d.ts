@@ -7,7 +7,7 @@ declare module "ibmmq" {
    * but probably should have been. It's also forced to be set elsewhere.
    */
   class MQPMO {
-    Options:number | MQC_MQPMO[]; 
+    Options: number | MQC_MQPMO[]; 
     Context: string;
     ResolvedQName: string;
     ResolvedQMgrName: string;

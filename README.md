@@ -133,7 +133,7 @@ services available from MQ such as transactions.
 All the application-level MQI verbs are implemented. Structures and verbs that are only used in other environments - for
 example in exits - are not provided as only C is a supported language for those operations.
 
-There are no structure definitions for most MQ header elements in message contents such as the MQCIH structure. 
+There are no structure definitions for most MQ header elements in message contents such as the MQCIH structure.
 
 However there is a definition and sample program to manipulate the Dead Letter Header (MQDLH). There is also a
 definition for the MQRFH2 structure header, though not for the individual folders and properties that may be added to
@@ -244,7 +244,7 @@ scope) then the same environment variable can be used.
 ### Setting environment variables for the installation process
 
 The MQIJS_* environment variables used during  `npm install` can also be set in an *.npmrc* file.  These are more commonly
-written in lowercase, so `export MQIJS_VRM=9.3.4` would become `mqijs_vrm=9.3.4` in the NPM configuration file. But 
+written in lowercase, so `export MQIJS_VRM=9.3.4` would become `mqijs_vrm=9.3.4` in the NPM configuration file. But
 the package does attempt to reference a variety of case options. The real environment variable takes precedence over the
 *.npmrc* setting.
 
@@ -280,7 +280,7 @@ For example
 
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
-The MacOS client is also now available via the `brew` command. See [here](https://github.com/ibm-messaging/homebrew-ibmmq) 
+The MacOS client is also now available via the `brew` command. See [here](https://github.com/ibm-messaging/homebrew-ibmmq)
 for instructions on configuring your system for downloads using this mechanism.
 
 #### Errors and warnings during build
@@ -355,6 +355,13 @@ and an example from the `amqsbra.ts`example where we use the bitwise operations 
   gmo!.Options = ((gmo!.Options as number) & ~MQC.MQGMO_BROWSE_FIRST);
   gmo!.Options = (gmo!.Options | MQC.MQGMO_BROWSE_NEXT);
 ```
+
+## Support for OpenTelemetry Tracing
+If your application is using OTel tracing, then context for traces/spans can be propagated through MQ messages as work
+moves between applications. There should be no need for applications to change for this MQ transfer to happen; available
+OTel libraries are automatically recognised and used. See comments in `lib/mqiotel.js` for more information.
+
+The only MQI extension is the optional use of an `OtelOpts.RemoveRFH2` flag on the MQGMO structure.
 
 ## History
 

@@ -24,6 +24,8 @@ redist.full/
 dist/
 build/
 
+samples/typescript/*.js
+
 samples/mykey.*
 9*Redist*tar.gz
 9*MacX64*tar.gz

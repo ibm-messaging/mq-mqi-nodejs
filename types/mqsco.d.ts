@@ -12,5 +12,9 @@ declare module "ibmmq" {
     CertificateValPolicy: MQC_MQ_CERT;
     CertificateLabel: string;
     KeyRepoPassword: string;
+    HTTPSKeyStore: string;
+    HTTPSCertValidation:  MQC_MQ_HTTPSCERTVAL;
+    HTTPSCertRevocation: MQC_MQ_HTTPSCERTREV;
+
   }
 }

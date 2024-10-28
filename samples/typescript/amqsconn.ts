@@ -63,7 +63,7 @@ cno.SecurityParms = csp;
 
 // And use the MQCD to programatically connect as a client
 // First force the client mode
-cno.Options |= MQC.MQCNO_CLIENT_BINDING;
+cno!.Options = (cno!.Options as number) | MQC.MQCNO_CLIENT_BINDING;
 // And then fill in relevant fields for the MQCD
 const cd = new mq.MQCD();
 cd.ConnectionName = "localhost(1414)";

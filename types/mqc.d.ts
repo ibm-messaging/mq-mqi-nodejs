@@ -386,7 +386,6 @@ declare module "ibmmq" {
     | "MQPCF"
     | "MQHREF"
     | "MQHRF"
-    | "MQHRF"
     | "MQHRF2"
     | "MQSTR"
     | "MQTRIG"
