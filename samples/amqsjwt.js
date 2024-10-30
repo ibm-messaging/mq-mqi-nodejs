@@ -136,7 +136,7 @@ function parseArgs() {
       printSyntax();
     }
   }
-  } catch (e) {
+  } catch {
     printSyntax();
   }
 }

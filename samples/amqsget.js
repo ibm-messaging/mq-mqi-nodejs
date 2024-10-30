@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2018
 
@@ -29,19 +29,19 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder("utf8");
 
 // The default queue manager and queue to be used
-var qMgr = "QM1";
-var qName = "DEV.QUEUE.1";
+let qMgr = "QM1";
+let qName = "DEV.QUEUE.1";
 
 // Global variables
-var ok = true;
+let ok = true;
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
@@ -57,10 +57,10 @@ function getMessages(hObj) {
 // This function retrieves messages from the queue without waiting.
 function getMessage(hObj) {
 
-  var buf = Buffer.alloc(1024);
-  var hdr;
-  var mqmd = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  const buf = Buffer.alloc(1024);
+  let hdr;
+  const mqmd = new mq.MQMD();
+  const gmo = new mq.MQGMO();
 
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
                 MQC.MQGMO_NO_WAIT |
@@ -68,7 +68,7 @@ function getMessage(hObj) {
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
 
-  mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {
+  mq.GetSync(hObj,mqmd,gmo,buf,function (err,len) {
     if (err) {
        if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
          console.log("no more messages");
@@ -77,19 +77,19 @@ function getMessage(hObj) {
        }
        ok = false;
     } else {
-      var format = mqmd.Format;
+      const format = mqmd.Format;
       switch (format) {
       case MQC.MQFMT_RF_HEADER_2:
         hdr   = mq.MQRFH2.getHeader(buf);
-        var props = mq.MQRFH2.getProperties(hdr,buf);
+        const props = mq.MQRFH2.getProperties(hdr,buf);
         console.log("RFH2 HDR is %j",hdr);
         console.log("Properties are '%s'",props);
-        printBody(hdr.Format,buf.slice(hdr.StrucLength),len-hdr.StrucLength);
+        printBody(hdr.Format,buf.subarray(hdr.StrucLength),len-hdr.StrucLength);
         break;
       case MQC.MQFMT_DEAD_LETTER_HEADER:
         hdr = mq.MQDLH.getHeader(buf);
         console.log("DLH HDR is %j",hdr);
-        printBody(hdr.Format,buf.slice(hdr.StrucLength),len-hdr.StrucLength);
+        printBody(hdr.Format,buf.subarray(hdr.StrucLength),len-hdr.StrucLength);
         break;
       default:
         printBody(format,buf,len);
@@ -110,13 +110,13 @@ function printBody(format,buf,len) {
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
        console.log(formatErr(err));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
@@ -133,7 +133,7 @@ function cleanup(hConn,hObj) {
 console.log("Sample AMQSGET.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qName = myArgs[0];
 }
@@ -143,18 +143,18 @@ if (myArgs[1]) {
 
 
 // Do the connect, including a callback function
-mq.Conn(qMgr, function(err,hConn) {
+mq.Conn(qMgr, function (err,hConn) {
    if (err) {
       console.log(formatErr(err));
    } else {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
-     var od = new mq.MQOD();
+     const od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
+     const openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+     mq.Open(hConn,od,openOptions,function (err,hObj) {
        if (err) {
          console.log(formatErr(err));
        } else {

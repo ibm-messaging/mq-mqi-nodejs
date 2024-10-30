@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2023
 
@@ -29,25 +29,25 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder("utf8");
 
 // The default queue manager and queue to be used
-var qMgr = "QM1";
-var qName = "DEV.QUEUE.1";
-var msgId = null;
+let qMgr = "QM1";
+let qName = "DEV.QUEUE.1";
+let msgId = null;
 
 // Some global variables
-var connectionHandle;
-var queueHandle;
+let connectionHandle;
+let queueHandle;
 
-var waitInterval = 3; // max seconds to wait for a new message
-var ok = true;
-var exitCode = 0;
+const waitInterval = 3; // max seconds to wait for a new message
+let ok = true;
+let exitCode = 0;
 
 /*
  * Format any error messages
@@ -62,8 +62,11 @@ function formatErr(err) {
 }
 
 function hexToBytes(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
+    const bytes = [];
+    let c;
+    for (c = 0; c < hex.length; c += 2) {
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+    }
     return bytes;
 }
 
@@ -72,8 +75,8 @@ function hexToBytes(hex) {
  * Define which messages we want to get, and how.
  */
 function getMessages() {
-  var md = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  const md = new mq.MQMD();
+  const gmo = new mq.MQGMO();
 
   gmo.Options = MQC.MQGMO_SYNCPOINT |
                 MQC.MQGMO_WAIT |
@@ -93,7 +96,7 @@ function getMessages() {
   mq.Get(queueHandle,md,gmo,getCB);
 
   // And now enable the callback
-  mq.Ctl(connectionHandle,MQC.MQOP_START, function(err) {
+  mq.Ctl(connectionHandle,MQC.MQOP_START, function (err) {
     console.log(formatErr(err));
   });
 
@@ -125,12 +128,12 @@ function getCB(err, hObj, gmo,md,buf, hConn ) {
      }
      // If we were using Syncpoint, then we may want to commit the updates.
      if ((gmo.Options & MQC.MQGMO_SYNCPOINT) != 0) {
-   
+
       mq.Cmit(connectionHandle, function (err) {
         if (err) console.log(formatErr(err));
         else console.log("Commit OK");
-      });  
-   
+      });
+
      }
   }
 }
@@ -139,13 +142,13 @@ function getCB(err, hObj, gmo,md,buf, hConn ) {
  * When we're done, close any queues and connections.
  */
 function cleanup(hConn,hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
       console.log(formatErr(err));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
@@ -163,7 +166,7 @@ function cleanup(hConn,hObj) {
 console.log("Sample AMQSGETA.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qName = myArgs[0];
 }
@@ -177,7 +180,7 @@ if (myArgs[2]) {
 
 // Connect to the queue manager, including a callback function for
 // when it completes.
-mq.Conn(qMgr, function(err,hConn) {
+mq.Conn(qMgr, function (err,hConn) {
    if (err) {
      console.log(formatErr(err));
      ok = false;
@@ -186,11 +189,11 @@ mq.Conn(qMgr, function(err,hConn) {
      connectionHandle = hConn;
 
      // Define what we want to open, and how we want to open it.
-     var od = new mq.MQOD();
+     const od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
+     const openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+     mq.Open(hConn,od,openOptions,function (err,hObj) {
        queueHandle = hObj;
        if (err) {
          console.log(formatErr(err));
@@ -207,7 +210,7 @@ mq.Conn(qMgr, function(err,hConn) {
 // message handler are processed. This is one way to do it. Use the
 // defined waitInterval with a bit extra added and look for the
 // current status. If not OK, then close everything down cleanly.
-setInterval(function() {
+setInterval(function () {
   if (!ok) {
      console.log("Exiting ...");
      cleanup(connectionHandle,queueHandle);

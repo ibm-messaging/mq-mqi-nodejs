@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017
 
@@ -28,11 +28,11 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager to be used. This can be overridden on command line.
-var qMgr = "QM1";
+let qMgr = "QM1";
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
@@ -41,13 +41,13 @@ function formatErr(err) {
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
       console.log(formatErr(err));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
@@ -62,9 +62,9 @@ function cleanup(hConn,hObj) {
 // parameters work.
 function inqQmgr(hObj) {
    // We will request 3 attributes of the queue manager.
-   var selectors = [new mq.MQAttr(MQC.MQCA_Q_MGR_NAME),
+   const selectors = [new mq.MQAttr(MQC.MQCA_Q_MGR_NAME),
                     new mq.MQAttr(MQC.MQCA_DEAD_LETTER_Q_NAME),
-                    new mq.MQAttr(MQC.MQIA_CODED_CHAR_SET_ID)
+                    new mq.MQAttr(MQC.MQIA_CODED_CHAR_SET_ID),
                    ];
 
    try {
@@ -85,15 +85,15 @@ function inqQmgr(hObj) {
 console.log("Sample AMQSINQ.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qMgr  = myArgs[0];
 }
 
-var cno = new mq.MQCNO();
+const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE;
 
-mq.Connx(qMgr, cno, function(err,hConn) {
+mq.Connx(qMgr, cno, function (err,hConn) {
    if (err) {
      console.log(formatErr(err));
    } else {
@@ -104,11 +104,11 @@ mq.Connx(qMgr, cno, function(err,hConn) {
      // get an object handle that refers to that qmgr.
      // No ObjectName is needed for this inquiry - the fact that it is the Q_MGR type
      // is sufficient.
-     var od = new mq.MQOD();
+     const od = new mq.MQOD();
      od.ObjectName = null;
      od.ObjectType = MQC.MQOT_Q_MGR;
-     var openOptions = MQC.MQOO_INQUIRE;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
+     const openOptions = MQC.MQOO_INQUIRE;
+     mq.Open(hConn,od,openOptions,function (err,hObj) {
        if (err) {
          console.log(formatErr(err));
        } else {

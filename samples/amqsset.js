@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2022
 
@@ -28,12 +28,12 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager and queue to be used. These can be overridden on command line.
-var qMgr = "QM1";
-var qName = "DEV.QUEUE.1";
+let qMgr = "QM1";
+let qName = "DEV.QUEUE.1";
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
@@ -42,13 +42,13 @@ function formatErr(err) {
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
       console.log(formatErr(err));
     } else {
       console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
@@ -63,7 +63,7 @@ function cleanup(hConn,hObj) {
 // parameters work. Using the MQAttr object makes this quite simple.
 function setQ(hObj) {
    // We will set 3 attributes of the queue.
-   var selectors = [new mq.MQAttr(MQC.MQIA_INHIBIT_PUT,MQC.MQQA_PUT_INHIBITED),
+   const selectors = [new mq.MQAttr(MQC.MQIA_INHIBIT_PUT,MQC.MQQA_PUT_INHIBITED),
                     new mq.MQAttr(MQC.MQIA_INHIBIT_GET,MQC.MQQA_GET_INHIBITED),
                     new mq.MQAttr(MQC.MQCA_TRIGGER_DATA,"TrigData After"),
                    ];
@@ -84,7 +84,7 @@ function setQ(hObj) {
 console.log("Sample AMQSSET.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qName = myArgs[0];
 }
@@ -92,21 +92,21 @@ if (myArgs[1]) {
   qMgr  = myArgs[1];
 }
 
-var cno = new mq.MQCNO();
+const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE;
 
-mq.Connx(qMgr, cno, function(err,hConn) {
+mq.Connx(qMgr, cno, function (err,hConn) {
    if (err) {
      console.log(formatErr(err));
    } else {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
-     var od = new mq.MQOD();
+     const od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_SET;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
+     const openOptions = MQC.MQOO_SET;
+     mq.Open(hConn,od,openOptions,function (err,hObj) {
        if (err) {
          console.log(formatErr(err));
        } else {

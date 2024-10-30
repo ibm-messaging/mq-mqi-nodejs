@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2018
 
@@ -34,34 +34,28 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder("utf8");
 
 // The queue manager and queue to be used. These can be overridden on command line.
-var qMgr = "QM1";
-var qName = "DEV.QUEUE.1";
+let qMgr = "QM1";
+let qName = "DEV.QUEUE.1";
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
 }
 
-function toHexString(byteArray) {
-  return byteArray.reduce((output, elem) =>
-    (output + ('0' + elem.toString(16)).slice(-2)),
-    '');
-}
-
 // Define some functions that will be used from the main flow
 function putMessage(hObj) {
 
-  var msg = "Hello from Node at " + new Date();
+  const msg = "Hello from Node at " + new Date();
 
-  var mqmd = new mq.MQMD(); // Defaults are fine.
-  var pmo = new mq.MQPMO();
+  const mqmd = new mq.MQMD(); // Defaults are fine.
+  const pmo = new mq.MQPMO();
 
   // Describe how the Put should behave
   pmo.Options = MQC.MQPMO_NO_SYNCPOINT |
@@ -74,7 +68,7 @@ function putMessage(hObj) {
   mqmd.Format = MQC.MQFMT_STRING;
 
   // Create a DLH and allow it to modify MQMD chaining fields like the CCSID
-  var mqdlh = new mq.MQDLH(mqmd);
+  const mqdlh = new mq.MQDLH(mqmd);
 
   // Fill in something for why the message is put to the DLQ
   mqdlh.Reason = MQC.MQRC_NOT_AUTHORIZED;
@@ -82,10 +76,10 @@ function putMessage(hObj) {
   mqdlh.DestQMgrName = "DEST.QMGR";
 
   // Create the full message by concatenating buffers into a single block
-  var fullMsg = Buffer.concat([mqdlh.getBuffer(),Buffer.from(msg)]);
+  const fullMsg = Buffer.concat([mqdlh.getBuffer(),Buffer.from(msg)]);
 
   // And put the message
-  mq.Put(hObj,mqmd,pmo,fullMsg,function(err) {
+  mq.Put(hObj,mqmd,pmo,fullMsg,function (err) {
     if (err) {
       console.log(formatErr(err));
     } else {
@@ -100,10 +94,10 @@ function putMessage(hObj) {
 // not what we're demonstrating in this sample.
 function getMessage(hObj) {
 
-  var buf = Buffer.alloc(1024);
+  const buf = Buffer.alloc(1024);
 
-  var mqmd = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  const mqmd = new mq.MQMD();
+  const gmo = new mq.MQGMO();
 
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
                 MQC.MQGMO_NO_WAIT |
@@ -111,15 +105,15 @@ function getMessage(hObj) {
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
   try {
-    var len = mq.GetSync(hObj,mqmd,gmo,buf);
+    const len = mq.GetSync(hObj,mqmd,gmo,buf);
     console.log("MQGET successful");
 
-    var format = mqmd.Format;
+    const format = mqmd.Format;
 
     // If the message has a DLH then
     // parse and print it.
     if (format == MQC.MQFMT_DEAD_LETTER_HEADER) {
-      var hdr = mq.MQDLH.getHeader(buf);
+      const hdr = mq.MQDLH.getHeader(buf);
       console.log("DLH is %j",hdr);
       printMessage(hdr.Format,buf.subarray(hdr.StrucLength),len-hdr.StrucLength);
     } else {
@@ -145,17 +139,17 @@ function printMessage(format,buf,len) {
 
 // When we're done, close queues and connections
 function cleanup(hConn,hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
       console.log(formatErr(err));
     } else {
-      //console.log("MQCLOSE successful");
+      // console.log("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
-        //console.log("MQDISC successful");
+        // console.log("MQDISC successful");
       }
     });
   });
@@ -168,7 +162,7 @@ function cleanup(hConn,hObj) {
 console.log("Sample AMQSDLH.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qName = myArgs[0];
 }
@@ -176,21 +170,21 @@ if (myArgs[1]) {
   qMgr  = myArgs[1];
 }
 
-var cno = new mq.MQCNO();
+const cno = new mq.MQCNO();
 cno.Options = MQC.MQCNO_NONE; // use MQCNO_CLIENT_BINDING to connect as client
 
-mq.Connx(qMgr, cno, function(err,hConn) {
+mq.Connx(qMgr, cno, function (err,hConn) {
    if (err) {
      console.log(formatErr(err));
    } else {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
-     var od = new mq.MQOD();
+     const od = new mq.MQOD();
      od.ObjectName = qName;
      od.ObjectType = MQC.MQOT_Q;
-     var openOptions = MQC.MQOO_OUTPUT | MQC.MQOO_INPUT_AS_Q_DEF;
-     mq.Open(hConn,od,openOptions,function(err,hObj) {
+     const openOptions = MQC.MQOO_OUTPUT | MQC.MQOO_INPUT_AS_Q_DEF;
+     mq.Open(hConn,od,openOptions,function (err,hObj) {
        if (err) {
          console.log(formatErr(err));
        } else {

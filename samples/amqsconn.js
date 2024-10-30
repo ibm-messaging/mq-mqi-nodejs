@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2018
 
@@ -30,20 +30,16 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager to be used.
-var qMgr = "QM1";
-var hConn;
+const qMgr = "QM1";
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
 }
 
-// When we're done, close queues and connections
-function cleanup(hConn) {
-}
 
 function sleep(ms) {
   return new Promise(resolve=>{
@@ -57,10 +53,10 @@ function sleep(ms) {
 console.log("Sample AMQSCONN.JS start");
 
 // Create default MQCNO structure
-var cno = new mq.MQCNO();
+const cno = new mq.MQCNO();
 
 // Add authentication via the MQCSP structure
-var csp = new mq.MQCSP();
+const csp = new mq.MQCSP();
 csp.UserId = "mqguest";
 csp.Password = "passw0rd!Passw0rd";
 // Make the MQCNO refer to the MQCSP
@@ -71,7 +67,7 @@ cno.SecurityParms = csp;
 // First force the client mode
 cno.Options |= MQC.MQCNO_CLIENT_BINDING;
 // And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
+const cd = new mq.MQCD();
 cd.ConnectionName = "localhost(1414)";
 cd.ChannelName = "SYSTEM.DEF.SVRCONN";
 // Make the MQCNO refer to the MQCD
@@ -83,14 +79,14 @@ if (MQC.MQCNO_CURRENT_VERSION >= 7) {
 }
 
 // Now we can try to connect
-mq.Connx(qMgr, cno, function(err,conn) {
+mq.Connx(qMgr, cno, function (err,conn) {
   if (err) {
     console.log(formatErr(err));
   } else {
     console.log("MQCONN to %s successful ", qMgr);
     // Sleep for a few seconds - bad in a real program but good for this one
     sleep(3 *1000).then(() => {
-      mq.Disc(conn, function(err) {
+      mq.Disc(conn, function (err) {
         if (err) {
           console.log(formatErr(err));
         } else {

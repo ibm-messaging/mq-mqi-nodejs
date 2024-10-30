@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2018
 
@@ -28,19 +28,19 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Import any other packages needed
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder("utf8");
 
 // The queue manager and queue to be used
-var qMgr = "QM1";
-var topicString = "dev/JSTopic";
+let qMgr = "QM1";
+let topicString = "dev/JSTopic";
 
 // Global variables
-var ok = true;
+let ok = true;
 
 
 // Define some functions that will be used from the main flow
@@ -55,10 +55,10 @@ function getMessages(hObj) {
 // async method.
 function getMessage(hObj) {
 
-  var buf = Buffer.alloc(1024);
+  const buf = Buffer.alloc(1024);
 
-  var mqmd = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  const mqmd = new mq.MQMD();
+  const gmo = new mq.MQGMO();
 
   gmo.WaitInterval = 3 * 1000; // 3 seconds
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
@@ -66,7 +66,7 @@ function getMessage(hObj) {
                 MQC.MQGMO_CONVERT |
                 MQC.MQGMO_FAIL_IF_QUIESCING;
 
-  mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {
+  mq.GetSync(hObj,mqmd,gmo,buf,function (err,len) {
     if (err) {
        if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
          console.log("no more messages");
@@ -95,13 +95,13 @@ function cleanup(hConn,hObjPubQ, hObjSubscription) {
     console.log("MQCLOSE (Subscription) ended with reason "  + err);
   }
 
-  mq.Close(hObjPubQ, 0, function(err) {
+  mq.Close(hObjPubQ, 0, function (err) {
     if (err) {
       console.log("MQCLOSE (PubQ) ended with reason " + err.mqrc);
     } else {
       console.log("MQCLOSE (PubQ) successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         console.log("MQDISC ended with reason " + err.mqrc);
       } else {
@@ -118,7 +118,7 @@ function cleanup(hConn,hObjPubQ, hObjSubscription) {
 console.log("Sample AMQSSUB.JS start");
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   topicString = myArgs[0];
 }
@@ -127,21 +127,21 @@ if (myArgs[1]) {
 }
 
 // Do the connect, including a callback function
-mq.Conn(qMgr, function(err,hConn) {
+mq.Conn(qMgr, function (err,hConn) {
    if (err) {
      console.log("MQCONN ended with reason code " + err.mqrc);
    } else {
      console.log("MQCONN to %s successful ", qMgr);
 
      // Define what we want to open, and how we want to open it.
-     var sd = new mq.MQSD();
+     const sd = new mq.MQSD();
      sd.ObjectString = topicString;
      sd.Options =   MQC.MQSO_CREATE
                   | MQC.MQSO_NON_DURABLE
                   | MQC.MQSO_FAIL_IF_QUIESCING
                   | MQC.MQSO_MANAGED;
 
-     mq.Sub(hConn,null,sd,function(err,hObjPubQ,hObjSubscription) {
+     mq.Sub(hConn,null,sd,function (err,hObjPubQ,hObjSubscription) {
        if (err) {
          console.log("MQSUB ended with reason ", err.mqrc);
        } else {

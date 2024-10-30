@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
   Copyright (c) IBM Corporation 2017, 2018
 
@@ -45,25 +45,22 @@
  */
 
 // Import the MQ package
-var mq = require('ibmmq');
-var MQC = mq.MQC; // Want to refer to this export directly for simplicity
+const mq = require("ibmmq");
+const MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // The queue manager to be used.
-var qMgr = "QM1";
+let qMgr = "QM1";
 // Where to connect to
-var connName = "localhost(1414)";
-var hConn;
+let connName = "localhost(1414)";
+
 
 function formatErr(err) {
   return  "MQ call failed in " + err.message;
 }
 
-// When we're done, close connections
-function cleanup(hConn) {
-}
 
 // Get command line parameters
-var myArgs = process.argv.slice(2); // Remove redundant parms
+const myArgs = process.argv.slice(2); // Remove redundant parms
 if (myArgs[0]) {
   qMgr  = myArgs[0];
 }
@@ -77,11 +74,11 @@ if (myArgs[1]) {
 console.log("Sample AMQSCONNTLS.JS start");
 
 // Create default MQCNO and MQSCO structures
-var cno = new mq.MQCNO();
-var sco = new mq.MQSCO();
+const cno = new mq.MQCNO();
+const sco = new mq.MQSCO();
 
 // Add authentication via the MQCSP structure
-var csp = new mq.MQCSP();
+const csp = new mq.MQCSP();
 csp.UserId = "mqguest";
 csp.Password = "passw0rd!Passw0rd";
 // Make the MQCNO refer to the MQCSP so it knows to use the structure
@@ -92,7 +89,7 @@ cno.SecurityParms = csp;
 cno.Options |= MQC.MQCNO_CLIENT_BINDING;
 
 // And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
+const cd = new mq.MQCD();
 cd.ConnectionName = connName;
 cd.ChannelName = "SYSTEM.SSL.SVRCONN";
 
@@ -114,12 +111,12 @@ cno.SSLConfig = sco;
 
 console.log("Trying to connect to %s at %s",qMgr,connName);
 // Now we can try to connect
-mq.Connx(qMgr, cno, function(err,conn) {
+mq.Connx(qMgr, cno, function (err,conn) {
   if (err) {
     console.log(formatErr(err));
   } else {
     console.log("MQCONN to %s successful ", qMgr);
-    mq.Disc(conn, function(err) {
+    mq.Disc(conn, function (err) {
       if (err) {
         console.log(formatErr(err));
       } else {
