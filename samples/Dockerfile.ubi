@@ -30,7 +30,7 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM registry.access.redhat.com/ubi8/nodejs-16 AS builder
+FROM registry.access.redhat.com/ubi8/nodejs-18 AS builder
 
 # Set some parameters.
 ENV APP_DIR    /opt/app-root/src/nodejs/mqput
@@ -61,7 +61,7 @@ RUN npm install --omit=dev --foreground-scripts=true
 ###########################################################
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image.
-FROM  registry.access.redhat.com/ubi8/nodejs-16-minimal
+FROM  registry.access.redhat.com/ubi8/nodejs-18-minimal
 
 # This is a queue predefined in the MQ Developer Edition server container. Though
 # the values can be overridden by setting environment variables during the 'docker run' phase.

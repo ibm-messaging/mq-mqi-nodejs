@@ -39,7 +39,7 @@ WORKDIR ${APP_DIR}
 RUN mkdir -p ${APP_DIR}
 
 # Update the base image and make sure we've installed basic capabilities including
-# the C++ compiler needed for the ref-napi dependency. Also install node and npm.
+# the C++ compiler needed for the FFI component. Also install node and npm.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \
     && curl --silent -k --location https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
@@ -84,4 +84,5 @@ WORKDIR ${APP_DIR}
 COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 
 # We are now ready to run the amqsput program.
+RUN echo "Node Version: " && node --version
 CMD node amqsput ${DOCKER_Q} ${DOCKER_QMGR}

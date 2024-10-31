@@ -11,17 +11,18 @@
 # QM1 and DEV.QUEUE.1 (overriding the default queue in the program itself).
 # And this script re-overrides the queue name.
 
-dfile="Dockerfile"
-if [ "$FROM" = "UBI" ]
+dfile="Dockerfile.ubi"
+if [ "$FROM" = "DEB" ]
 then
-  dfile=Dockerfile.ubi
+  dfile=Dockerfile.deb
 fi
 
-docker build  -f $dfile -t mq-node-demo .
+docker build -f $dfile -t mq-node-demo .
 if [ $? -eq 0 ]
 then
   h=`hostname`
   docker run \
+    --rm \
     --network host \
     -e MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$h(1414)" \
     -e DOCKER_QMGR="QM1" \

@@ -66,8 +66,8 @@ information.
 
 ## Running in a container
 The `run.docker` script builds and runs a container with the `amqsput` program. Two Dockerfiles are provided. The
-default uses images based around debian/ubuntu containers. If you set the `FROM` environment variable to "UBI" then
-images from the Red Hat Universal Base Images repository are used instead.
+default uses images based around the Red Hat Universal Base Images repository. If you set the `FROM` environment
+variable to "DEB" then images from debian/ubuntu are used instead.
 
 The automatic installation of the MQ client code only works for platforms where the Redistributable Client package is
 available. For other platforms, you have to modify the Dockerfile to incorporate the MQ client from your own existing
