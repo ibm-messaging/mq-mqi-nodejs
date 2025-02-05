@@ -92,10 +92,11 @@ class ObjContext {
 public:
   FunctionReference appCBRef;
   ObjectReference jsHObjRef;
+  MQLONG stashedHObj;
   ObjectReference result;
   int queuedCount = 0;
-  struct {  
-    int removeRFH2; 
+  struct {
+    int removeRFH2;
   } OtelOpts;
 };
 
@@ -224,6 +225,8 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
       int mapCount = objContextMap.count(key);
       if (mapCount == 1) {
+        debugf(LOG_DEBUG, "have found a matching key for hObj %d",data->hObj);
+
         ObjContext *objContext = objContextMap[key];
         Function f = objContext->appCBRef.Value().As<Function>();
 
@@ -240,14 +243,16 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
         foundCb = true;
       } else if (data->callType == MQCBCT_EVENT_CALL) {
-        // We do not register for EVENT callbacks, but the MQ Client libraries
-        // create an EVENT_CALL anyway. This is confusing but accurate.
-        // So if we receive one, we will fake up a response to send back to the
-        // application by calling one of the registered listeners for the hConn.
+        // The qmgr does sometimes call us for EVENTS even when we've not
+        // explicitly registered an event handler. The MQ Client library
+        // appears to set an hObj of 0 instead of the correct hObj associated with
+        // the registered callback. We attempt to deal with that by stashing the
+        // real hObj into the callback, but if we still can't find the user's callback
+        // function, we try to find the first callback associated with this hConn.
         //
-        // See Issue #173.
+        // Also see Issue #173 and mq-golang#217.
 
-        // We search the map and try to find the first callback for this hConn.
+        // Search the map and try to find the first callback for this hConn.
         key = makeKey(data->hConn, HOBJ_WILDCARD);
         for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
           string mapKey = it->first;
@@ -262,7 +267,7 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
             o.Set("jsRc", Number::New(env, data->mqrc));
             o.Set("jsCallType", Number::New(env, data->callType));
 
-            debugf(LOG_DEBUG, "setting up the callback for event for key %s",mapKey.c_str());
+            debugf(LOG_DEBUG, "setting up the fallback cb handler for event for key %s",mapKey.c_str());
             foundCb = true;
             break;
           }
@@ -329,6 +334,20 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   retData->mqrc = pContext->Reason;
   retData->mqcc = pContext->CompCode;
   retData->callType = pContext->CallType;
+
+  // The MQ Client code sometimes invokes is with hObj=0 for EVENT callbacks even though there's nothing
+  // registered for that handle. It appears to be an error, and should be setting the real hObj value
+  // instead. It behaves differently than when using local bindings. So we've stashed the real
+  // hObj in the structure passed around in the CallbackArea. See also the mq-golang #217 issue which
+  // discussed this a lot more.
+  auto octx = (ObjContext *)pContext->CallbackArea;
+  debugf(LOG_TRACE, "Context hObj=%d StashedHobj=%d",pContext->Hobj,octx?octx->stashedHObj:-1);
+
+  if (pContext->Hobj == MQHO_NONE && pContext->CallbackArea != NULL)    {
+    if (octx->stashedHObj != MQHO_NONE) {
+      retData->hObj = octx->stashedHObj;
+    }
+  }
 
   retData->buf = NULL;
   retData->bodyLen = 0;
@@ -553,7 +572,7 @@ Object GETASYNC(const CallbackInfo &info) {
   Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
   objContext->jsHObjRef = Persistent(jsHObj);
   objContext->result = Persistent(Object::New(env));
-
+  objContext->stashedHObj = hObj;
   objContext->OtelOpts.removeRFH2 = removeRFH2;
 
   objContextMap[makeKey(hConn, hObj)] = objContext;
