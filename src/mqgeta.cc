@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2023, 2024
+  Copyright (c) IBM Corporation 2023, 2025
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -335,11 +335,11 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   retData->mqcc = pContext->CompCode;
   retData->callType = pContext->CallType;
 
-  // The MQ Client code sometimes invokes is with hObj=0 for EVENT callbacks even though there's nothing
+  // The MQ Client code sometimes invokes us with hObj=0 for EVENT callbacks even though there's nothing
   // registered for that handle. It appears to be an error, and should be setting the real hObj value
-  // instead. It behaves differently than when using local bindings. So we've stashed the real
-  // hObj in the structure passed around in the CallbackArea. See also the mq-golang #217 issue which
-  // discussed this a lot more.
+  // instead. It behaves differently when using local bindings: that does have the correct hObj. 
+  // So we've stashed the real hObj in the structure passed around in the CallbackArea. See also 
+  // the mq-golang #217 issue which discussed this a lot more.
   auto octx = (ObjContext *)pContext->CallbackArea;
   debugf(LOG_TRACE, "Context hObj=%d StashedHobj=%d",pContext->Hobj,octx?octx->stashedHObj:-1);
 
@@ -565,14 +565,17 @@ Object GETASYNC(const CallbackInfo &info) {
 
   // Add a map entry that holds any necessary control information that we need to know later.
   // JS objects need to be marked persistent so they don't get GC'd until we free the objContext during
-  // MQCLOSE().
+  // MQCLOSE(). This context object is also made available to the callback function via the CallbackArea
+  // and we stash the real hObj value only with the JS object to make it easier to work with in the C
+  // parts of the callback processing (the MQ Client sometimes calls us with the wrong hObj, so this
+  // is a workround).
   ObjContext *objContext = new ObjContext;
   objContext->appCBRef = Persistent(v.As<Function>());
 
   Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
   objContext->jsHObjRef = Persistent(jsHObj);
   objContext->result = Persistent(Object::New(env));
-  objContext->stashedHObj = hObj;
+  objContext->stashedHObj = hObj; 
   objContext->OtelOpts.removeRFH2 = removeRFH2;
 
   objContextMap[makeKey(hConn, hObj)] = objContext;

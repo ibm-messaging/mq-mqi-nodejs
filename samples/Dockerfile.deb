@@ -1,4 +1,4 @@
-# © Copyright IBM Corporation 2019, 2022
+# © Copyright IBM Corporation 2019, 2025
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM ubuntu:20.04 as builder
+FROM public.ecr.aws/ubuntu/ubuntu:20.04 as builder
 
 # Set some parameters.
 ENV NODE_VERSION 18
@@ -67,7 +67,7 @@ RUN npm install --omit=dev  --foreground-scripts=true \
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
 # is an official Node image with the runtime already embedded
-FROM  node:18-slim
+FROM  public.ecr.aws/docker/library/node:18-slim
 
 # This is a queue predefined in the MQ Developer Edition server container. Though
 # the values can be overridden by setting environment variables during the 'docker run' phase.

@@ -1,6 +1,6 @@
 "use strict";
 /*
-  Copyright (c) IBM Corporation 2023
+  Copyright (c) IBM Corporation 2023,2025
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -119,7 +119,9 @@ function getCB(err, hObj, gmo,md,buf, hConn ) {
      ok = false;
      // We don't need any more messages delivered, so cause the
      // callback to be deleted after this one has completed.
-     mq.GetDone(hObj);
+     mq.GetDone(hObj, function (err) {
+        console.log(formatErr(err));
+     });
    } else {
      if (md.Format=="MQSTR") {
        console.log("message <%s>", decoder.write(buf));

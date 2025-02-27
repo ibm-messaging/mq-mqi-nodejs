@@ -17,7 +17,7 @@ const redistDir=baseDir+"/redist";
 // const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.4.1";
+let vrm="9.4.2";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
 

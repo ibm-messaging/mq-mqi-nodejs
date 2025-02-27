@@ -194,8 +194,12 @@ declare module "ibmmq" {
   function MQNC_STR(MQC_MQNC): string;
   function MQNHABACKLOG_STR(MQC_MQNHABACKLOG): string;
   function MQNHACONNACTV_STR(MQC_MQNHACONNACTV): string;
+  function MQNHACONNGRP_STR(MQC_MQNHACONNGRP): string;
+  function MQNHAGRPROLE_STR(MQC_MQNHAGRPROLE): string;
   function MQNHAINSYNC_STR(MQC_MQNHAINSYNC): string;
   function MQNHAROLE_STR(MQC_MQNHAROLE): string;
+  function MQNHASTATUS_STR(MQC_MQNHASTATUS): string;
+  function MQNHATYPE_STR(MQC_MQNHATYPE): string;
   function MQNPMS_STR(MQC_MQNPMS): string;
   function MQNPM_STR(MQC_MQNPM): string;
   function MQNSH_STR(MQC_MQNSH): string;

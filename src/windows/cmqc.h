@@ -13,13 +13,13 @@
  /*  <copyright                                                  */
  /*  notice="lm-source-program"                                  */
  /*  pids="5724-H72"                                             */
- /*  years="1993,2024"                                           */
+ /*  years="1993,2025"                                           */
  /*  crc="2042140514" >                                          */
  /*  Licensed Materials - Property of IBM                        */
  /*                                                              */
  /*  5724-H72                                                    */
  /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2024 All Rights Reserved.     */
+ /*  (C) Copyright IBM Corp. 1993, 2025 All Rights Reserved.     */
  /*                                                              */
  /*  US Government Users Restricted Rights - Use, duplication or */
  /*  disclosure restricted by GSA ADP Schedule Contract with     */
@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  10/2/24 4:42 PM                               */
- /* Build Level:   p941-L241002                                  */
+ /* Generated on:  2/14/25 9:37 AM                               */
+ /* Build Level:   p942-L250214                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -1974,6 +1974,7 @@
  #define MQ_INSTALLATION_DESC_LENGTH    64
  #define MQ_INSTALLATION_NAME_LENGTH    16
  #define MQ_INSTALLATION_PATH_LENGTH    256
+ #define MQ_ISOTIME_LENGTH              64
  #define MQ_JAAS_CONFIG_LENGTH          1024
  #define MQ_LDAP_PASSWORD_LENGTH        32
  #define MQ_LDAP_BASE_DN_LENGTH         1024
@@ -2002,6 +2003,7 @@
  #define MQ_MSG_TOKEN_LENGTH            16
  #define MQ_NAMELIST_DESC_LENGTH        64
  #define MQ_NAMELIST_NAME_LENGTH        48
+ #define MQ_NHA_GROUP_NAME_LENGTH       48
  #define MQ_NHA_INSTANCE_NAME_LENGTH    48
  #define MQ_OBJECT_INSTANCE_ID_LENGTH   24
  #define MQ_OBJECT_NAME_LENGTH          48
@@ -2903,7 +2905,8 @@
  #define MQCMDL_LEVEL_935               935
  #define MQCMDL_LEVEL_940               940
  #define MQCMDL_LEVEL_941               941
- #define MQCMDL_CURRENT_LEVEL           941
+ #define MQCMDL_LEVEL_942               942
+ #define MQCMDL_CURRENT_LEVEL           942
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0

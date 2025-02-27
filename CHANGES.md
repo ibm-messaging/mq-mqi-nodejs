@@ -1,6 +1,12 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 28 Feb 2025: v2.1.3
+* Update for MQ 9.4.2
+* Deal better with callbacks on "wrong" hObj
+* Various linter-suggested updates
+* Move away from DockerHub as default location for container images
+
 ## 28 Oct 2024: v2.1.2
 * Fix some missing TypeScript definitions
 * Remove eslint dependencies from package.json
