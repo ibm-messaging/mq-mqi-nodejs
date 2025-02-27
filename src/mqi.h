@@ -30,7 +30,7 @@
 #if defined(WIN32)
 #include "windows/cmqc.h"
 #else
-#include "linux/cmqc.h"
+#include "unix/cmqc.h"
 #endif
 #include <cmqxc.h>
 
