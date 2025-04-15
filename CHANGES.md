@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 15 Apr 2025: v2.1.4
+* Fix a potential deadlock under load
+
 ## 28 Feb 2025: v2.1.3
 * Update for MQ 9.4.2
 * Deal better with callbacks on "wrong" hObj

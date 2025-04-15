@@ -337,8 +337,8 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
 
   // The MQ Client code sometimes invokes us with hObj=0 for EVENT callbacks even though there's nothing
   // registered for that handle. It appears to be an error, and should be setting the real hObj value
-  // instead. It behaves differently when using local bindings: that does have the correct hObj. 
-  // So we've stashed the real hObj in the structure passed around in the CallbackArea. See also 
+  // instead. It behaves differently when using local bindings: that does have the correct hObj.
+  // So we've stashed the real hObj in the structure passed around in the CallbackArea. See also
   // the mq-golang #217 issue which discussed this a lot more.
   auto octx = (ObjContext *)pContext->CallbackArea;
   debugf(LOG_TRACE, "Context hObj=%d StashedHobj=%d",pContext->Hobj,octx?octx->stashedHObj:-1);
@@ -575,7 +575,7 @@ Object GETASYNC(const CallbackInfo &info) {
   Object jsHObj = info[IDX_GETA_JSHOBJ].As<Object>();
   objContext->jsHObjRef = Persistent(jsHObj);
   objContext->result = Persistent(Object::New(env));
-  objContext->stashedHObj = hObj; 
+  objContext->stashedHObj = hObj;
   objContext->OtelOpts.removeRFH2 = removeRFH2;
 
   objContextMap[makeKey(hConn, hObj)] = objContext;
@@ -867,10 +867,16 @@ void Res(MQHCONN hConn) {
 
   debugf(LOG_DEBUG, "RES");
   if (isCBDefined(hConn) && !isCBActive(hConn) && config.autoCtl) {
+    // debugf(LOG_DEBUG, "MQCTL RESUME before  hConn: %d ",hConn);
+    // We assume that the RESUME will work so reset the flag in advance. That's because there
+    // might be a callback between the MQCTL and setCBActive call. Which then confuses the state.
+    // We can't directly control the MQ thread that calls the callback, or lock out the thread.
+    // We probably do not need the same pre-emptive flag change for the SUSPEND call
+    setCBActive(hConn,true);
     _MQCTL(hConn, MQOP_RESUME, &mqctlo, &CC, &RC);
     debugf(LOG_DEBUG, "MQCTL RESUME  hConn: %d CC: %d RC: %d",hConn,CC,RC);
-    if (CC == MQCC_OK) {
-      setCBActive(hConn,true);
+    if (CC != MQCC_OK) {
+      setCBActive(hConn,false);
     }
   }
 }
