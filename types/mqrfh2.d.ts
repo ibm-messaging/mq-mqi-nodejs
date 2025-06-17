@@ -38,8 +38,20 @@ declare module "ibmmq" {
     static getHeader: (buf: Buffer) => MQRFH2;
 
     /**
-     * getProperties returns the XML-like string. Input is the already-parsed
-     * header structure and the entire message body (including the unparsed header)
+     * getAllProperties returns the XML-like strings as an array.
+     * Input is the already-parsed header structure and the entire message
+     * body (including the unparsed header). Most likely, only propsArray[0]
+     * is ever populated.
+     */
+    static getAllProperties(hdr: MQRFH2, buf: Buffer): string[];
+
+    /**
+     * @deprecated since version 2.1.0. Use of {@link getAllProperties} is preferred.
+     *
+     * getProperties returns all of the namevalue data elements in the RFH2 as a single string.
+     * This was the original behaviour provided, and is fine if there is only a single element in the RFH2
+     * structure. Preferred, however, is the newer and more general getAllProperties which returns
+     * the elements as separate array entries.
      */
     static getProperties: (hdr: MQRFH2, buf: Buffer) => string;
   }
