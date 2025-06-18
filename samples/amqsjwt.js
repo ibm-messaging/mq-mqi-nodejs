@@ -1,6 +1,6 @@
 "use strict";
 /*
-  Copyright (c) IBM Corporation 2023
+  Copyright (c) IBM Corporation 2023, 2025
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ There is no attempt in this sample to configure advanced security features
 such as TLS for the queue manager connection. It does, however, use a minimal
 TLS connection to the Token Server.
 
-Defaults are provided for all parameters. Use "-?" to see the options.
+Defaults are provided for all parameters. Use "-?" to see the options.  The
+userid/password option is now deprecated; instead use the clientId/clientSecret
+mechanism.
 
 If an error occurs, the error is reported.
 */
@@ -53,6 +55,8 @@ const cf = {
   tokenUserName : "jwtuser",
   tokenPassword : "passw0rd",
   tokenClientId : "jwtcid",
+  tokenClientSecret : "",
+
   tokenRealm    : "mq",
 };
 
@@ -79,6 +83,8 @@ function printSyntax() {
         MQ Channel Name (default "SYSTEM.DEF.SVRCONN")
   -clientId string
         ClientId (default "jwtcid")
+  -clientSecret string
+        ClientSecret (default "")
   -connection string
         MQ Connection Name (default "localhost(1414)")
   -host string
@@ -87,11 +93,11 @@ function printSyntax() {
       portnumber for Token Server (default 8443)
   -m string
         Queue Manager (default "QM1")
-  -password string
+  -password string (deprecated)
         Password (default "passw0rd")
   -realm string
         Realm (default "mq")
-  -user string
+  -user string (deprecated)
         UserName (default "jwtuser")
 `;
   console.log(usage);
@@ -125,6 +131,9 @@ function parseArgs() {
     case "-clientId":
       cf.tokenClientId = process.argv[++i];
       break;
+    case "-clientSecret":
+        cf.tokenClientSecret = process.argv[++i];
+        break;
     case "-host":
       cf.tokenHost = process.argv[++i];
       break;
@@ -148,12 +157,21 @@ function obtainToken(connectCb) {
   /*
    * Build the string that is passed as form data to the server
    */
-  const formData = querystring.stringify({
+  let formData = querystring.stringify({
+    "client_secret": cf.tokenClientSecret,
+    "client_id":     cf.tokenClientId,
+    "grant_type":    "client_credentials",
+  });
+
+  if (cf.tokenClientSecret == null || cf.tokenClientSecret == "") {
+    console.log("Username/Password authentication is deprecated. Use clientSecret instead.\n");
+    formData = querystring.stringify({
                 username:   cf.tokenUserName,
                 password:   cf.tokenPassword,
                 client_id:  cf.tokenClientId,
                 grant_type: "password",
-  });
+    });
+  }
 
   /*
    * NOTE 1: The use of "rejectUnauthorized" is not a good idea for production, but it means

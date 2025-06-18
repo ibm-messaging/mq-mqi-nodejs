@@ -10,6 +10,7 @@ declare module "ibmmq" {
   function MQAPPL_STR(MQC_MQAPPL): string;
   function MQAS_STR(MQC_MQAS): string;
   function MQAT_STR(MQC_MQAT): string;
+  function MQAUSC_STR(MQC_MQAUSC): string;
   function MQAUTHENTICATE_STR(MQC_MQAUTHENTICATE): string;
   function MQAUTHOPT_STR(MQC_MQAUTHOPT): string;
   function MQAUTH_STR(MQC_MQAUTH): string;
@@ -210,6 +211,8 @@ declare module "ibmmq" {
   function MQOPER_STR(MQC_MQOPER): string;
   function MQOPMODE_STR(MQC_MQOPMODE): string;
   function MQOP_STR(MQC_MQOP): string;
+  function MQOTEL_PCTL_STR(MQC_MQOTEL_PCTL): string;
+  function MQOTEL_TRACE_STR(MQC_MQOTEL_TRACE): string;
   function MQOT_STR(MQC_MQOT): string;
   function MQPAGECLAS_STR(MQC_MQPAGECLAS): string;
   function MQPA_STR(MQC_MQPA): string;

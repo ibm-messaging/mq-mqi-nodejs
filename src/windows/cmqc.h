@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  2/14/25 9:37 AM                               */
- /* Build Level:   p942-L250214                                  */
+ /* Generated on:  5/27/25 12:25 PM                              */
+ /* Build Level:   p943-L250527                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -2068,6 +2068,7 @@
  #define MQ_TRIGGER_TERM_ID_LENGTH      4
  #define MQ_TRIGGER_TRANS_ID_LENGTH     4
  #define MQ_USER_ID_LENGTH              12
+ #define MQ_LONG_USER_ID_LENGTH         1024
  #define MQ_VERSION_LENGTH              8
  #define MQ_XCF_GROUP_NAME_LENGTH       8
  #define MQ_XCF_MEMBER_NAME_LENGTH      16
@@ -2761,6 +2762,19 @@
  #define MQCEX_NOLIMIT                  (-1)
  #define MQCEX_AS_PARENT                (-2)
 
+ /* OTELTRAC values */
+ #define MQOTEL_TRACE_QMGR              0
+ #define MQOTEL_TRACE_OFF               1
+ #define MQOTEL_TRACE_ON                2
+ #define MQOTEL_TRACE_NONE              3
+ #define MQOTEL_TRACE_AS_PARENT         4
+
+ /* OTELPCTL values */
+ #define MQOTEL_PCTL_QMGR               0
+ #define MQOTEL_PCTL_MANUAL             1
+ #define MQOTEL_PCTL_AUTO               2
+ #define MQOTEL_PCTL_AS_PARENT          3
+
  /* Read Ahead Values */
  #define MQREADA_NO                     0
  #define MQREADA_YES                    1
@@ -2906,7 +2920,8 @@
  #define MQCMDL_LEVEL_940               940
  #define MQCMDL_LEVEL_941               941
  #define MQCMDL_LEVEL_942               942
- #define MQCMDL_CURRENT_LEVEL           942
+ #define MQCMDL_LEVEL_943               943
+ #define MQCMDL_CURRENT_LEVEL           943
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0
@@ -3413,6 +3428,7 @@
  #define MQIA_ARCHIVE                   60
  #define MQIA_AUTHENTICATION_FAIL_DELAY 259
  #define MQIA_AUTHENTICATION_METHOD     266
+ #define MQIA_AUTHOREV_SCOPE            277
  #define MQIA_AUTHORITY_EVENT           47
  #define MQIA_AUTH_INFO_TYPE            66
  #define MQIA_AUTO_REORGANIZATION       173
@@ -3493,7 +3509,7 @@
  #define MQIA_IP_ADDRESS_VERSION        93
  #define MQIA_KEY_REUSE_COUNT           267
  #define MQIA_LAST                      2000
- #define MQIA_LAST_USED                 276
+ #define MQIA_LAST_USED                 279
  #define MQIA_LDAP_AUTHORMD             263
  #define MQIA_LDAP_NESTGRP              264
  #define MQIA_LDAP_SECURE_COMM          261
@@ -3539,6 +3555,8 @@
  #define MQIA_NPM_DELIVERY              196
  #define MQIA_OPEN_INPUT_COUNT          17
  #define MQIA_OPEN_OUTPUT_COUNT         18
+ #define MQIA_OTEL_PROPAGATION_CONTROL  279
+ #define MQIA_OTEL_TRACE                278
  #define MQIA_OUTBOUND_PORT_MAX         140
  #define MQIA_OUTBOUND_PORT_MIN         110
  #define MQIA_PAGESET_ID                62
@@ -3831,6 +3849,8 @@
  typedef MQCHAR256 MQPOINTER PMQCHAR256;
  typedef MQCHAR MQCHAR264[264];
  typedef MQCHAR264 MQPOINTER PMQCHAR264;
+ typedef MQCHAR MQCHAR1024[1024];
+ typedef MQCHAR1024 MQPOINTER PMQCHAR1024;
 
  /* Other Datatypes */
  typedef long MQLONG;

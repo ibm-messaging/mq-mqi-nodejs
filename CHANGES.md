@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 16 Jun 2025: v2.1.5
+* Update for MQ 9.4.3
+* samples - amqsjwt to use clientId/secret instead of userid/password
+
 ## 15 Apr 2025: v2.1.4
 * Fix a potential deadlock under load
 
