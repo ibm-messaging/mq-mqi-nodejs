@@ -158,9 +158,9 @@ function obtainToken(connectCb) {
    * Build the string that is passed as form data to the server
    */
   let formData = querystring.stringify({
-    "client_secret": cf.tokenClientSecret,
-    "client_id":     cf.tokenClientId,
-    "grant_type":    "client_credentials",
+    client_secret: cf.tokenClientSecret,
+    client_id:     cf.tokenClientId,
+    grant_type:    "client_credentials",
   });
 
   if (cf.tokenClientSecret == null || cf.tokenClientSecret == "") {
