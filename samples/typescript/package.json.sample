@@ -5,7 +5,7 @@
   "main": "amqsput.ts",
   "license": "Apache-2.0",
   "dependencies": {
-    "ibmmq": ">=2.1.5"
+    "ibmmq": ">=2.1.6"
   },
   "devDependencies": {
     "@types/node": "^22.8.1",

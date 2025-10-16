@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 16 Oct 2025: v2.1.6
+* Update for MQ 9.4.4
+* Added DEPRECATIONS.md to notify of planned future changes
+
 ## 16 Jun 2025: v2.1.5
 * Update for MQ 9.4.3
 * samples - amqsjwt to use clientId/secret instead of userid/password

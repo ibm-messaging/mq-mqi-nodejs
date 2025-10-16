@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ibm-messaging/mq-mqi-nodejs"
+    "url": "git+https://github.com/ibm-messaging/mq-mqi-nodejs.git"
   },
   "typings": "./types/index.d.ts",
   "devDependencies": {
@@ -23,8 +23,8 @@
   },
   "gypfile": true,
   "dependencies": {
-    "node-addon-api": "^8.3.1",
-    "node-gyp": "^11.2.0",
+    "node-addon-api": "^8.5.0",
+    "node-gyp": "^11.4.2",
     "node-gyp-build": "^4.8.4",
     "prebuildify": "^6.0.1",
     "proxy-agent": "^6.5.0"

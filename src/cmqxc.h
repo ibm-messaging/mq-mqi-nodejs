@@ -38,13 +38,13 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  5/27/25 12:25 PM                              */
- /* Build Level:   p943-L250527                                  */
+ /* Generated on:  10/3/25, 11:37 AM                             */
+ /* Build Level:   p944-L251003                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p943-L250527                                  */
- /* su=3286f0178bfaeefc2576a05e2d9645e2be0cc8ed                  */
+ /* @(#) MQMBID sn=p944-L251003                                  */
+ /* su=5a6d9bbecd43549d3b1be8d12c2bdf86e288a3d6                  */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/
