@@ -27,11 +27,11 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM public.ecr.aws/ubuntu/ubuntu:20.04 as builder
+FROM public.ecr.aws/ubuntu/ubuntu:20.04 AS builder
 
 # Set some parameters.
-ENV NODE_VERSION 18
-ENV APP_DIR    /usr/local/nodejs/mqput
+ENV NODE_VERSION=20
+ENV APP_DIR=/usr/local/nodejs/mqput
 
 WORKDIR ${APP_DIR}
 
@@ -67,15 +67,15 @@ RUN npm install --omit=dev  --foreground-scripts=true \
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
 # is an official Node image with the runtime already embedded
-FROM  public.ecr.aws/docker/library/node:18-slim
+FROM  public.ecr.aws/docker/library/node:20-slim
 
 # This is a queue predefined in the MQ Developer Edition server container. Though
 # the values can be overridden by setting environment variables during the 'docker run' phase.
-ENV DOCKER_Q    DEV.QUEUE.1
-ENV DOCKER_QMGR QM1
-ENV MQSERVER SYSTEM.DEF.SVRCONN/TCP/localhost
+ENV DOCKER_Q=DEV.QUEUE.1
+ENV DOCKER_QMGR=QM1
+ENV MQSERVER=SYSTEM.DEF.SVRCONN/TCP/localhost
 
-ENV APP_DIR    /usr/local/nodejs/mqput
+ENV APP_DIR=/usr/local/nodejs/mqput
 WORKDIR ${APP_DIR}
 
 # Copy over the tree containing the program and all its dependencies
@@ -85,4 +85,4 @@ COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 
 # We are now ready to run the amqsput program.
 RUN echo "Node Version: " && node --version
-CMD node amqsput ${DOCKER_Q} ${DOCKER_QMGR}
+CMD [ "node",  "amqsput", "${DOCKER_Q}", "${DOCKER_QMGR}" ]

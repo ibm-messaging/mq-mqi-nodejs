@@ -11,22 +11,30 @@
 # QM1 and DEV.QUEUE.1 (overriding the default queue in the program itself).
 # And this script re-overrides the queue name.
 
+docker="docker"
+if [ "$DOCKER" = "podman" ]
+then
+  docker="podman"
+fi
+echo "Using $docker as command"
 dfile="Dockerfile.ubi"
+tag="ubi"
 if [ "$FROM" = "DEB" ]
 then
   dfile=Dockerfile.deb
+  tag="deb"
 fi
 
-docker build -f $dfile -t mq-node-demo .
+$docker build -f $dfile -t mq-node-demo-$tag .
 if [ $? -eq 0 ]
 then
   h=`hostname`
-  docker run \
+  $docker run \
     --rm \
     --network host \
     -e MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$h(1414)" \
     -e DOCKER_QMGR="QM1" \
     -e DOCKER_Q="DEV.QUEUE.2" \
     -it \
-      mq-node-demo
+      mq-node-demo-$tag
 fi
