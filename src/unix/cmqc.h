@@ -13,13 +13,13 @@
  /*  <copyright                                                  */
  /*  notice="lm-source-program"                                  */
  /*  pids="5724-H72"                                             */
- /*  years="1993,2025"                                           */
+ /*  years="1993,2026"                                           */
  /*  crc="2042140514" >                                          */
  /*  Licensed Materials - Property of IBM                        */
  /*                                                              */
  /*  5724-H72                                                    */
  /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2025 All Rights Reserved.     */
+ /*  (C) Copyright IBM Corp. 1993, 2026 All Rights Reserved.     */
  /*                                                              */
  /*  US Government Users Restricted Rights - Use, duplication or */
  /*  disclosure restricted by GSA ADP Schedule Contract with     */
@@ -38,8 +38,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  10/3/25, 11:37 AM                             */
- /* Build Level:   p944-L251003                                  */
+ /* Generated on:  1/20/26, 9:18 AM                              */
+ /* Build Level:   p945-L260120                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -1967,7 +1967,6 @@
  #define MQ_GROUP_ID_LENGTH             24
  #define MQ_APPL_FUNCTION_NAME_LENGTH   10
  #define MQ_INITIAL_KEY_LENGTH          256
- #define MQ_ENCRYPTION_KEY_LENGTH       256
  #define MQ_INSTALLATION_DESC_LENGTH    64
  #define MQ_INSTALLATION_NAME_LENGTH    16
  #define MQ_INSTALLATION_PATH_LENGTH    256
@@ -2919,7 +2918,8 @@
  #define MQCMDL_LEVEL_942               942
  #define MQCMDL_LEVEL_943               943
  #define MQCMDL_LEVEL_944               944
- #define MQCMDL_CURRENT_LEVEL           944
+ #define MQCMDL_LEVEL_945               945
+ #define MQCMDL_CURRENT_LEVEL           945
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0

@@ -1,6 +1,10 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 06 Feb 2026: v2.1.7
+* Update for MQ 9.4.5
+* Updated base Node engine to 20.19
+
 ## 16 Oct 2025: v2.1.6
 * Update for MQ 9.4.4
 * Added DEPRECATIONS.md to notify of planned future changes

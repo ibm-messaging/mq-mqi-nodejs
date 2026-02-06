@@ -178,7 +178,7 @@ The package includes a couple of verbs that are not standard in the MQI.
 * *Lookup()* extracts strings corresponding to MQI numbers, similar to the *MQConstants.lookup()* method in Java.
 
 ## Requirements
-* node version 16 or greater.
+* node version 20 or greater.
 * On platforms other than Windows and Linux x64, you must also install the MQ client package
 * I have run it on Windows, where the NPM 'windows-build-tools' package also needed to be installed first. See
   [this document](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#environment-setup-and-configuration)

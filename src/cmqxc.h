@@ -13,13 +13,13 @@
  /*  <copyright                                                  */
  /*  notice="lm-source-program"                                  */
  /*  pids="5724-H72"                                             */
- /*  years="1993,2025"                                           */
+ /*  years="1993,2026"                                           */
  /*  crc="2042140514" >                                          */
  /*  Licensed Materials - Property of IBM                        */
  /*                                                              */
  /*  5724-H72                                                    */
  /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2025 All Rights Reserved.     */
+ /*  (C) Copyright IBM Corp. 1993, 2026 All Rights Reserved.     */
  /*                                                              */
  /*  US Government Users Restricted Rights - Use, duplication or */
  /*  disclosure restricted by GSA ADP Schedule Contract with     */
@@ -38,13 +38,13 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  10/3/25, 11:37 AM                             */
- /* Build Level:   p944-L251003                                  */
+ /* Generated on:  1/20/26, 9:18 AM                              */
+ /* Build Level:   p945-L260120                                  */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p944-L251003                                  */
- /* su=5a6d9bbecd43549d3b1be8d12c2bdf86e288a3d6                  */
+ /* @(#) MQMBID sn=p945-L260120                                  */
+ /* su=cf26678a1a640aba7dc4f9c41871946713dc9a38                  */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/

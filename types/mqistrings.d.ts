@@ -117,6 +117,7 @@ declare module "ibmmq" {
   function MQEI_STR(MQC_MQEI): string;
   function MQENC_STR(MQC_MQENC): string;
   function MQEPH_STR(MQC_MQEPH): string;
+  function MQERO_STR(MQC_MQERO): string;
   function MQET_STR(MQC_MQET): string;
   function MQEVO_STR(MQC_MQEVO): string;
   function MQEVR_STR(MQC_MQEVR): string;
