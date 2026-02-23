@@ -379,6 +379,8 @@ void unlock() {}
 // statements in the JS layer.
 // Use gmtime rather than localtime for reporting (the Z is the clue)
 void debugf(int level, const char *fmt, ...) {
+  const char *levelC = "D";
+
   if (logLevel >= level) {
     char buf[1024] = {0};
     char timebuf[32] = {0};
@@ -388,18 +390,26 @@ void debugf(int level, const char *fmt, ...) {
     vsnprintf(buf, sizeof(buf) - 1, fmt, va);
     va_end(va);
 
+    switch (level) {
+    case LOG_NONE: levelC = "N";break;
+    case LOG_DEBUG: levelC = "D";break;
+    case LOG_TRACE: levelC = "T";break;
+    case LOG_OBJECT: levelC = "O";break;
+    default: break;
+    }
+
     lock();
 
 #if defined(WIN32)
     SYSTEMTIME now;
     GetSystemTime(&now);
     snprintf(timebuf, sizeof(timebuf)-1, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ", now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond, now.wMilliseconds);
-    fprintf(stderr, "[%s] %s : %s", "mqnpi", timebuf, buf);
+    fprintf(stderr, "[%s] (%s) %s : %s", "mqnpi", levelC, timebuf, buf);
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%S", gmtime(&tv.tv_sec));
-    fprintf(stderr, "[%s] %s.%3.3dZ : %s", "mqnpi", timebuf, (int)(tv.tv_usec / 1000), buf);
+    fprintf(stderr, "[%s] (%s) %s.%3.3dZ : %s", "mqnpi", levelC, timebuf, (int)(tv.tv_usec / 1000), buf);
 #endif
 
     if (buf[strlen(buf) - 1] != '\n') {

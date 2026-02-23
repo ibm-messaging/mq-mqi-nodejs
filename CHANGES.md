@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## XX XXX 2026: v2.1.8
+* otel - Deal with MQSUB(MQSO_MANAGED) when discovering PROPCTL value
+
 ## 06 Feb 2026: v2.1.7
 * Update for MQ 9.4.5
 * Updated base Node engine to 20.19
