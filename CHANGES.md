@@ -2,7 +2,7 @@
 Newest updates are at the top of this file.
 
 ## 25 Feb 2026: v2.1.8
-* Remove eslint again (don't know how it crept back)
+* Remove eslint again (don't know how it crept back) (#202)
 * otel - Deal with MQSUB(MQSO_MANAGED) when discovering PROPCTL value
 
 ## 06 Feb 2026: v2.1.7
