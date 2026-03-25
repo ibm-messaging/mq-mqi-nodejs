@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'ibmmq_native',
-      'sources': [ 'src/mqi.cc' , 
+      'sources': [ 'src/mqi.cc' ,
                    'src/mqgeta.cc',
                    'src/mqconndisc.cc',
                    'src/mqcsp.cc',
@@ -34,32 +34,36 @@
                  ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")" , '.', './src' ],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
-    
+
       'cflags!': [ '-fno-exceptions','-g' ],
       'cflags_cc!': [ '-fno-exceptions','-g','-Wno-unused-but-set-variable' ],
-      'xcode_settings': {
-        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-        'CLANG_CXX_LIBRARY': 'libc++',
-        'MACOSX_DEPLOYMENT_TARGET': '10.7'
-      },
+
       'msvs_settings': {
         'VCCLCompilerTool': { 'ExceptionHandling': 1 },
       },
       'conditions': [
          ['OS=="linux"',  {
               'include_dirs' : [ '/opt/mqm/inc', '<@(redist_dir)/include' ] ,
-              'link_settings': { 
-                 'XXlibraries'   : ['-lmqm_r'],
-                 'ldflags'     : ['-Wl,-rpath,/opt/mqm/lib64 -Wl,-rpath,/usr/lib64 -Wl,-rpath,<@(redist_dir)/lib64 -L/opt/mqm/lib64 -L<@(redist_dir)/lib64' ] 
+              'link_settings': {
+                 'ldflags'     : ['-Wl,-rpath,/opt/mqm/lib64 -Wl,-rpath,/usr/lib64 -Wl,-rpath,<@(redist_dir)/lib64 -L/opt/mqm/lib64 -L<@(redist_dir)/lib64' ]
                },
-         },     
+         },
+         ],
+         ['OS=="mac"', {
+              'xcode_settings': {
+                'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                'CLANG_CXX_LIBRARY': 'libc++',
+                'MACOSX_DEPLOYMENT_TARGET': '13.0'
+              },
+              'include_dirs' : [ '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1' ],
+         },
          ],
          ['OS=="aix"',  {
               'cc': [ '/opt/freeware/bin/gcc' ],
               'CC': [ '/opt/freeware/bin/gcc' ],
               'cxx': [ '/opt/freeware/bin/gcc' ],
               'include_dirs' : [ '/usr/mqm/inc', '<@(redist_dir)/include' ] ,
-         },     
+         },
          ],
          ['OS=="win"', {
               'sources': [ 'src/win_dlfcn.cc' ],
