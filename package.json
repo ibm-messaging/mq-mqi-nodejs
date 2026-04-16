@@ -19,7 +19,7 @@
   "typings": "./types/index.d.ts",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.8",
-    "@types/node": "^22.8.1"
+    "@types/node": "^25.6.0"
   },
   "gypfile": true,
   "dependencies": {
