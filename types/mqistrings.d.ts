@@ -253,7 +253,9 @@ declare module "ibmmq" {
   function MQQSIE_STR(MQC_MQQSIE): string;
   function MQQSOT_STR(MQC_MQQSOT): string;
   function MQQSO_STR(MQC_MQQSO): string;
+  function MQQSR_STR(MQC_MQQSR): string;
   function MQQSUM_STR(MQC_MQQSUM): string;
+  function MQQS_STR(MQC_MQQS): string;
   function MQQT_STR(MQC_MQQT): string;
   function MQRAR_STR(MQC_MQRAR): string;
   function MQRCCF_STR(MQC_MQRCCF): string;

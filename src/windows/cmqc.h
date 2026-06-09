@@ -10,21 +10,8 @@
  /*                                                              */
  /****************************************************************/
  /*                                                              */
- /*  <copyright                                                  */
- /*  notice="lm-source-program"                                  */
- /*  pids="5724-H72"                                             */
- /*  years="1993,2026"                                           */
- /*  crc="2042140514" >                                          */
- /*  Licensed Materials - Property of IBM                        */
- /*                                                              */
- /*  5724-H72                                                    */
- /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2026 All Rights Reserved.     */
- /*                                                              */
- /*  US Government Users Restricted Rights - Use, duplication or */
- /*  disclosure restricted by GSA ADP Schedule Contract with     */
- /*  IBM Corp.                                                   */
- /*  </copyright>                                                */
+ /* PID 5724-H72                                                 */
+ /* Copyright IBM Corp. 1993, 2026                               */
  /*                                                              */
  /****************************************************************/
  /*                                                              */
@@ -38,8 +25,8 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  1/20/26, 9:18 AM                              */
- /* Build Level:   p945-L260120                                  */
+ /* Generated on:  5/22/26, 1:19 PM                              */
+ /* Build Level:   p1000-L260522                                 */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
@@ -2923,7 +2910,8 @@
  #define MQCMDL_LEVEL_943               943
  #define MQCMDL_LEVEL_944               944
  #define MQCMDL_LEVEL_945               945
- #define MQCMDL_CURRENT_LEVEL           945
+ #define MQCMDL_LEVEL_1000              1000
+ #define MQCMDL_CURRENT_LEVEL           1000
 
  /* Command Server Options */
  #define MQCSRV_CONVERT_NO              0

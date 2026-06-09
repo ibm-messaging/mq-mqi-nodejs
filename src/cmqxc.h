@@ -10,21 +10,8 @@
  /*                                                              */
  /****************************************************************/
  /*                                                              */
- /*  <copyright                                                  */
- /*  notice="lm-source-program"                                  */
- /*  pids="5724-H72"                                             */
- /*  years="1993,2026"                                           */
- /*  crc="2042140514" >                                          */
- /*  Licensed Materials - Property of IBM                        */
- /*                                                              */
- /*  5724-H72                                                    */
- /*                                                              */
- /*  (C) Copyright IBM Corp. 1993, 2026 All Rights Reserved.     */
- /*                                                              */
- /*  US Government Users Restricted Rights - Use, duplication or */
- /*  disclosure restricted by GSA ADP Schedule Contract with     */
- /*  IBM Corp.                                                   */
- /*  </copyright>                                                */
+ /* PID 5724-H72                                                 */
+ /* Copyright IBM Corp. 1993, 2026                               */
  /*                                                              */
  /****************************************************************/
  /*                                                              */
@@ -38,13 +25,13 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  1/20/26, 9:18 AM                              */
- /* Build Level:   p945-L260120                                  */
+ /* Generated on:  5/22/26, 1:19 PM                              */
+ /* Build Level:   p1000-L260522                                 */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p945-L260120                                  */
- /* su=cf26678a1a640aba7dc4f9c41871946713dc9a38                  */
+ /* @(#) MQMBID sn=p1000-L260522                                 */
+ /* su=636cd2c400c26142b34fc88b442c5ecdb2aac902                  */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/
@@ -70,7 +57,8 @@
  #define MQCD_VERSION_10                10
  #define MQCD_VERSION_11                11
  #define MQCD_VERSION_12                12
- #define MQCD_CURRENT_VERSION           12
+ #define MQCD_VERSION_13                13
+ #define MQCD_CURRENT_VERSION           13
 
  /* Structure Length */
  #define MQCD_LENGTH_1                  984
@@ -122,9 +110,14 @@
  #define MQCD_LENGTH_12                 1944
 #endif
 #if defined(MQ_64_BIT)
- #define MQCD_CURRENT_LENGTH            1992
+ #define MQCD_LENGTH_13                 2000
 #else
- #define MQCD_CURRENT_LENGTH            1944
+ #define MQCD_LENGTH_13                 1952
+#endif
+#if defined(MQ_64_BIT)
+ #define MQCD_CURRENT_LENGTH            2000
+#else
+ #define MQCD_CURRENT_LENGTH            1952
 #endif
 
  /* Channel Types */
@@ -214,6 +207,16 @@
  #define MQSPL_PASSTHRU                 0
  #define MQSPL_REMOVE                   1
  #define MQSPL_AS_POLICY                2
+
+ /* PQCR In Use */
+ #define MQQS_UNKNOWN                   (-1)
+ #define MQQS_UNPROTECTED               0
+ #define MQQS_HYBMLKEM                  1
+ #define MQQS_MLKEM                     2
+
+ /* PQCR Required */
+ #define MQQSR_OPTIONAL                 0
+ #define MQQSR_REQUIRED                 1
 
  /****************************************************************/
  /* Values Related to MQACH Structure                            */
@@ -1176,6 +1179,11 @@
    /* Ver:11 */
    MQLONG    SPLProtection;             /* SPL Protection */
    /* Ver:12 */
+   MQLONG    QuantumSafeAlgorithm;      /* Quantum Cryptography */
+                                        /* Algorithm */
+   MQLONG    QuantumSafeRequired;       /* Quantum Cryptography */
+                                        /* Requirement */
+   /* Ver:13 */
  };
 
  #define MQCD_DEFAULT {""},\
@@ -1282,7 +1290,9 @@
                       MQUSEDLQ_YES,\
                       MQRCN_NO,\
                       {""},\
-                      MQSPL_PASSTHRU
+                      MQSPL_PASSTHRU,\
+                      MQQS_UNPROTECTED,\
+                      MQQSR_OPTIONAL
 
 /* Initial values for MQCD when passed on MQCONNX function */
  #define MQCD_CLIENT_CONN_DEFAULT {""},\
@@ -1389,7 +1399,9 @@
                                   MQUSEDLQ_YES,\
                                   MQRCN_NO,\
                                   {""},\
-                                  MQSPL_PASSTHRU
+                                  MQSPL_PASSTHRU,\
+                                  MQQS_UNPROTECTED,\
+                                  MQQSR_OPTIONAL
 
  /****************************************************************/
  /* API Exit Chain Area Header                                   */
