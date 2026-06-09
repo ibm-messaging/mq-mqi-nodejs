@@ -24,5 +24,7 @@ declare module "ibmmq" {
     CertificateLabel: string;
     HdrCompList: MQC_MQCOMPRESS[];
     MsgCompList: MQC_MQCOMPRESS[];
+    QuantumSafeAlgorithm: MQC_MQQS;
+    QuantumSafeRequired: MQC_MQQSR;
   }
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2017, 2023
+  Copyright (c) IBM Corporation 2017, 2026
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   int i;
 
-  pmqcd->Version = 11;  // The latest version relevant to client channels (V12 exists, but doesn't have anything interesting for clients)
+  pmqcd->Version = MQCD_VERSION_11;
 
   setMQIString(env, pmqcd->ChannelName, jscd, "ChannelName", MQ_CHANNEL_NAME_LENGTH);
   setMQIString(env, pmqcd->ConnectionName, jscd, "ConnectionName", MQ_CONN_NAME_LENGTH);
@@ -34,7 +34,7 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   pmqcd->MaxMsgLength = getMQLong(jscd,"MaxMsgLength");
   pmqcd->HeartbeatInterval =getMQLong(jscd,"HeartbeatInterval");
   setMQIString(env, pmqcd->SSLCipherSpec, jscd, "SSLCipherSpec", MQ_SSL_CIPHER_SPEC_LENGTH);
-  
+
   Value v = jscd.Get("SSLPeerName");
   if (v.IsString()) {
     pmqcd->SSLPeerNamePtr = mqnStrdup(env,v.As<String>().Utf8Value().c_str());
@@ -48,7 +48,7 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   pmqcd->ClientChannelWeight = getMQLong(jscd,"ClientChannelWeight");
   pmqcd->ConnectionAffinity = getMQLong(jscd,"ConnectionAffinity");
   pmqcd->DefReconnect = getMQLong(jscd,"DefReconnect");
-  
+
   setMQIString(env, pmqcd->CertificateLabel, jscd, "CertificateLabel", MQ_CERT_LABEL_LENGTH);
 
   Array a = jscd.Get("HdrCompList").As<Array>();
@@ -60,6 +60,17 @@ void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {
   for (i = 0; i < 16; i++) {
     Value v = a[i];
     pmqcd->MsgCompList[i] = v.As<Number>().Int32Value();
+  }
+
+  pmqcd->QuantumSafeAlgorithm = getMQLong(jscd,"QuantumSafeAlgorithm");
+  pmqcd->QuantumSafeRequired  = getMQLong(jscd,"QuantumSafeRequired");
+  /* Only set these fields to be active if they are non-zero so we can       */
+  /* continue to use the older level of structure with older versions of the */
+  /* MQ client.*/
+  if ((pmqcd->QuantumSafeAlgorithm > 0 ) || (pmqcd->QuantumSafeRequired > 0)) {
+    if (pmqcd->Version < MQCD_VERSION_13) {
+        pmqcd->Version = MQCD_VERSION_13;
+    }
   }
 
   return;
