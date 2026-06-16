@@ -1,13 +1,13 @@
 "use strict";
 
 // External packages we require
-const fs = require("fs");
-const path = require("path");
-const http  = require("http");
-const https = require("https");
-const { ProxyAgent } = require("proxy-agent");
+import * as fs from "fs";
+import * as path from "path";
+import * as http from "http";
+import * as https from "https";
+import { ProxyAgent } from "proxy-agent";
 
-const execSync = require("child_process").execSync;
+import * as child_process from "child_process";
 
 // How to get to the MQ Redistributable Client package
 const protocol = "https://";
@@ -17,7 +17,7 @@ const redistDir=baseDir+"/redist";
 // const macDir=baseDir+"/mactoolkit";
 
 // This is the version (VRM) of MQ associated with this level of package
-let vrm="9.4.5";
+let vrm="10.0.0";
 // This is the default fixpack or CSU level that we might want to apply
 const defaultFp="0";
 
@@ -203,7 +203,7 @@ function removeUnneededWithGenMQPkg(fullNewBaseDir) {
     const psCmd="cd " + fullNewBaseDir + ";./bin/genmqpkg.sh -b " + debugGenOpt + " " + fullNewBaseDir;
 
     console.log("Running genmqpkg...");
-    execSync(psCmd, debugGenObj );
+    child_process.execSync(psCmd, debugGenObj );
     cleanup(0);
   }
 }
@@ -257,7 +257,7 @@ function removeUnneeded() {
 function isRunnable(cmd) {
     try {
       // Don't want to see any output from the command
-      execSync(cmd + " --help", { stdio:"ignore" });
+      child_process.execSync(cmd + " --help", { stdio:"ignore" });
     } catch (err) {
       console.error("ERROR: Cannot run command: %s. Make sure it is installed and in the PATH.", cmd);
       return false;
@@ -375,14 +375,14 @@ try {
         fs.closeSync(fd);
         const fullNewBaseDir=path.resolve(newBaseDir);
         console.log("Unpacking libraries into "+ fullNewBaseDir + "...");
-        execSync(unpackCommand);
+        child_process.execSync(unpackCommand);
         // On Windows we use PowerShell to do the unpacking of the zip
         // file. We can be "reasonably" certain that this will work. The Node.js
         // unzip packages seemed to sometimes create corrupt files silently.
         if (currentPlatform === "win32") {
           const psCmd = "Expand-Archive -Force -Path " + file + " -DestinationPath " + newBaseDir ;
           const psCmd2 = "powershell -command \"" + psCmd + "\"";
-          execSync(psCmd2, { windowsHide:true });
+          child_process.execSync(psCmd2, { windowsHide:true });
           removeUnneeded();
         } else {
           removeUnneededWithGenMQPkg(fullNewBaseDir);

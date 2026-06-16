@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## 16 Jun 2026: v2.1.9
+* Update for MQ 10.0.0
+* Convert postinstall script to mjs
+  * Note that npm 11.16.0 starts to warn about executing postinstalls
+
 ## 25 Feb 2026: v2.1.8
 * Remove eslint again (don't know how it crept back) (#202)
 * otel - Deal with MQSUB(MQSO_MANAGED) when discovering PROPCTL value

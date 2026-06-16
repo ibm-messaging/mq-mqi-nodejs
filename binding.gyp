@@ -30,7 +30,7 @@
                    'src/mqsd.cc',
                    'src/mqsro.cc',
                    'src/mqsts.cc',
-		   'src/mqtest.cc',
+                   'src/mqtest.cc',
                  ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")" , '.', './src' ],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
