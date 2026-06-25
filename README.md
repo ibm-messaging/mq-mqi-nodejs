@@ -194,6 +194,20 @@ cd <something>
 npm install ibmmq
 ~~~
 
+### NPM restrictions on installation scripts
+There are restrictions being introduced for scripts that are executed during `npm install`. This
+includes anything that requires processing of `binding.gyp` files. The `ibmmq` library has both
+a build step and a postinstall step that can be affected.
+
+The simplest solution will be to explicitly approve MQ's use of these scripts:
+
+```
+npm approve-scripts ibmmq
+```
+This updates your _package.json_ file.
+
+For more discussion and some alternative approaches see [this post](https://marketaylor.synology.me/?p=1912).
+
 ### Prerequisite components
 
 Installation of the package will automatically install any prerequisite packages downloadable from the npm repository.
