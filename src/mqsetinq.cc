@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the object property verbs in the MQI. They are always synchronous.
  */

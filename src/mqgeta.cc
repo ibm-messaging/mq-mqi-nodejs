@@ -84,6 +84,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 #include <chrono>
 #include <mutex>
 #include <thread>
@@ -427,17 +430,17 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
     break;
 
   case CB_READAHEAD:
-    // This is an alternative strategy for getting the messages off the queeu as fast as possbile, but at the cost
-    // of potential unreliabilty and overlapping work. Lots of callbacks can be scheduled to run "simultaneously" with
+    // This is an alternative strategy for getting the messages off the queue as fast as possible, but at the cost
+    // of potential unreliability and overlapping work. Lots of callbacks can be scheduled to run "simultaneously" with
     // their own message contents.We may decide here to delay callbacks a little while to allow the
     // PreJsCB functions a chance to catch up if we think there might be too many in a queue.
     // C++ automatically creates an object if you simply use x=myMap[unknown_key].So check the key exists
     // in the map first.
     if (connContextMap.count(hConn) == 1) {
       ConnContext *connContext = connContextMap[hConn];
-      if (connContext != NULL && connContext->queuedCount++ > config.maxConsecutiveGets) {
+      if (connContext != NULL) {
         connContext->mtx.lock();
-        // Test again under the lock
+        // Test under the lock
         if (connContext->queuedCount++ > config.maxConsecutiveGets) {
           connContext->queuedCount = 0;
           debugf(LOG_DEBUG, "mqnCB - delaying for a while on hConn %d after %d messages: %dms", hConn, config.maxConsecutiveGets, config.getLoopDelayTimeMs);
@@ -459,7 +462,10 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
   bool queued = false;
   int retries = 0;
 
-  //  processMtx.lock(); // Block all callbacks temporarily while we give the worker queue a chance to drain.
+  /* Block all callbacks temporarily while we give the worker queue a chance to drain.
+     Not considered necessary right now.
+     processMtx.lock();
+   */
 
   // Now add the user's callback (actually our NodeJS proxy function) to the queue to be executed
   //
@@ -483,7 +489,9 @@ void mqnCB(MQHCONN hConn, MQMD *pmqmd, MQGMO *pmqgmo, MQBYTE *buf, MQCBC *pConte
     }
   }
 
-  // processMtx.unlock();
+  /* If we do the lock, then here's the unlock
+     processMtx.unlock();
+   */
 
   return;
 }

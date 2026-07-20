@@ -13,8 +13,8 @@
 #include "win_dlfcn.h"
 #include <windows.h>
 
-/* Error code from last failure. Held as a global */
-static DWORD lastError = 0;
+/* Error code from last failure. */
+static thread_local DWORD lastError = 0;
 
 /**
  * Convert UTF-8 string to Windows UNICODE (UCS-2 LE).

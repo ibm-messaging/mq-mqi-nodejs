@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the message handle verbs in the MQI. They can only be called synchronously.
  */

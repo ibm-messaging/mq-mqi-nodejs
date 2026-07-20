@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQOD (object descriptor) structure. */
 
 void copyODtoC(Env env, Object jsod, PMQOD pmqod) {

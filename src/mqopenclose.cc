@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the MQOPEN/MQCLOSE verbs in the MQI. They can be called either synchronously or asynch.
  */

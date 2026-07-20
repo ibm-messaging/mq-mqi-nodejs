@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the MQPUT1 verb in the MQI. MQPUT can be called either synchronously or asynch.
  */

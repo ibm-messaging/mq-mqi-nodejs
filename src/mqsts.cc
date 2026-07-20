@@ -20,6 +20,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQSTS structure. */
 
 void copySTStoC(Env env, Object jssts, PMQSTS pmqsts) {

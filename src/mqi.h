@@ -34,46 +34,43 @@
 #endif
 #include <cmqxc.h>
 
-using namespace Napi;
-using namespace std;
-
-using BUC = Buffer<unsigned char>;
+using BUC = Napi::Buffer<unsigned char>;
 
 /* The MQI wrapper functions */
-Object CONNX(const CallbackInfo &info);
-Object DISC(const CallbackInfo &info);
-Object OPEN(const CallbackInfo &info);
-Object CLOSE(const CallbackInfo &info);
+Napi::Object CONNX(const Napi::CallbackInfo &info);
+Napi::Object DISC(const Napi::CallbackInfo &info);
+Napi::Object OPEN(const Napi::CallbackInfo &info);
+Napi::Object CLOSE(const Napi::CallbackInfo &info);
 
-Object BEGIN(const CallbackInfo &info);
-Object CMIT(const CallbackInfo &info);
-Object BACK(const CallbackInfo &info);
+Napi::Object BEGIN(const Napi::CallbackInfo &info);
+Napi::Object CMIT(const Napi::CallbackInfo &info);
+Napi::Object BACK(const Napi::CallbackInfo &info);
 
-Object SUB(const CallbackInfo &info);
-Object SUBRQ(const CallbackInfo &info);
-Object STAT(const CallbackInfo &info);
+Napi::Object SUB(const Napi::CallbackInfo &info);
+Napi::Object SUBRQ(const Napi::CallbackInfo &info);
+Napi::Object STAT(const Napi::CallbackInfo &info);
 
-Object INQ(const CallbackInfo &info);
-Object SET(const CallbackInfo &info);
+Napi::Object INQ(const Napi::CallbackInfo &info);
+Napi::Object SET(const Napi::CallbackInfo &info);
 
-Object PUT(const CallbackInfo &info);
-Object PUT1(const CallbackInfo &info);
-Object GET(const CallbackInfo &info);
-Object GETASYNC(const CallbackInfo &info);
-Object GETDONE(const CallbackInfo &info);
-Object CTL(const CallbackInfo &info);
+Napi::Object PUT(const Napi::CallbackInfo &info);
+Napi::Object PUT1(const Napi::CallbackInfo &info);
+Napi::Object GET(const Napi::CallbackInfo &info);
+Napi::Object GETASYNC(const Napi::CallbackInfo &info);
+Napi::Object GETDONE(const Napi::CallbackInfo &info);
+Napi::Object CTL(const Napi::CallbackInfo &info);
 
-Object CRTMH(const CallbackInfo &info);
-Object DLTMH(const CallbackInfo &info);
+Napi::Object CRTMH(const Napi::CallbackInfo &info);
+Napi::Object DLTMH(const Napi::CallbackInfo &info);
 
-Object SETMP(const CallbackInfo &info);
-Object DLTMP(const CallbackInfo &info);
-Object INQMP(const CallbackInfo &info);
+Napi::Object SETMP(const Napi::CallbackInfo &info);
+Napi::Object DLTMP(const Napi::CallbackInfo &info);
+Napi::Object INQMP(const Napi::CallbackInfo &info);
 
-void SetTuningParameters(const CallbackInfo &Info);
+void SetTuningParameters(const Napi::CallbackInfo &Info);
 
 /* To permit test code */
-void TESTSP(const CallbackInfo &info);
+void TESTSP(const Napi::CallbackInfo &info);
 
 /* How to get from the dlsym pointers to the real functions */
 /* The varargs elements are the types of the parameters to each call - MQLONG, PMQMD etc */
@@ -114,35 +111,35 @@ void Sus(MQHCONN);
 void Res(MQHCONN);
 
 /* Structure transformations into/out of JS format */
-void copyODtoC(Env, Object, PMQOD);
-void copyODfromC(Env, Object, PMQOD);
+void copyODtoC(Napi::Env, Napi::Object, PMQOD);
+void copyODfromC(Napi::Env, Napi::Object, PMQOD);
 
-void copyMDtoC(Env, Object, PMQMD);
-void copyMDfromC(Env, Object, PMQMD);
+void copyMDtoC(Napi::Env, Napi::Object, PMQMD);
+void copyMDfromC(Napi::Env, Napi::Object, PMQMD);
 
-void copyGMOtoC(Env, Object, PMQGMO);
-void copyGMOfromC(Env, Object, PMQGMO);
+void copyGMOtoC(Napi::Env, Napi::Object, PMQGMO);
+void copyGMOfromC(Napi::Env, Napi::Object, PMQGMO);
 
-void copyPMOtoC(Env, Object, PMQPMO);
-void copyPMOfromC(Env, Object, PMQPMO);
+void copyPMOtoC(Napi::Env, Napi::Object, PMQPMO);
+void copyPMOfromC(Napi::Env, Napi::Object, PMQPMO);
 
-void copySDtoC(Env, Object, PMQSD);
-void copySDfromC(Env, Object, PMQSD);
+void copySDtoC(Napi::Env, Napi::Object, PMQSD);
+void copySDfromC(Napi::Env, Napi::Object, PMQSD);
 
-void copySROtoC(Env, Object, PMQSRO);
-void copySROfromC(Env, Object, PMQSRO);
+void copySROtoC(Napi::Env, Napi::Object, PMQSRO);
+void copySROfromC(Napi::Env, Napi::Object, PMQSRO);
 
-void copySTStoC(Env env, Object jssts, PMQSTS pmqsts);
-void copySTSfromC(Env env, Object jssts, PMQSTS pmqsts);
+void copySTStoC(Napi::Env env, Napi::Object jssts, PMQSTS pmqsts);
+void copySTSfromC(Napi::Env env, Napi::Object jssts, PMQSTS pmqsts);
 
-void copyCSPtoC(Env, Object, PMQCSP);
-void copyCSPfromC(Env, Object, PMQCSP);
-void copyCDtoC(Env, Object, PMQCD);
-void copyCDfromC(Env, Object, PMQCD);
-void copySCOtoC(Env, Object, PMQSCO);
-void copySCOfromC(Env, Object, PMQSCO);
-void copyBNOtoC(Env, Object, PMQBNO);
-void copyBNOfromC(Env, Object, PMQBNO);
+void copyCSPtoC(Napi::Env, Napi::Object, PMQCSP);
+void copyCSPfromC(Napi::Env, Napi::Object, PMQCSP);
+void copyCDtoC(Napi::Env, Napi::Object, PMQCD);
+void copyCDfromC(Napi::Env, Napi::Object, PMQCD);
+void copySCOtoC(Napi::Env, Napi::Object, PMQSCO);
+void copySCOfromC(Napi::Env, Napi::Object, PMQSCO);
+void copyBNOtoC(Napi::Env, Napi::Object, PMQBNO);
+void copyBNOfromC(Napi::Env, Napi::Object, PMQBNO);
 
 void cleanupCSP(PMQCSP);
 void cleanupCD(PMQCD);
@@ -154,31 +151,31 @@ void cleanupConnectionContext(MQHCONN);
 void resumeConnectionContext(MQHCONN);
 
 /* Field manipulation functions */
-void setMQIString(Env env, char *out, Object in, const char *field, size_t len);
-void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size_t len);
-String getMQIString(Env env, PMQCHAR in, size_t len);
-void getMQIBytes(Env env, unsigned char *in, Object out, const char *field, size_t len);
-void setMQICharV(Env env, PMQCHARV v, Object in, const char *field, bool output);
-String getMQICharV(Env env, PMQCHARV v, bool free);
-int32_t getMQLong(Object, const char *);
+void setMQIString(Napi::Env env, char *out, Napi::Object in, const char *field, size_t len);
+void setMQIBytes(Napi::Env env, unsigned char *out, Napi::Object in, const char *field, size_t len);
+Napi::String getMQIString(Napi::Env env, PMQCHAR in, size_t len);
+void getMQIBytes(Napi::Env env, unsigned char *in, Napi::Object out, const char *field, size_t len);
+void setMQICharV(Napi::Env env, PMQCHARV v, Napi::Object in, const char *field, bool output);
+Napi::String getMQICharV(Napi::Env env, PMQCHARV v, bool free);
+int32_t getMQLong(Napi::Object, const char *);
 
 /* Memory allocation functions */
 void mqnFree(void *);
 void mqnFreeString(void *);
-char *mqnStrdup(Env, const char *);
-void *mqnAlloc(Env, size_t l);
+char *mqnStrdup(Napi::Env, const char *);
+void *mqnAlloc(Napi::Env, size_t l);
 
 /* Debug functions */
 void debugf(int, const char *fmt, ...);
-void debugDest(Env env, void *s);
-void dumpObject(Env env, const char *, Object o);
+void debugDest(Napi::Env env, void *s);
+void dumpObject(Napi::Env env, const char *, Napi::Object o);
 void dumpHex(const char *title, void *buf, int length);
 
 const char *napiType(napi_valuetype t);
 
-void throwTE(Env env, std::string s1, std::string s2);
-void throwRE(Env env, std::string s1, std::string s2);
-void throwError(Env env, std::string s1);
+void throwTE(Napi::Env env, std::string s1, std::string s2);
+void throwRE(Napi::Env env, std::string s1, std::string s2);
+void throwError(Napi::Env env, std::string s1);
 
 #define LOG_NONE (0)
 #define LOG_DEBUG (1)
@@ -194,9 +191,9 @@ extern bool defaultUseCtl;
 
 class Configuration {
 public:
-  string platform;
-  string arch;
-  FunctionReference noopFnRef;
+  std::string platform;
+  std::string arch;
+  Napi::FunctionReference noopFnRef;
 
   // For tuning the async get routines
   int maxConsecutiveGets = maxConsecutiveGetsDefault;

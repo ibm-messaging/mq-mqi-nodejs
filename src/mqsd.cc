@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQSD (subscription descriptor) structure. */
 
 

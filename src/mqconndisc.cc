@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the MQCONNX/MQDISC verbs. Both can be called either syncronously or asynch.
  */

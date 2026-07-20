@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQCD (channel definition) structure */
 
 void copyCDtoC(Env env, Object jscd, PMQCD pmqcd) {

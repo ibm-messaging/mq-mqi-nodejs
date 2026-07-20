@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the subscription management verbs in the MQI. MQSUB can be called either synchronously or asynch.
  * MQSUBRQ is always synchronous.

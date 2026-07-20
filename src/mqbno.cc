@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQBNO structure */
 
 void copyBNOtoC(Env env, Object jsbno, PMQBNO pmqbno) {

@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /*
  * Invocations of the MQGET verb in the MQI. MQGET can be called either synchronously or asynch. However, this
  * is still fundamentally a synchronous call to the MQI. See mqgeta.cc for the true asynchronous processing using

@@ -26,6 +26,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 #if defined(WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <time.h>
@@ -36,10 +39,6 @@
 #include <sys/time.h>
 #endif
 #include <errno.h>
-
-#if 0
-#include <mutex>
-#endif
 
 Configuration config = Configuration();
 int logLevel = 0;
@@ -79,7 +78,7 @@ void mqnFree(void *p) {
 // before freeing the buffer
 void mqnFreeString(void *p) {
   if (p) {
-    memset(p, 0, strlen((char *)p));
+    memset(p, 0, strlen((char *)p) + 1); // Include the NULL that's already there, just for consistency
     free(p);
   }
 }
@@ -109,8 +108,8 @@ void Configure(const CallbackInfo &info) {
   debugf(LOG_TRACE, "Configure has loglevel %d", logLevel);
   debugf(LOG_TRACE, "Library built: %s %s", __DATE__,__TIME__);
   debugf(LOG_TRACE, "Initial TuningParms: platform:%s arch:%s maxConsecutiveGets:%d getLoopDelayTimeMs:%d useCtl:%s autoCtl:%s",
-    config.platform.c_str(), config.arch.c_str(), 
-    config.maxConsecutiveGets, config.getLoopDelayTimeMs, 
+    config.platform.c_str(), config.arch.c_str(),
+    config.maxConsecutiveGets, config.getLoopDelayTimeMs,
     config.useCtl?"true":"false", config.autoCtl?"true":"false");
 
 
@@ -366,6 +365,7 @@ String getMQICharV(Env env, PMQCHARV v, bool free) {
 
 #if 0
 // We may end up needing locking around the debug printing. So we can turn on this block
+// For now, adding mutexes around the output is unnecessary
 std::mutex mtx;
 void lock() { mtx.lock();}
 void unlock() { mtx.unlock();}

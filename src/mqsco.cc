@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQSCO structure */
 
 void copySCOtoC(Env env, Object jssco, PMQSCO pmqsco) {

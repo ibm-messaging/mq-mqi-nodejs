@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 /* Conversion routines for the MQCSP structure. There's no need to copy anything back from 
  * the C structure post-call.
  *

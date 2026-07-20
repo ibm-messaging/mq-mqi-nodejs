@@ -1,6 +1,9 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## xx xxx 2026: v2.1.10
+* Various code hygiene cleanups
+
 ## 16 Jun 2026: v2.1.9
 * Update for MQ 10.0.0
 * Convert postinstall script to mjs

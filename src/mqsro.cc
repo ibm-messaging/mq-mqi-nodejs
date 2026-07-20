@@ -19,6 +19,9 @@
 
 #include "mqi.h"
 
+using namespace Napi;
+using namespace std;
+
 void copySROtoC(Env env, Object jssro, PMQSRO pmqsro) {
   pmqsro->Options = getMQLong(jssro,"Options");
   pmqsro->NumPubs = getMQLong(jssro,"NumPubs");
