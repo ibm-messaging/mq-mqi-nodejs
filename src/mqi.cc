@@ -271,10 +271,10 @@ void setMQIBytes(Env env, unsigned char *out, Object in, const char *field, size
 String getMQIString(Env env, PMQCHAR in, size_t len) {
   // debugf(LOG_DEBUG,"GetMQIString: input: \"%-*.*s\" %d", len, len, in, len);
   int l = len - 1;
-  while ((in[l] == ' ' || in[l] == 0) && l > 0) {
+  while (l >= 0 && (in[l] == ' ' || in[l] == 0)) {
     l--;
   }
-  // debugf(LOg_DEBUG,"    Len of returned string = %d", l);
+  // debugf(LOG_DEBUG,"    Len of returned string = %d", l + 1);
   String rc = String::New(env, in, l + 1);
   return rc;
 }
