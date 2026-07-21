@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy this file to config.json and edit as needed. All keys are optional — omitted keys fall back to built-in defaults.",
+
+  "qmgr":  "QM1",
+  "queue": "DEV.QUEUE.1",
+  "topic": "dev/JSTopic",
+
+  "clientHost":    "localhost(1414)",
+  "clientChannel": "DEV.APP.SVRCONN",
+  "clientUser":    "app",
+  "clientPass":    "passw0rd",
+
+  "tlsHost":    "localhost(1414)",
+  "tlsChannel": "SYSTEM.SSL.SVRCONN",
+  "tlsCipher":  "ANY_TLS12_OR_HIGHER",
+  "tlsKeyRepo": "/var/mqm/ssl/key"
+}

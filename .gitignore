@@ -1,0 +1,45 @@
+# Don't want to include dependencies
+node_modules
+
+package-lock.json
+
+npm-debug.log
+
+# User config that should not be committed
+unittests/config.json
+
+# Directories that might have some debug logs
+lib/out
+lib/trc
+lib/tmp
+# Other log files
+npm-debug.log
+
+# Various directories that hold working material
+tools/
+doc/
+tests.untracked/
+samples.untracked/
+defects/
+issues/
+redist/
+archive/
+dist/
+build/
+prebuilds/*
+test/
+*.old
+
+# Scripts for easy tests
+t
+t2
+t.out
+
+# TLS keystores
+samples/mykey.*
+
+# Binaries
+*.tgz
+
+# Temporary files
+samples/typescript/*.js
