@@ -1,6 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
+## Unreleased
+* otel - Don't put an invalid message handle into the PMO/GMO when MQCRTMH fails (#208). This
+  turned a failed trace-propagation attempt into `TypeError: Cannot convert undefined to
+  a BigInt` from the application's MQPUT/MQGET
+
 ## 16 Jun 2026: v2.1.9
 * Update for MQ 10.0.0
 * Convert postinstall script to mjs
