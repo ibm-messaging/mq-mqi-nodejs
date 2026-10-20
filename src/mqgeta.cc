@@ -1,5 +1,5 @@
 /*
-  Copyright (c) IBM Corporation 2023, 2025
+  Copyright (c) IBM Corporation 2023, 2026
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -87,9 +87,11 @@
 using namespace Napi;
 using namespace std;
 
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 class ObjContext {
 public:
@@ -101,6 +103,11 @@ public:
   struct {
     int removeRFH2;
   } OtelOpts;
+  // Set to true when the context has been evicted from objContextMap.
+  // The actual delete is deferred to the main thread (PreJsCB / TSFN finalizer)
+  // to avoid calling napi_delete_reference from the wrong thread or while a
+  // queued TSFN callback is still mid-flight.
+  std::atomic<bool> dead{false};
 };
 
 class ConnContext {
@@ -113,6 +120,9 @@ public:
 
 static map<string, ObjContext *> objContextMap;
 static map<MQLONG, ConnContext *> connContextMap;
+// Contexts evicted from objContextMap that are waiting to be deleted on the
+// main thread once any in-flight TSFN callbacks have finished using them.
+static vector<ObjContext *> pendingFree;
 
 #define HOBJ_WILDCARD (-2)
 
@@ -133,13 +143,32 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data);
 
 /* Make it simpler to type the types */
 using TSFN = TypedThreadSafeFunction<Context, ReturnedData, PreJsCB>;
-void FinalizerCallback(Env env, void *finalizeData, Context *context) { debugf(LOG_TRACE, "TSFN Finalizer Callback"); };
 
 string makeKey(MQHCONN hConn, MQHOBJ hObj);
 
 static TSFN tsfn;
 static bool initialised = false;
 static mutex processMtx;
+
+// Free all ObjContexts that have been tombstoned and are no longer referenced
+// by any in-flight TSFN callback. Must only be called from the main (JS) thread.
+static void drainPendingFree() {
+  processMtx.lock();
+  vector<ObjContext *> toFree;
+  toFree.swap(pendingFree);
+  processMtx.unlock();
+  for (ObjContext *ctx : toFree) {
+    debugf(LOG_DEBUG, "drainPendingFree: deleting ObjContext %p", ctx);
+    delete ctx;
+  }
+}
+
+void FinalizerCallback(Env env, void *finalizeData, Context *context) {
+  debugf(LOG_TRACE, "TSFN Finalizer Callback");
+  // The TSFN queue is now fully drained; no more PreJsCB calls will come.
+  // It is safe to delete any contexts that were waiting.
+  drainPendingFree();
+};
 
 enum CB_STRATEGY { CB_SYNCED, CB_READAHEAD };
 CB_STRATEGY callbackStrategy = CB_SYNCED;
@@ -228,23 +257,31 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
       int mapCount = objContextMap.count(key);
       if (mapCount == 1) {
-        debugf(LOG_DEBUG, "have found a matching key for hObj %d",data->hObj);
-
         ObjContext *objContext = objContextMap[key];
-        Function f = objContext->appCBRef.Value().As<Function>();
+        // The context may have been tombstoned by cleanupObjectContext after it
+        // was queued into the TSFN but before we got here. If so, skip it —
+        // the entry will have been removed from objContextMap already so this
+        // branch should not normally be reached, but guard defensively.
+        if (!objContext->dead.load(std::memory_order_acquire)) {
+          debugf(LOG_DEBUG, "have found a matching key for hObj %d",data->hObj);
 
-        o = objContext->result.Value();
-        o.Set("appCB", f);
-        o.Set("jsHObj", objContext->jsHObjRef.Value());
-        o.Set("jsCc", Number::New(env, data->mqcc));
-        o.Set("jsRc", Number::New(env, data->mqrc));
-        o.Set("jsCallType", Number::New(env, data->callType));
+          Function f = objContext->appCBRef.Value().As<Function>();
 
-        Object otelOpts = Object::New(env);
-        otelOpts.Set("RemoveRFH2", Boolean::New(env,objContext->OtelOpts.removeRFH2?true:false));
-        o.Set("jsOtelOpts",otelOpts);
+          o = objContext->result.Value();
+          o.Set("appCB", f);
+          o.Set("jsHObj", objContext->jsHObjRef.Value());
+          o.Set("jsCc", Number::New(env, data->mqcc));
+          o.Set("jsRc", Number::New(env, data->mqrc));
+          o.Set("jsCallType", Number::New(env, data->callType));
 
-        foundCb = true;
+          Object otelOpts = Object::New(env);
+          otelOpts.Set("RemoveRFH2", Boolean::New(env,objContext->OtelOpts.removeRFH2?true:false));
+          o.Set("jsOtelOpts",otelOpts);
+
+          foundCb = true;
+        } else {
+          debugf(LOG_DEBUG, "PreJsCB - context for hObj %d is dead, skipping", data->hObj);
+        }
       } else if (data->callType == MQCBCT_EVENT_CALL) {
         // The qmgr does sometimes call us for EVENTS even when we've not
         // explicitly registered an event handler. The MQ Client library
@@ -261,6 +298,9 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
           string mapKey = it->first;
           if (mapKey.find(key, 0) == 0) { // startswith()
             ObjContext *objContext = objContextMap[mapKey];
+            if (objContext->dead.load(std::memory_order_acquire)) {
+              continue; // tombstoned — try next entry
+            }
             Function f = objContext->appCBRef.Value().As<Function>();
 
             o = objContext->result.Value();
@@ -315,6 +355,10 @@ void PreJsCB(Env env, Function callback, Context *context, ReturnedData *data) {
 
   // We don't need the returnedData structure any more */
   delete (data);
+
+  // We are on the main JS thread here, so it is safe to delete any ObjContexts
+  // that were tombstoned by cleanupObjectContext since the last PreJsCB ran.
+  drainPendingFree();
 }
 
 // May have many of these invoked before preJsCB gets executed
@@ -664,6 +708,8 @@ Object GETDONE(const CallbackInfo &info) {
   Object result = Object::New(env);
   cleanupObjectContext(hConn, hObj, &CC, &RC, true);
 
+  // printf("!! IN SOME GETDONE PROCESSING\n");
+
   result.Set("jsCc", Number::New(env, CC));
   result.Set("jsRc", Number::New(env, RC));
 
@@ -769,12 +815,24 @@ bool cleanupObjectContext(MQHCONN hConn, MQHOBJ hObj, PMQLONG pCC, PMQLONG pRC, 
   //processMtx.lock(); // Locking is probably unnecessary
   if (objContextMap.count(key) == 1) {
     ObjContext *objContext = objContextMap[key];
-    delete (objContext);
-    if (resume) {
-      objContextMap.erase(key);
-    }
+
+    // Tombstone the context so that any PreJsCB callbacks still queued in the
+    // TSFN will skip it rather than use its (about-to-be-invalidated) napi refs.
+    // The context must be deleted on the main JS thread, so instead of calling
+    // delete here we push it onto pendingFree. PreJsCB / FinalizerCallback will
+    // drain that list on the main thread once no in-flight callbacks remain.
+    objContext->dead.store(true, std::memory_order_release);
+    processMtx.lock();
+    pendingFree.push_back(objContext);
+    processMtx.unlock();
+
+    // Always erase the map entry so that PreJsCB never finds a tombstoned pointer.
+    objContextMap.erase(key);
     toDelete = true;
   }
+
+
+  debugf(LOG_DEBUG, "cleanupObjectContext - Done the map deletion");
 
   _MQCTL(hConn, MQOP_SUSPEND, &mqctlo, pCC, pRC);
   debugf(LOG_DEBUG, "cleanupObjectContext - MQCTL(1) CC:%d RC %d", *pCC, *pRC);
@@ -820,26 +878,20 @@ void cleanupConnectionContext(MQHCONN hConn) {
 
   processMtx.lock(); /* Protect against attempts to MQDISC from two environments */
 
-  // Don't need to call MQCB, just remove all object contexts for this hConn
+  // Collect the hObj values to clean up while holding the lock, but do not
+  // call cleanupObjectContext yet — it also acquires processMtx internally.
   string key = makeKey(hConn, HOBJ_WILDCARD);
-  for (auto it = objContextMap.begin(); it != objContextMap.end();) {
+  vector<MQLONG> hObjsToClean;
+  for (auto it = objContextMap.begin(); it != objContextMap.end(); ++it) {
     string mapKey = it->first;
-
     if (mapKey.find(key, 0) == 0) { // startswith()
       size_t idx = mapKey.find("/", 0);
       if (idx != string::npos && idx < (mapKey.length() - 1)) {
         try {
           auto hObjStr = mapKey.substr(idx + 1); // step past the "/"
-          auto hObj = stoi(hObjStr, nullptr);
-          // Ignore any problems removing the message listener.
-          if (cleanupObjectContext(hConn, hObj, &CC, &RC, false)) {
-            it = objContextMap.erase(it); // Can't erase items in the iteration itself
-          } else {
-            it++;
-          }
+          hObjsToClean.push_back(stoi(hObjStr, nullptr));
         } catch (exception &e) {
-          // Bad value - catch the exception just in case there's something odd in the map key
-          debugf(LOG_DEBUG,"Caught exception - processing %s in stio: %s ",mapKey.c_str(),e.what());
+          debugf(LOG_DEBUG,"Caught exception - processing %s in stoi: %s ",mapKey.c_str(),e.what());
         }
       }
     }
@@ -853,6 +905,12 @@ void cleanupConnectionContext(MQHCONN hConn) {
     }
   }
   processMtx.unlock();
+
+  // Now call cleanupObjectContext outside the lock. It will acquire processMtx
+  // itself when pushing to pendingFree, and will erase the map entry.
+  for (MQLONG hObj : hObjsToClean) {
+    cleanupObjectContext(hConn, hObj, &CC, &RC, false);
+  }
 }
 
 void Sus(MQHCONN hConn) {

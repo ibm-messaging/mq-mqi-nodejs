@@ -35,8 +35,10 @@
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")" , '.', './src' ],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
 
-      'cflags!': [ '-fno-exceptions','-g' ],
-      'cflags_cc!': [ '-fno-exceptions','-g','-Wno-unused-but-set-variable' ],
+      'cflags!':    [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions','-Wno-unused-but-set-variable' ],
+      'cflags_cc':  [ '-g' ],
+      'cflags':     [ '-g' ],
 
       'msvs_settings': {
         'VCCLCompilerTool': { 'ExceptionHandling': 1 },

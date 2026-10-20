@@ -1,6 +1,6 @@
 {
   "name": "ibmmq",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "description": "Bindings to call IBM MQ API",
   "main": "./lib/mqi.js",
   "scripts": {
@@ -18,16 +18,16 @@
   },
   "typings": "./types/index.d.ts",
   "devDependencies": {
-    "@tsconfig/recommended": "^1.0.8",
-    "@types/node": "^25.6.0"
+    "@tsconfig/recommended": "^1.0.13",
+    "@types/node": "^26.6.5"
   },
   "gypfile": true,
   "dependencies": {
-    "node-addon-api": "^8.8.0",
+    "node-addon-api": "^8.9.2",
     "node-gyp": "^12.3.0",
     "node-gyp-build": "^4.8.4",
     "prebuildify": "^6.0.1",
-    "proxy-agent": "^8.0.1"
+    "proxy-agent": "^8.0.2"
   },
   "engines": {
     "node": ">=20.19"

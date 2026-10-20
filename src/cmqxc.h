@@ -25,13 +25,13 @@
 
  /****************************************************************/
  /* <BEGIN_BUILDINFO>                                            */
- /* Generated on:  5/22/26, 1:19 PM                              */
- /* Build Level:   p1000-L260522                                 */
+ /* Generated on:  9/22/26, 2:55 PM                              */
+ /* Build Level:   p1001-L260922                                 */
  /* Build Type:    Production                                    */
  /* Pointer Size:  32 Bit, 64 Bit                                */
  /* Source File:                                                 */
- /* @(#) MQMBID sn=p1000-L260522                                 */
- /* su=636cd2c400c26142b34fc88b442c5ecdb2aac902                  */
+ /* @(#) MQMBID sn=p1001-L260922                                 */
+ /* su=6bc8d1b5b5332280d75028d55dd4e52901fdfd30                  */
  /* pn=com.ibm.mq.famfiles.data/xml/approved/cmqxc.xml           */
  /* <END_BUILDINFO>                                              */
  /****************************************************************/
@@ -195,6 +195,8 @@
  #define MQPROTO_HTTP                   2
  #define MQPROTO_AMQP                   3
  #define MQPROTO_MQTTV311               4
+ #define MQPROTO_MQTTV5                 5
+ #define MQPROTO_MQTTV5_MASK            8
 
  /* Security Protocol */
  #define MQSECPROT_NONE                 0

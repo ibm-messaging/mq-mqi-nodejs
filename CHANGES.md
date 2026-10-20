@@ -1,9 +1,11 @@
 # Changelog
 Newest updates are at the top of this file.
 
-## xx xxx 2026: v2.1.10
+## 20 Oct 2026: v2.1.10
+* Update for MQ 10.0.1
 * Various code hygiene cleanups
 * Add some unit tests
+* Updated DEPRECATIONS.md
 
 ## 16 Jun 2026: v2.1.9
 * Update for MQ 10.0.0

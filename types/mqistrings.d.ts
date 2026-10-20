@@ -7,6 +7,7 @@ declare module "ibmmq" {
   function MQADOPT_TYPE_STR(MQC_MQADOPT_TYPE): string;
   function MQADPCTX_STR(MQC_MQADPCTX): string;
   function MQAIT_STR(MQC_MQAIT): string;
+  function MQAM_STR(MQC_MQAM): string;
   function MQAPPL_STR(MQC_MQAPPL): string;
   function MQAS_STR(MQC_MQAS): string;
   function MQAT_STR(MQC_MQAT): string;

@@ -1,3 +1,6 @@
+## 20 Oct 2026: v2.1.10
+* This will be the last version to be built against Node 20
+  * Future versions will require a minimum of Node 22.
 
 ## 16 Oct 2025: v2.1.6
 * This will be the last version to be built against Node 18.

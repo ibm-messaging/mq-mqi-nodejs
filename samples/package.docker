@@ -6,7 +6,7 @@
   "author": "Mark Taylor",
   "license": "Apache-2.0",
   "dependencies": {
-    "ibmmq": ">=2.1.9"
+    "ibmmq": ">=2.1.10"
   },
   "allowScripts": {
     "ibmmq": true
