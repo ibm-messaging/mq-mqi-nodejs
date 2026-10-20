@@ -6,6 +6,7 @@ Newest updates are at the top of this file.
 * Various code hygiene cleanups
 * Add some unit tests
 * Updated DEPRECATIONS.md
+* Fix for #208 - deal with invalid MH
 
 ## 16 Jun 2026: v2.1.9
 * Update for MQ 10.0.0
