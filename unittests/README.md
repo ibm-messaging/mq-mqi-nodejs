@@ -92,11 +92,11 @@ node --test unittests/tc_basic.js -- \
   default) and a user `app` with password `passw0rd`.
 - **TC7** requires a TLS-enabled SVRCONN channel (`SYSTEM.SSL.SVRCONN` by
   default) and a key repository that trusts the queue manager's certificate.
-  The sample keystore at `samples/mykey` (no extension) can be used for a
-  local developer queue manager:
+  The default for simplicity is to use the same keystore as QM1, in /var/mqm/ssl.
+
 
   ```sh
   node --test unittests/tc_tls.js -- QM1 DEV.QUEUE.1 dev/JSTopic \
     localhost(1414) DEV.APP.SVRCONN app passw0rd \
-    localhost(1414) SYSTEM.SSL.SVRCONN ANY_TLS12_OR_HIGHER ./samples/mykey
+    localhost(1414) SYSTEM.SSL.SVRCONN ANY_TLS12_OR_HIGHER unittests/key
   ```
