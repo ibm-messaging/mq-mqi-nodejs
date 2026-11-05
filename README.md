@@ -249,23 +249,22 @@ at security vulnerabilities (CSU packages). You can override both the version (V
 assuming that full VRMF level is still available for download. Setting the environment variables `MQIJS_VRM` and
 `MQIJS_FIXPACK` will select a specific Redistributable Client package to be installed. Note that installing an older VRM
 than the default in the current version of this package may not work, if newer options have been introduced to the MQI.
-At the time of writing this paragraph, the latest version of MQ was 9.2.0 (with no later CD releases), but there was
-also a 9.2.0.1 fixpack. If you want to pick that up instead of the base 9.2.0.0 referred to in postinstall.js, then set
-`MQIJS_FIXPACK=1` before running `npm install`. Once newer CD levels are available, then the postinstall script will
-point at those instead by default. If you want to select a CSU level (very similar to a fixpack, but with a more limited
-scope) then the same environment variable can be used.
+If you want to select a CSU level (very similar to a fixpack, but with a more limited scope) then the same environment
+variable can be used.
 
 ### Setting environment variables for the installation process
 
-The MQIJS_* environment variables used during  `npm install` can also be set in an *.npmrc* file.  These are more commonly
-written in lowercase, so `export MQIJS_VRM=9.3.4` would become `mqijs_vrm=9.3.4` in the NPM configuration file. But
-the package does attempt to reference a variety of case options. The real environment variable takes precedence over the
-*.npmrc* setting.
+The MQIJS_* environment variables used during `npm install` can also be set in an *.npmrc* file. These are more commonly
+written in lowercase, so `export MQIJS_VRM=9.3.4` would become `mqijs_vrm=9.3.4` in the NPM configuration file. But the
+package does attempt to reference a variety of case options. The real environment variable takes precedence over the
+*.npmrc* setting. However, note that future versions of `npm` are likely to disable non-standard environment variables
+which are configured in this way.
 
 ### Downloading behind a proxy
 
 Downloading the Redistributable C Client libraries behind a proxy is supported. Use the environment variables
-`https_proxy` and `no_proxy` to control proxy behaviour.
+`https_proxy`, `http_proxy` and `no_proxy` to control proxy behaviour. Either of the `http_proxy` or `https_proxy`
+environment variables will work, regardless of the protocol in the real URL.
 
 For example, the following command will use a proxy server at `http://localhost:8080` to download the redistributable
 libraries:

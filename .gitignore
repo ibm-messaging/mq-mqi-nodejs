@@ -1,10 +1,6 @@
 # Don't want to include dependencies
 node_modules
 
-package-lock.json
-
-npm-debug.log
-
 # User config that should not be committed
 unittests/config.json
 
@@ -15,24 +11,25 @@ lib/tmp
 # Other log files
 npm-debug.log
 
-# Various directories that hold working material
+# Various directories from my tree that hold working material
 tools/
 doc/
 tests.untracked/
 samples.untracked/
-defects/
 issues/
 redist/
-archive/
 dist/
 build/
 prebuilds/*
 test/
+archive/
+
 *.old
 
-# Scripts for easy tests
+# Scripts for quick tests
 t
 t2
+t3
 t.out
 
 # TLS keystores

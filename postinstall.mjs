@@ -5,9 +5,98 @@ import * as fs from "fs";
 import * as path from "path";
 import * as http from "http";
 import * as https from "https";
-import { ProxyAgent } from "proxy-agent";
+import * as tls from "tls";
+import * as nodeUrl from "url";
 
 import * as child_process from "child_process";
+
+// This is the version (VRM) of MQ associated with this level of package
+let vrm="10.0.1";
+// This is the default fixpack or CSU level that we might want to apply
+const defaultFp="0";
+
+// If MQIJS_CA_FILE names a PEM file, trust the certificate(s) in it in addition
+// to the default root CAs. This allows servers using a self-signed certificate
+// (or a private CA) without disabling certificate validation.
+function loadExtraCa() {
+  const caFile = pEnv("MQIJS_CA_FILE");
+  if (!caFile) return undefined;
+  return [...tls.rootCertificates, fs.readFileSync(caFile, "utf8")];
+}
+
+// Build an http.Agent or https.Agent (matching the target URL's protocol) that
+// tunnels through an HTTP proxy (CONNECT), or returns undefined when no proxy
+// is needed, using only Node built-ins.
+function buildProxyAgent(targetUrl) {
+  const parsedTarget = new nodeUrl.URL(targetUrl);
+  const isHttps = parsedTarget.protocol === "https:";
+
+  // Honour the same env vars that proxy-agent / curl use. Prefer the variable
+  // matching the target protocol, but fall back to the other one.
+  const proxyEnv = isHttps ? pEnv("HTTPS_PROXY") || pEnv("https_proxy") ||
+      pEnv("HTTP_PROXY") || pEnv("http_proxy")
+    : pEnv("HTTP_PROXY") || pEnv("http_proxy") ||
+      pEnv("HTTPS_PROXY") || pEnv("https_proxy");
+
+  if (!proxyEnv) {
+    return undefined;
+  }
+
+  // Check NO_PROXY / no_proxy
+  const noProxy = pEnv("NO_PROXY") || pEnv("no_proxy") || "";
+  const targetHost = parsedTarget.hostname;
+  if (noProxy.split(",").some(h => {
+    h = h.trim();
+    return h && (targetHost === h || targetHost.endsWith("." + h));
+  })) {
+    return undefined;
+  }
+
+  const parsedProxy = new nodeUrl.URL(proxyEnv);
+  const proxyHost = parsedProxy.hostname;
+  const proxyPort = parseInt(parsedProxy.port, 10) || 8080;
+
+  // Return an Agent whose createConnection opens a CONNECT tunnel. For https
+  // targets the tunnel is then wrapped in TLS; for http targets the raw tunnel
+  // socket is used directly.
+  const defaultPort = isHttps ? 443 : 80;
+  const AgentClass = isHttps ? https.Agent : http.Agent;
+  const ca = isHttps ? loadExtraCa() : undefined;
+  const agent = new AgentClass({ keepAlive: false });
+  // createConnection must be set on the instance; Agent ignores it as a
+  // constructor option.
+  agent.createConnection = (opts, cb) => {
+    const authority = `${opts.host}:${opts.port || defaultPort}`;
+    const req = http.request({
+      host: proxyHost,
+      port: proxyPort,
+      method: "CONNECT",
+      path: authority,
+      headers: { Host: authority },
+    });
+    req.on("connect", (res, socket) => {
+      if (res.statusCode < 200 || res.statusCode > 299) {
+        socket.destroy();
+        cb(new Error("Proxy CONNECT failed. HTTP Status Code: " + res.statusCode));
+        return;
+      }
+      if (isHttps) {
+        const tlsSocket = tls.connect({
+          socket,
+          servername: opts.servername || opts.host,
+          ...(ca ? { ca } : {}),
+        });
+        tlsSocket.once("secureConnect", () => cb(null, tlsSocket));
+        tlsSocket.once("error", cb);
+      } else {
+        cb(null, socket);
+      }
+    });
+    req.on("error", cb);
+    req.end();
+  };
+  return agent;
+}
 
 // How to get to the MQ Redistributable Client package
 const protocol = "https://";
@@ -15,11 +104,6 @@ const host="public.dhe.ibm.com";
 const baseDir="ibmdl/export/pub/software/websphere/messaging/mqdev";
 const redistDir=baseDir+"/redist";
 // const macDir=baseDir+"/mactoolkit";
-
-// This is the version (VRM) of MQ associated with this level of package
-let vrm="10.0.1";
-// This is the default fixpack or CSU level that we might want to apply
-const defaultFp="0";
 
 // Try a few ways to pick up environment variables
 function pEnv(s) {
@@ -353,9 +437,13 @@ if (url.startsWith("https"))
 try {
   // The downloaded file goes into the current directory (node_modules/ibmmq)
   const fd = fs.openSync(file, "w");
-  const agent = new ProxyAgent();
+  const agent = buildProxyAgent(url);
+  const ca = client === https ? loadExtraCa() : undefined;
+  const reqOptions = {};
+  if (agent) reqOptions.agent = agent;
+  if (ca) reqOptions.ca = ca;
 
-  client.get(url, { agent }, (res) => {
+  client.get(url, reqOptions, (res) => {
     let error;
 
     if (res.statusCode < 200 || res.statusCode > 299) {

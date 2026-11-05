@@ -7,6 +7,9 @@ Newest updates are at the top of this file.
 * Add some unit tests
 * Updated DEPRECATIONS.md
 * Fix for #208 - deal with invalid MH
+* Replace the proxy-agent use in postinstall
+  * Once we move to node 22 as base level, even that can
+    be replaced
 
 ## 16 Jun 2026: v2.1.9
 * Update for MQ 10.0.0
